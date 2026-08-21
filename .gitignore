@@ -1,0 +1,160 @@
+# =============================================================================
+# Segredos — nada aqui entra no repositório, nunca
+# =============================================================================
+.env
+.env.*
+# o exemplo É versionado: contém só nomes de variáveis, sem valores
+!.env.example
+
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+*.crt
+
+# Par de chaves RS256 do identity-service (ADR-015)
+jwt-private*
+jwt-public*
+
+# Certificados do broker MQTT
+infra/mqtt/certs/
+
+# Credenciais de nuvem
+.aws/
+gcp-*.json
+service-account*.json
+
+
+# =============================================================================
+# Java / Gradle
+# =============================================================================
+.gradle/
+# 'build/' casa só com diretórios chamados exatamente build — build-logic/ é preservado
+build/
+.kotlin/
+
+*.class
+*.jar
+# O wrapper É versionado, senão ./gradlew não roda em máquina limpa.
+# Precisa de ** porque o build fica em backend/, não na raiz.
+!**/gradle/wrapper/gradle-wrapper.jar
+hs_err_pid*
+replay_pid*
+
+# Caso alguém rode Maven por engano
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+
+
+# =============================================================================
+# Front-end (marco 4 em diante)
+# =============================================================================
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.tsbuildinfo
+.eslintcache
+coverage/
+playwright-report/
+test-results/
+/blob-report/
+.playwright/
+
+
+# =============================================================================
+# Docker e execução local
+# =============================================================================
+docker-compose.override.yml
+compose.override.yml
+.docker/
+
+# Dados de container montados localmente, se alguém trocar volume por bind mount
+/data/
+/pgdata/
+/mongodata/
+
+
+# =============================================================================
+# Configuração local que não vale para os outros
+# =============================================================================
+application-local.yml
+application-local.yaml
+application-local.properties
+*-local.env
+
+# Testcontainers: preferência de máquina, não do projeto
+.testcontainers.properties
+
+
+# =============================================================================
+# Claude Code
+# O CLAUDE.md e .claude/skills/ SÃO versionados — são configuração do projeto.
+# Só a preferência local de cada desenvolvedor fica de fora.
+# =============================================================================
+.claude/settings.local.json
+.claude/*.local.json
+
+
+# =============================================================================
+# Artefatos gerados
+# =============================================================================
+# Clientes gerados a partir do OpenAPI — regeráveis, não versionados
+clients/generated/
+
+# Relatórios de build, cobertura e segurança
+*.sbom.json
+sbom-*.json
+trivy-report*
+dependency-check-report*
+
+
+# =============================================================================
+# Logs e temporários
+# =============================================================================
+*.log
+logs/
+*.tmp
+*.bak
+*.swp
+*~
+
+
+# =============================================================================
+# IDE
+# =============================================================================
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Exclui o CONTEÚDO, não a pasta: o git não desce em diretório excluído,
+# e sem isso a exceção abaixo nunca teria efeito.
+.vscode/*
+!.vscode/extensions.json
+*.code-workspace
+
+.settings/
+.classpath
+.project
+.apt_generated/
+.factorypath
+
+nbproject/private/
+.nb-gradle/
+
+
+# =============================================================================
+# Sistema operacional
+# =============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini

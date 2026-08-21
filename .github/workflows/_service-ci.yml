@@ -1,0 +1,43 @@
+# Workflow reutilizável — um único lugar para a definição do pipeline.
+# Cada serviço tem um caller fino com seu path filter.
+
+name: service-ci
+
+on:
+  workflow_call:
+    inputs:
+      module:
+        required: true
+        type: string
+        description: "Caminho Gradle do módulo, ex.: :services:order-service"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Verificar formatação e compilar
+        working-directory: backend
+        run: ./gradlew ${{ inputs.module }}:compileJava --no-daemon
+
+      - name: Testes (unitários, arquitetura e integração)
+        working-directory: backend
+        run: ./gradlew ${{ inputs.module }}:test --no-daemon
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

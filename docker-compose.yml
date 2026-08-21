@@ -1,0 +1,344 @@
+# Perfis:
+#   core           infraestrutura (bancos, brokers, storage)
+#   services       gateway e microsserviços
+#   observability  Prometheus, Grafana, Loki, Tempo
+#   full           tudo
+#
+# No dia a dia você não sobe os dez aplicativos. Sobe `core` e roda pelo IDE
+# apenas o serviço em que está trabalhando:
+#   docker compose --profile core up -d
+
+name: delivery-platform
+
+services:
+
+  # ─────────────────────────────────────────────────────── core
+  postgres:
+    profiles: ["core", "full"]
+    image: postgis/postgis:17-3.5
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+    # ADR-014: sete serviços relacionais; o default de 100 conexões não basta.
+    command: ["postgres", "-c", "max_connections=200"]
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mongodb:
+    profiles: ["core", "full"]
+    image: mongo:8
+    # Replica set de nó único: sem ele não há transação multi-documento,
+    # e sem transação não há Outbox — ADR-008/ADR-017.
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand({ping:1}).ok' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mongo-init:
+    profiles: ["core", "full"]
+    image: mongo:8
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./infra/database/init/mongo-init-replicaset.sh:/init.sh:ro
+    entrypoint: ["sh", "/init.sh"]
+    restart: "no"
+
+  redis:
+    profiles: ["core", "full"]
+    image: redis:7-alpine
+    # AOF ligado: reiniciar o container não pode apagar carrinhos ativos.
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  rabbitmq:
+    profiles: ["core", "full"]
+    image: rabbitmq:4-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  mosquitto:
+    profiles: ["core", "full"]
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./infra/mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+
+  minio:
+    profiles: ["core", "full"]
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9090:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ───────────────────────────────────────────────── aplicações
+
+  gateway:
+    profiles: ["services", "full"]
+    build:
+      context: ./backend
+      dockerfile: infra/gateway/Dockerfile
+    environment:
+      SERVER_PORT: "8080"
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  identity-service:
+    profiles: ["services", "full"]
+    build:
+      context: ./backend
+      dockerfile: services/identity-service/Dockerfile
+    environment:
+      SERVER_PORT: "8081"
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  merchant-service:
+    profiles: ["services", "full"]
+    build:
+      context: ./backend
+      dockerfile: services/merchant-service/Dockerfile
+    environment:
+      SERVER_PORT: "8082"
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  catalog-service:
+    profiles: ["services", "full"]
+    build:
+      context: ./backend
+      dockerfile: services/catalog-service/Dockerfile
+    environment:
+      SERVER_PORT: "8083"
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  inventory-service:
+    profiles: ["services", "full"]
+    build:
+      context: ./backend
+      dockerfile: services/inventory-service/Dockerfile
+    environment:
+      SERVER_PORT: "8084"
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  order-service:
+    profiles: ["services", "full"]
+    build:
+      context: ./backend
+      dockerfile: services/order-service/Dockerfile
+    environment:
+      SERVER_PORT: "8085"
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
+    ports:
+      - "8085:8085"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  payment-service:
+    profiles: ["services", "full"]
+    build:
+      context: ./backend
+      dockerfile: services/payment-service/Dockerfile
+    environment:
+      SERVER_PORT: "8086"
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
+    ports:
+      - "8086:8086"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  delivery-service:
+    profiles: ["services", "full"]
+    build:
+      context: ./backend
+      dockerfile: services/delivery-service/Dockerfile
+    environment:
+      SERVER_PORT: "8087"
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
+    ports:
+      - "8087:8087"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  geolocation-service:
+    profiles: ["services", "full"]
+    build:
+      context: ./backend
+      dockerfile: services/geolocation-service/Dockerfile
+    environment:
+      SERVER_PORT: "8088"
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
+    ports:
+      - "8088:8088"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+  notification-service:
+    profiles: ["services", "full"]
+    build:
+      context: ./backend
+      dockerfile: services/notification-service/Dockerfile
+    environment:
+      SERVER_PORT: "8089"
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
+    ports:
+      - "8089:8089"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ──────────────────────────────────────────── observabilidade
+  prometheus:
+    profiles: ["observability", "full"]
+    image: prom/prometheus:latest
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    profiles: ["observability", "full"]
+    image: grafana/grafana:latest
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+  loki:
+    profiles: ["observability", "full"]
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+
+  tempo:
+    profiles: ["observability", "full"]
+    image: grafana/tempo:latest
+    ports:
+      - "3200:3200"
+
+volumes:
+  postgres-data:
+  mongo-data:
+  redis-data:
+  rabbitmq-data:
+  mosquitto-data:
+  minio-data:
+  grafana-data:

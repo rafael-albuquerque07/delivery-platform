@@ -1,0 +1,20 @@
+name: identity-service
+
+on:
+  push:
+    paths:
+      - 'backend/services/identity-service/**'
+      - 'backend/build-logic/**'
+      - 'backend/gradle/libs.versions.toml'
+      - '.github/workflows/identity-service.yml'
+  pull_request:
+    paths:
+      - 'backend/services/identity-service/**'
+      - 'backend/build-logic/**'
+      - 'backend/gradle/libs.versions.toml'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_service-ci.yml
+    with:
+      module: ':services:identity-service'

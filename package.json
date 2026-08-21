@@ -1,0 +1,23 @@
+{
+  "name": "delivery-platform-tooling",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ferramental do monorepo: validação dos contratos em contracts/. Não é a aplicação — o backend é Java/Gradle e o front-end tem seu próprio package.json em frontend/.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "contracts:openapi": "redocly lint 'contracts/openapi/*.yaml'",
+    "contracts:openapi:stats": "redocly stats 'contracts/openapi/*.yaml'",
+    "contracts:asyncapi": "asyncapi validate contracts/asyncapi/business-events-rabbitmq.yaml && asyncapi validate contracts/asyncapi/courier-telemetry-mqtt.yaml",
+    "contracts:events": "ajv compile -s 'contracts/events/*.json' --spec=draft2020 --strict=true",
+    "contracts:lint": "spectral lint 'contracts/openapi/*.yaml'",
+    "contracts": "npm run contracts:openapi && npm run contracts:asyncapi && npm run contracts:events"
+  },
+  "devDependencies": {
+    "@redocly/cli": "2.46.2",
+    "@stoplight/spectral-cli": "6.16.3",
+    "@asyncapi/cli": "6.0.2",
+    "ajv-cli": "5.0.0"
+  }
+}

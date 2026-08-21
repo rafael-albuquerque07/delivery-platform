@@ -1,0 +1,17 @@
+{
+  "recommendations": [
+    "vscjava.vscode-java-pack",
+    "vmware.vscode-boot-dev-pack",
+    "vscjava.vscode-gradle",
+    "redhat.vscode-yaml",
+    "ms-azuretools.vscode-docker",
+    "42crunch.vscode-openapi",
+    "editorconfig.editorconfig",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss"
+  ],
+  "unwantedRecommendations": [
+    "vscjava.vscode-maven"
+  ]
+}

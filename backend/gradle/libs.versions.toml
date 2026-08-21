@@ -1,0 +1,56 @@
+# =============================================================================
+# Version catalog — fonte única de versões do backend.
+#
+# VERIFICADO em 16/08/2026 contra fontes oficiais:
+#   springBoot  4.1.0        — release de junho/2026; traz Spring Framework 7.0.x
+#                              e Spring Security 7.1.0 (ambos gerenciados pelo BOM)
+#   springCloud 2025.1.2     — release train "Oakwood", compatível com Boot 4.1.0
+#   springdoc   3.0.x        — linha para Spring Boot 4 (a 2.8.x é para Boot 3.5)
+#
+# A CONFIRMAR na primeira resolução de dependências (./gradlew dependencies):
+#   springdoc   — confirmar o patch 3.0.x que declara suporte a Boot 4.1.0
+#   mapstruct, mongock, archunit — não são gerenciados pelo BOM do Boot
+#
+# NÃO declare aqui o que o BOM do Spring Boot já gerencia: Flyway, Testcontainers,
+# Awaitility, Hibernate, JTS/Hibernate Spatial, driver do PostgreSQL, Jackson.
+# =============================================================================
+
+[versions]
+java              = "21"
+springBoot        = "4.1.0"
+springCloud       = "2025.1.2"
+springdoc         = "3.0.3"
+mapstruct         = "1.6.3"
+mongock           = "5.5.1"
+archunit          = "1.3.0"
+resilience4j      = "2.2.0"
+mqttClient        = "1.2.5"
+
+[libraries]
+# --- BOMs -------------------------------------------------------------------
+spring-cloud-bom       = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "springCloud" }
+mongock-bom            = { module = "io.mongock:mongock-bom", version.ref = "mongock" }
+
+# --- documentação -----------------------------------------------------------
+springdoc-webmvc       = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+
+# --- mapeamento -------------------------------------------------------------
+mapstruct              = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstruct-processor    = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
+
+# --- resiliência ------------------------------------------------------------
+resilience4j-spring    = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
+
+# --- migrations MongoDB -----------------------------------------------------
+mongock-springboot     = { module = "io.mongock:mongock-springboot" }
+mongock-mongodb-driver = { module = "io.mongock:mongodb-springdata-v4-driver" }
+
+# --- MQTT -------------------------------------------------------------------
+paho-mqtt-v5           = { module = "org.eclipse.paho:org.eclipse.paho.mqttv5.client", version.ref = "mqttClient" }
+
+# --- teste ------------------------------------------------------------------
+archunit-junit5        = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
+
+[plugins]
+spring-boot            = { id = "org.springframework.boot", version.ref = "springBoot" }
+spring-dependency-mgmt = { id = "io.spring.dependency-management", version = "1.1.7" }

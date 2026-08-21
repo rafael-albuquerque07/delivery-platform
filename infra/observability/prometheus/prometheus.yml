@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: delivery-services
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - gateway:8080
+          - identity-service:8081
+          - merchant-service:8082
+          - catalog-service:8083
+          - inventory-service:8084
+          - order-service:8085
+          - payment-service:8086
+          - delivery-service:8087
+          - geolocation-service:8088
+          - notification-service:8089

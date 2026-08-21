@@ -1,0 +1,20 @@
+name: inventory-service
+
+on:
+  push:
+    paths:
+      - 'backend/services/inventory-service/**'
+      - 'backend/build-logic/**'
+      - 'backend/gradle/libs.versions.toml'
+      - '.github/workflows/inventory-service.yml'
+  pull_request:
+    paths:
+      - 'backend/services/inventory-service/**'
+      - 'backend/build-logic/**'
+      - 'backend/gradle/libs.versions.toml'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_service-ci.yml
+    with:
+      module: ':services:inventory-service'
