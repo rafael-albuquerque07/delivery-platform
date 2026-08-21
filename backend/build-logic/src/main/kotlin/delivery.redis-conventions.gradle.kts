@@ -7,5 +7,6 @@ plugins {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
-    testImplementation("org.testcontainers:junit-jupiter")
+    // Testcontainers 2.x prefixa os módulos com "testcontainers-".
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
 }

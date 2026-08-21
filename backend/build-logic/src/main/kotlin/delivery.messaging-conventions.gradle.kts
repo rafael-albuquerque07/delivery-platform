@@ -9,7 +9,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-amqp")
 
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
-    testImplementation("org.testcontainers:junit-jupiter")
-    testImplementation("org.testcontainers:rabbitmq")
+    // Testcontainers 2.x prefixa os módulos com "testcontainers-".
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers-rabbitmq")
     testImplementation("org.awaitility:awaitility")
 }

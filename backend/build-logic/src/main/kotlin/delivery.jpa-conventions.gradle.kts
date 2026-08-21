@@ -12,6 +12,8 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
-    testImplementation("org.testcontainers:junit-jupiter")
-    testImplementation("org.testcontainers:postgresql")
+    // Testcontainers 2.x prefixa os módulos com "testcontainers-" (ex.: era
+    // "org.testcontainers:junit-jupiter", agora "org.testcontainers:testcontainers-junit-jupiter").
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
 }
