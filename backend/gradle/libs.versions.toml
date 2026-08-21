@@ -1,10 +1,10 @@
 # =============================================================================
 # Version catalog — fonte única de versões do backend.
 #
-# VERIFICADO em 16/08/2026 contra fontes oficiais:
-#   springBoot  4.1.0        — release de junho/2026; traz Spring Framework 7.0.x
+# VERIFICADO em 21/08/2026 contra fontes oficiais:
+#   springBoot  4.1.1        — patch da linha 4.1.x; traz Spring Framework 7.0.x
 #                              e Spring Security 7.1.0 (ambos gerenciados pelo BOM)
-#   springCloud 2025.1.2     — release train "Oakwood", compatível com Boot 4.1.0
+#   springCloud 2025.1.2     — release train "Oakwood", compatível com toda a linha 4.1.x
 #   springdoc   3.0.x        — linha para Spring Boot 4 (a 2.8.x é para Boot 3.5)
 #
 # A CONFIRMAR na primeira resolução de dependências (./gradlew dependencies):
@@ -17,7 +17,7 @@
 
 [versions]
 java              = "21"
-springBoot        = "4.1.0"
+springBoot        = "4.1.1"
 springCloud       = "2025.1.2"
 springdoc         = "3.0.3"
 mapstruct         = "1.6.3"
