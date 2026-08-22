@@ -158,3 +158,9 @@ nbproject/private/
 Thumbs.db
 ehthumbs.db
 desktop.ini
+
+# saída de compilação da extensão Java do VS Code
+bin/
+
+# ferramentas de terceiros
+.qodo/
