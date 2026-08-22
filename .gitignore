@@ -135,6 +135,10 @@ logs/
 # e sem isso a exceção abaixo nunca teria efeito.
 .vscode/*
 !.vscode/extensions.json
+# Desarma o sync automático das extensões Java/Gradle, que disputa
+# build-logic/build/ com o build da linha de comando. Não é preferência
+# pessoal — sem isso o build quebra. Ver armadilhas no CLAUDE.md.
+!.vscode/settings.json
 *.code-workspace
 
 .settings/

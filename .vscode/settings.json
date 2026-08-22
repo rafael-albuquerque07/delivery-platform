@@ -1,0 +1,6 @@
+{
+  "java.import.gradle.enabled": false,
+  "java.configuration.updateBuildConfiguration": "disabled",
+  "gradle.nestedProjects": false,
+  "java.compile.nullAnalysis.mode": "automatic"
+}
