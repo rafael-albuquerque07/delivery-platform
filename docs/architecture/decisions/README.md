@@ -4,7 +4,7 @@
 |---|---|---|
 | 001 | Monorepo | ⬜ a escrever |
 | 002 | Banco por serviço | ⬜ a escrever |
-| 003 | Mensageria híbrida RabbitMQ + MQTT | ⬜ a escrever |
+| 003 | ~~Mensageria híbrida RabbitMQ + MQTT~~ | ⛔ sem objeto — MQTT saiu do MVP (020, 021) |
 | 004 | Um estabelecimento por pedido | ⬜ a escrever |
 | 005 | ~~PostGIS e Redis GEO~~ | ⛔ sem objeto — geoprocessamento saiu do MVP (020) |
 | 006 | Carrinho no Redis: TTL, durabilidade e ordem do checkout | ⬜ a escrever |
@@ -12,9 +12,9 @@
 | 008 | MongoDB como replica set de nó único | 🟨 decidida, formalizar |
 | 009 | Modelo de valores do pedido | ✅ aceita · **emendada pela v1.1** |
 | 010 | Saga do pedido: pivô em `PRONTO`, pagamento fora da transação | ✅ aceita · **reescrita pela v1.1** |
-| 011 | Autorização comercial: cache, TTL, invalidação e fail-closed | ⬜ a escrever |
-| 012 | Roteamento do gateway sob `/merchants/{id}` | ⬜ a escrever |
-| 013 | Retenção e anonimização de dados pessoais (LGPD) | ⬜ a escrever |
+| 011 | Autorização comercial: cache, TTL, invalidação e fail-closed | ⚠️ **a escrever antes do marco 1** |
+| 012 | Roteamento do gateway | ⬜ a escrever |
+| 013 | Retenção e anonimização de dados pessoais (LGPD) | ⚠️ **a escrever antes do marco 7** |
 | 014 | Não adotar H2; Testcontainers como fonte de verdade | ✅ aceita |
 | 015 | Emitir JWT com `NimbusJwtEncoder` | ✅ aceita |
 | 016 | Front-end mínimo antes da PWA completa | ✅ aceita |
@@ -22,8 +22,9 @@
 | 018 | Snapshot de opções no item e cotação pelo catálogo | ✅ aceita |
 | 019 | `DeliveryQuotePort`: cotação por distância geodésica | ⛔ **revogada** — ver 020 |
 | 020 | Taxa de entrega por área nomeada (bairro / faixa de CEP) | ✅ aceita |
-| 021 | Catálogo de serviços do MVP | 🔒 número reservado — alinhamento do esqueleto |
+| 021 | Catálogo de serviços do MVP — oito serviços | ✅ aceita |
 | 022 | A remuneração do entregador pertence ao vínculo | ✅ aceita |
+| 023 | Fronteira entre `order` e `payment` no registro de liquidações | ⚠️ **a escrever antes do marco 4** — ver ADR-021, "ponto em aberto" |
 
 ## Onde mora o quê
 

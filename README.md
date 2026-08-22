@@ -1,11 +1,16 @@
 # delivery-platform
 
-Plataforma de delivery multiestabelecimento em microsserviços. Nove serviços de
-negócio e um gateway, cada um com processo, banco, migrations, testes, container,
-contrato e pipeline próprios.
+Plataforma de delivery para **comércio de bairro**, em microsserviços. Oito
+serviços de negócio e um gateway, cada um com processo, banco, migrations,
+testes, container, contrato e pipeline próprios.
 
-> **Estado: esqueleto (Fase 0).** A estrutura, o build e a infraestrutura estão
-> montados. Ainda não há regra de negócio — a etapa 1 começa pelo
+> **O cliente é o comerciante, não o consumidor.** A plataforma frequentemente
+> não custodia o dinheiro, o entregador pertence ao estabelecimento e o pedido
+> nasce numa conversa de WhatsApp. Se uma decisão parecer estranha, confira as
+> premissas em [`docs/PRD.md`](docs/PRD.md) §5 antes de "corrigir".
+
+> **Estado: esqueleto (marco 0).** A estrutura, o build e a infraestrutura estão
+> montados. Ainda não há regra de negócio — o marco 1 começa pelo
 > `identity-service`.
 
 ---
@@ -14,7 +19,7 @@ contrato e pipeline próprios.
 
 - JDK 21 (o Gradle Toolchain baixa se não houver)
 - Docker e Docker Compose
-- ~16 GB de RAM se subir tudo — mas o dia a dia usa só o perfil `core`
+- ~12 GB de RAM se subir tudo — mas o dia a dia usa só o perfil `core`
 
 ## Primeiros passos
 
@@ -24,15 +29,15 @@ docker compose --profile core up -d
 cd backend && ./gradlew build
 ```
 
-> **Primeira execução:** o build ainda não foi resolvido contra o Maven Central.
-> Confirme as versões marcadas em `backend/gradle/libs.versions.toml` — as do
-> Spring Boot e do Spring Cloud foram verificadas contra fontes oficiais; as de
-> MapStruct, Mongock, ArchUnit e Resilience4j precisam de conferência no primeiro
-> `./gradlew dependencies`.
+> **Windows:** mantenha o repositório **fora** do perfil do usuário — em
+> `C:\dev\`, não em `Documents`. Sincronização de nuvem e antivírus corporativo
+> apagam os arquivos que o Kotlin DSL gera em `build/`, e o sintoma é um build
+> que falha em arquivos diferentes a cada tentativa. Aponte também
+> `GRADLE_USER_HOME` para fora do perfil.
 
 ## Como se trabalha aqui
 
-Você **não** sobe os dez aplicativos. Sobe a infraestrutura e roda pelo IDE
+Você **não** sobe os nove aplicativos. Sobe a infraestrutura e roda pelo IDE
 apenas o serviço em que está mexendo:
 
 ```bash
@@ -42,8 +47,8 @@ docker compose --profile core up -d           # bancos, brokers, storage
 
 | Perfil do Compose | Sobe |
 |---|---|
-| `core` | PostgreSQL/PostGIS, MongoDB, Redis, RabbitMQ, Mosquitto, MinIO |
-| `services` | gateway e os nove microsserviços |
+| `core` | PostgreSQL, MongoDB, Redis, RabbitMQ, MinIO |
+| `services` | gateway e os oito microsserviços |
 | `observability` | Prometheus, Grafana, Loki, Tempo |
 | `full` | tudo |
 
@@ -65,11 +70,15 @@ delivery-platform/
 │   ├── build-logic/            convention plugins — toda configuração compartilhada
 │   ├── gradle/libs.versions.toml
 │   ├── infra/gateway/
-│   └── services/               os nove microsserviços
+│   └── services/               os oito microsserviços
 ├── contracts/                  OpenAPI, AsyncAPI e JSON Schema dos eventos
-├── docs/                       PRD, arquitetura, ADRs e PDFs de referência
-├── infra/                      configuração de Postgres, Mongo, MQTT e observabilidade
-├── frontend/                   entra na etapa 4 (ADR-016)
+├── docs/
+│   ├── PRD.md                  o que o produto é e para quem
+│   ├── dominio/                as REGRAS vigentes — leia antes de codificar
+│   ├── architecture/decisions/ ADRs
+│   └── referencia/             PDFs publicados
+├── infra/                      configuração de Postgres, Mongo e observabilidade
+├── frontend/                   entra no marco 3 (ADR-016)
 └── .github/workflows/          um pipeline por serviço + workflow reutilizável
 ```
 
@@ -98,21 +107,35 @@ Em revisão manual, a arquitetura erode em duas semanas.
 
 ## Serviços e portas
 
-| Serviço | Porta | Persistência | Publica eventos |
+| Serviço | Porta | Persistência | Documento de domínio |
 |---|---:|---|---|
 | gateway | 8080 | — | — |
-| identity-service | 8081 | PostgreSQL | sim |
-| merchant-service | 8082 | PostgreSQL + Redis | sim |
-| catalog-service | 8083 | MongoDB + Redis | sim |
-| inventory-service | 8084 | PostgreSQL | sim |
-| order-service | 8085 | PostgreSQL + Redis | sim |
-| payment-service | 8086 | PostgreSQL | sim |
-| delivery-service | 8087 | PostgreSQL + Redis | sim |
-| geolocation-service | 8088 | PostGIS + Redis | sim |
-| notification-service | 8089 | MongoDB | não (terminal) |
+| identity-service | 8081 | PostgreSQL | — (autenticação, sem domínio de negócio) |
+| merchant-service | 8082 | PostgreSQL + Redis | [`estabelecimento.md`](docs/dominio/estabelecimento.md) |
+| catalog-service | 8083 | MongoDB + Redis | [`catalogo.md`](docs/dominio/catalogo.md) |
+| settlement-service | 8084 | PostgreSQL | [`liquidacao.md`](docs/dominio/liquidacao.md) |
+| order-service | 8085 | PostgreSQL + Redis | [`pedido.md`](docs/dominio/pedido.md) |
+| payment-service | 8086 | PostgreSQL | — (fronteira com o PSP; ver ADR-021) |
+| delivery-service | 8087 | PostgreSQL + Redis | [`entrega.md`](docs/dominio/entrega.md) |
+| conversation-service | 8088 | MongoDB | [`conversa.md`](docs/dominio/conversa.md) |
 
-Sete bancos PostgreSQL e dois MongoDB — nove bancos lógicos.
+Seis bancos PostgreSQL e dois MongoDB — oito bancos lógicos.
 **Nenhum serviço acessa o banco de outro.**
+
+> **Não há coluna "publica eventos" nesta tabela, de propósito.** A anterior
+> tinha, estava desatualizada, e um agente tomou uma decisão de build lendo ela.
+> Quem publica o quê está em `docs/dominio/<serviço>.md`, na seção de eventos,
+> que é onde a informação é mantida.
+
+### Serviços adiados
+
+| Serviço | Volta em | Por quê saiu |
+|---|---|---|
+| `inventory` | marco 10 | A maioria dos produtos opera em disponibilidade qualitativa (P6) |
+| `geolocation` | marco 11 | Taxa é por bairro, não por distância (P5, ADR-020) |
+
+`notification` foi **absorvido** pelo `conversation-service` e não volta —
+ADR-021.
 
 ---
 
@@ -120,18 +143,22 @@ Sete bancos PostgreSQL e dois MongoDB — nove bancos lógicos.
 
 | Decisão | Onde aparece |
 |---|---|
-| **ADR-014** — sem H2 | Um único profile `dev`; Testcontainers em todo teste de banco; `maximum-pool-size: 5` em cada serviço, porque sete deles no default de 10 estouram o `max_connections` do Postgres |
+| **ADR-014** — sem H2 | Um único profile `dev`; Testcontainers em todo teste de banco; `maximum-pool-size: 5` em cada serviço relacional |
 | **ADR-015** — JWT com `NimbusJwtEncoder` | Todos os serviços são Resource Server; só o `identity-service` emitirá |
-| **ADR-016** — front mínimo antes da PWA | `frontend/` é só um README até a etapa 4 |
+| **ADR-016** — front mínimo antes da PWA | `frontend/` é só um README até o marco 3 |
 | **ADR-017** — MongoDB como aprendizado | Mongock nos serviços documentais; MongoDB sobe como **replica set de nó único**, sem o qual não há transação multi-documento e portanto não há Outbox |
+| **ADR-020** — taxa por área nomeada | Sem PostGIS, sem MQTT, sem motor de rotas |
+| **ADR-021** — oito serviços no MVP | Este `settings.gradle.kts`, este Compose, esta tabela |
+| **ADR-022** — remuneração no vínculo | Não existe campo de pagamento do entregador no pedido |
 
-O índice completo está em [`docs/architecture/decisions/`](docs/architecture/decisions/README.md).
+Índice completo em [`docs/architecture/decisions/`](docs/architecture/decisions/README.md).
 
 ## Documentos
 
 | Arquivo | O que responde |
 |---|---|
 | [`docs/PRD.md`](docs/PRD.md) | O que o produto é, para quem, e o que está fora de escopo |
+| [`docs/dominio/`](docs/dominio/README.md) | **As regras vigentes** — agregados, invariantes, tabelas de transição, fórmulas |
 | [`CLAUDE.md`](CLAUDE.md) | Invariantes e convenções — leitura obrigatória antes do primeiro commit |
 | [`docs/architecture/decisions/`](docs/architecture/decisions/README.md) | Por que cada decisão foi tomada, com alternativas e consequências |
 | `docs/referencia/*.pdf` | Versões publicadas da arquitetura, do PRD e da revisão de escopo |
@@ -149,27 +176,32 @@ O índice completo está em [`docs/architecture/decisions/`](docs/architecture/d
   a primeira chamada sem timeout é uma indisponibilidade latente.
 - **`correlationId` desde o começo.** É código, não infraestrutura — e precisa
   estar no payload do evento desde o primeiro evento.
-- **Valor cobrado vem do pedido.** Nunca de um número enviado pelo cliente.
+- **Valor cobrado vem do pedido.** Nunca de um número enviado pelo cliente, e
+  nunca calculado pela interpretação automática do canal.
+- **Nenhuma entrega ou retirada conclui sem liquidação registrada.**
 
 ---
 
-## Roadmap
+## Marcos
 
-| Etapa | Entrega |
-|---|---|
-| 0 | ✅ Esqueleto: build, módulos, Compose, CI |
-| 1 | PostgreSQL, Flyway, Testcontainers, CI mínimo |
-| 2 | `identity-service`: JWT RS256, JWKS, senhas |
-| 3 | `merchant-service` + gateway — vira microsserviços de fato |
-| 4 | Front-end mínimo (entrega 15.A) |
-| 5 | `catalog-service` |
-| 6 | `inventory` + `order` + RabbitMQ + Outbox + idempotência |
-| 7 | `payment-service` e Saga completa |
-| 8 | `delivery-service` — aqui os nove requisitos originais estão atendidos |
-| 9 | `geolocation-service`: MQTT, PostGIS, Redis GEO, rotas |
-| 10 | `notification-service` |
-| 11 | Observabilidade |
-| 12 | Hardening e DevSecOps |
+A numeração é a de [`docs/PRD.md`](docs/PRD.md) §10, e é a única que vale.
 
-Ao fim da **etapa 8** todos os requisitos originais estão cumpridos. As etapas
-seguintes ampliam o escopo, não provam mais nada sobre arquitetura.
+| Marco | Entrega | O comerciante consegue |
+|---|---|---|
+| 0 | ✅ Esqueleto: build, módulos, Compose, CI | — |
+| 1 | Conta, estabelecimento, equipe e permissões | Cadastrar a loja e o time, com poderes diferentes |
+| 2 | Cardápio com opções e disponibilidade qualitativa | Publicar o cardápio e marcar o que acabou |
+| 3 | Painel de pedidos e ciclo de preparo | Receber e acompanhar pedidos numa tela |
+| 4 | Liquidação presencial, troco e Pix confirmado | Registrar como cada pedido foi pago de verdade |
+| 5 | Entregadores, vínculo, remuneração e despacho | Despachar e saber quem está com cada pedido |
+| **6** | **Fechamento de expediente** | **Fechar o dia com extrato por entregador** |
+| 7 | Canal WhatsApp determinístico | Receber pedido pelo WhatsApp com menu numerado |
+| 8 | Pagamento online e emissão fiscal | Cobrar antecipado e emitir documento |
+| 9 | Atendimento assistido e escalonamento | Atender sozinho a maior parte dos pedidos |
+| 10 | Controle quantitativo e substituição de item | Operar minimercado com contagem de estoque |
+| 11 | Rastreamento e telemetria | Mostrar a entrega no mapa |
+
+**Ao fim do marco 6 existe produto completo e vendável.** A loja cadastra equipe
+e cardápio, recebe e prepara pedidos, despacha com entregador próprio, registra
+como cada pedido foi liquidado e fecha o expediente com extrato. Os marcos 7 a 9
+ampliam o alcance; 10 e 11 abrem segmentos novos.
