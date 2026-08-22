@@ -134,6 +134,9 @@ Estas não são preferências de estilo. Quebrar qualquer uma é defeito.
 | Vai colocar permissão ou papel dentro do JWT | Não. Permissão é do vínculo usuário × estabelecimento e é resolvida por requisição, com cache curto. No token vai só a identidade |
 | Serviço de autorização indisponível | **Negar.** Fail-closed é decisão assumida: liberar em caso de dúvida transforma uma queda em acesso irrestrito |
 | Faixa de horário que cruza a meia-noite | `fim < inicio` pertence ao dia de início e se estende ao seguinte. Teste com pedido à 01:00 é obrigatório |
+| Arquivo gerado sumindo de `build-logic/build/` no Windows | É a extensão **Java/Gradle do VS Code** rodando sync em segundo plano e disputando o diretório com o build da linha de comando. Desabilite `redhat.java` e `vscjava.vscode-gradle` no workspace e recarregue a janela. Matar o daemon não resolve — o watcher ressuscita em ~1 min |
+| Extensão do Java não desabilita | O pacote **Salesforce Apex** declara `redhat.java` como dependência dura e o mantém ligado. Desabilite o Salesforce no workspace também |
+| `GRADLE_USER_HOME` volta sozinho para o perfil do usuário | `$env:GRADLE_USER_HOME` vale só naquela janela do PowerShell. Torne permanente: `[Environment]::SetEnvironmentVariable("GRADLE_USER_HOME","C:\gradle","User")` — e reabra o VS Code, que herda o ambiente na inicialização |
 
 ---
 
