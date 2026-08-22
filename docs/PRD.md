@@ -161,7 +161,7 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 **H3.3** Como comerciante de minimercado, quero controlar quantidade quando o produto exige.
 - Modo de controle escolhido por produto: sem controle, qualitativo ou quantitativo
 - Produto quantitativo tem saldo, reserva ao entrar no pedido e baixa na conclusão
-- *Entra a partir do marco 5*
+- *Entra a partir do marco 10*
 
 ### E4 — Pedido e painel
 
@@ -179,7 +179,7 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 **H4.3** Como comerciante de mercado, quero substituir um item que acabou sem cancelar o pedido.
 - Substituição por similar, remoção ou cancelamento, com registro de quem autorizou e por quê
 - O valor original permanece registrado; o ajuste é lançamento novo, com histórico
-- *Entra a partir do marco 5*
+- *Entra a partir do marco 10*
 
 **H4.4** Como comerciante, quero cancelar ou o cliente cancelar dentro da regra.
 - Todo cancelamento registra a causa
@@ -283,7 +283,7 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 **H10.1** Como comerciante, preciso emitir documento fiscal do pedido.
 - Emissão a partir do pedido concluído
 - Contingência quando o serviço de emissão estiver indisponível
-- *Entra a partir do marco 7*
+- *Entra a partir do marco 8*
 
 ---
 

@@ -74,8 +74,9 @@ Estas não são preferências de estilo. Quebrar qualquer uma é defeito.
    acréscimo. Alteração posterior no catálogo não muda pedido existente.
 
 5. **Total é imutável.** Substituição e correção geram `Ajuste` (lista
-   somente-inserção, com autor, motivo e data). `total_efetivo` é derivado,
-   nunca gravado por cima.
+   somente-inserção, com autor, motivo e data). `totalEfetivo = total + Σ
+   ajustes.delta` é derivado, nunca gravado por cima. Nenhum relatório soma
+   `total` para dizer quanto entrou.
 
 6. **Comprovante em imagem não confirma Pix.** Só o webhook do PSP, com `txid`
    correlacionado ao pedido.
@@ -87,6 +88,10 @@ Estas não são preferências de estilo. Quebrar qualquer uma é defeito.
 
 9. **Nenhum identificador vindo da URL é confiável** sem confronto com o usuário
    autenticado e as permissões no estabelecimento.
+
+10. **Divergência de caixa nunca é compensada em silêncio.** Falta e sobra são
+    registradas e aparecem no fechamento. Abatê-las automaticamente do
+    pagamento do entregador apaga a métrica que o produto existe para produzir.
 
 ---
 
@@ -121,6 +126,14 @@ Estas não são preferências de estilo. Quebrar qualquer uma é defeito.
 | Tentado a usar `subprojects {}` no build raiz | Não. Convention plugins em `build-logic/`. `subprojects` quebra o configuration cache |
 | Teste de integração lento localmente | `testcontainers.reuse.enable=true` em `~/.testcontainers.properties` |
 | Precisa de permissão comercial em outro serviço | Consultar `merchant-service` via porta, com cache curto no Redis e política de **negar** quando indisponível |
+| `allowEmptyShould(true)` no ArchUnit | Muleta temporária: com só `.gitkeep` nas camadas, zero classes = falha. **Remova por serviço assim que ele tiver classes** — mantido depois, uma camada apagada ou pacote renomeado passa em silêncio |
+| Declarar versão de Testcontainers | Não declare. O BOM do Boot 4.1.x traz testcontainers-bom 2.x, onde os artefatos mudaram de nome: `org.testcontainers:testcontainers-junit-jupiter`, `-postgresql`, `-mongodb`, `-rabbitmq` |
+| Arquivo gerado sumindo de `build/` no Windows | Não é o build. É sync (OneDrive na pasta `Documents`) ou EDR em quarentena. Mantenha o repositório fora do perfil do usuário, ex. `C:\dev\`, e `GRADLE_USER_HOME` em `C:\gradle` |
+| Vai somar `total` num relatório | Não. `total` é o valor congelado no fechamento. O que entrou é `Σ Liquidacao.valorEfetivo`; o que o pedido vale hoje é `totalEfetivo` |
+| Vai calcular quanto o entregador ganha por pedido | Não existe. Remuneração vem do vínculo e é apurada por jornada — ADR-022 |
+| Vai colocar permissão ou papel dentro do JWT | Não. Permissão é do vínculo usuário × estabelecimento e é resolvida por requisição, com cache curto. No token vai só a identidade |
+| Serviço de autorização indisponível | **Negar.** Fail-closed é decisão assumida: liberar em caso de dúvida transforma uma queda em acesso irrestrito |
+| Faixa de horário que cruza a meia-noite | `fim < inicio` pertence ao dia de início e se estende ao seguinte. Teste com pedido à 01:00 é obrigatório |
 
 ---
 
@@ -136,6 +149,8 @@ Documentos de referência:
 
 - `docs/PRD.md` — o que o produto é, para quem, e o que está fora de escopo
 - `docs/architecture/` — como o sistema funciona
+- `docs/dominio/` — as regras vigentes: agregados, invariantes, tabelas de
+  transição e fórmulas de apuração. **Leia antes de escrever regra de negócio.**
 - `contracts/` — OpenAPI, AsyncAPI e JSON Schema dos eventos
 
 ---
