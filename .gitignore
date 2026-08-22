@@ -129,7 +129,7 @@ logs/
 *.iml
 *.ipr
 *.iws
-out/
+/out/
 
 # Exclui o CONTEÚDO, não a pasta: o git não desce em diretório excluído,
 # e sem isso a exceção abaixo nunca teria efeito.
