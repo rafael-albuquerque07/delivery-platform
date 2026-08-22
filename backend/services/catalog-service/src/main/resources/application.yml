@@ -8,11 +8,8 @@ spring:
   data:
     mongodb:
       uri: ${MONGO_URI:mongodb://localhost:27017/catalog_db?replicaSet=rs0}
-
-# Mongock cumpre para o MongoDB o papel do Flyway no SQL — ADR-017.
-mongock:
-  migration-scan-package:
-    - com.deliveryplatform.catalog.infrastructure.persistence.migration
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
 
   rabbitmq:
     addresses: ${RABBITMQ_ADDRESSES:localhost:5672}
@@ -28,15 +25,19 @@ mongock:
           initial-interval: 2s
           max-attempts: 5
 
-  data:
-    redis:
-      url: ${REDIS_URL:redis://localhost:6379}
-
   security:
     oauth2:
       resourceserver:
         jwt:
           jwk-set-uri: ${JWT_JWKS_URI:http://localhost:8081/.well-known/jwks.json}
+
+# Mongock cumpre para o MongoDB o papel do Flyway no SQL — ADR-017.
+# ATENÇÃO: este bloco é irmão de `spring`, não filho. Estava aninhado por
+# engano, e com ele iam junto rabbitmq, redis e a configuração de JWT — o
+# Spring ignorava os três em silêncio.
+mongock:
+  migration-scan-package:
+    - com.deliveryplatform.catalog.infrastructure.persistence.migration
 
 management:
   endpoints:

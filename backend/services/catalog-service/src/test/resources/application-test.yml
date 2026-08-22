@@ -1,7 +1,4 @@
-spring:
-  jpa:
-    show-sql: false
-
+# Serviço documental: nada de JPA aqui.
 logging:
   level:
     root: WARN
