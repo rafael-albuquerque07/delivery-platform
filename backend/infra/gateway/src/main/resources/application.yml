@@ -19,10 +19,10 @@ spring:
           uri: ${SERVICE_CATALOG_URI:http://localhost:8083}
           predicates:
             - Path=/api/v1/catalog/**
-        - id: inventory
-          uri: ${SERVICE_INVENTORY_URI:http://localhost:8084}
+        - id: settlement
+          uri: ${SERVICE_SETTLEMENT_URI:http://localhost:8084}
           predicates:
-            - Path=/api/v1/inventory/**
+            - Path=/api/v1/settlement/**
         - id: order
           uri: ${SERVICE_ORDER_URI:http://localhost:8085}
           predicates:
@@ -35,14 +35,10 @@ spring:
           uri: ${SERVICE_DELIVERY_URI:http://localhost:8087}
           predicates:
             - Path=/api/v1/delivery/**
-        - id: geolocation
-          uri: ${SERVICE_GEOLOCATION_URI:http://localhost:8088}
+        - id: conversation
+          uri: ${SERVICE_CONVERSATION_URI:http://localhost:8088}
           predicates:
-            - Path=/api/v1/geolocation/**
-        - id: notification
-          uri: ${SERVICE_NOTIFICATION_URI:http://localhost:8089}
-          predicates:
-            - Path=/api/v1/notification/**
+            - Path=/api/v1/conversation/**
   data:
     redis:
       url: ${REDIS_URL}
@@ -67,7 +63,11 @@ management:
     health:
       probes:
         enabled: true
+      show-details: never
 
 logging:
   level:
     root: INFO
+    com.deliveryplatform: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"

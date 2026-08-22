@@ -4,9 +4,13 @@
 #   observability  Prometheus, Grafana, Loki, Tempo
 #   full           tudo
 #
-# No dia a dia você não sobe os dez aplicativos. Sobe `core` e roda pelo IDE
+# No dia a dia você não sobe os nove aplicativos. Sobe `core` e roda pelo IDE
 # apenas o serviço em que está trabalhando:
 #   docker compose --profile core up -d
+#
+# ADR-021: oito serviços de negócio e um gateway. Mosquitto saiu junto com o
+# MQTT (ADR-020); a imagem do Postgres deixou de ser a do PostGIS pelo mesmo
+# motivo.
 
 name: delivery-platform
 
@@ -15,12 +19,12 @@ services:
   # ─────────────────────────────────────────────────────── core
   postgres:
     profiles: ["core", "full"]
-    image: postgis/postgis:17-3.5
+    image: postgres:17-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: postgres
-    # ADR-014: sete serviços relacionais; o default de 100 conexões não basta.
+    # ADR-014: seis serviços relacionais; o default de 100 conexões é apertado.
     command: ["postgres", "-c", "max_connections=200"]
     ports:
       - "5432:5432"
@@ -63,7 +67,7 @@ services:
   redis:
     profiles: ["core", "full"]
     image: redis:7-alpine
-    # AOF ligado: reiniciar o container não pode apagar carrinhos ativos.
+    # AOF ligado: reiniciar o container não pode apagar estado de sessão ativo.
     command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "6379:6379"
@@ -92,16 +96,6 @@ services:
       timeout: 10s
       retries: 5
 
-  mosquitto:
-    profiles: ["core", "full"]
-    image: eclipse-mosquitto:2
-    ports:
-      - "1883:1883"
-      - "9001:9001"
-    volumes:
-      - ./infra/mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - mosquitto-data:/mosquitto/data
-
   minio:
     profiles: ["core", "full"]
     image: minio/minio:latest
@@ -129,17 +123,24 @@ services:
       dockerfile: infra/gateway/Dockerfile
     environment:
       SERVER_PORT: "8080"
-      DB_USERNAME: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      RABBITMQ_USERNAME: ${RABBITMQ_USER}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      REDIS_URL: redis://redis:6379
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      SERVICE_IDENTITY_URI: http://identity-service:8081
+      SERVICE_MERCHANT_URI: http://merchant-service:8082
+      SERVICE_CATALOG_URI: http://catalog-service:8083
+      SERVICE_SETTLEMENT_URI: http://settlement-service:8084
+      SERVICE_ORDER_URI: http://order-service:8085
+      SERVICE_PAYMENT_URI: http://payment-service:8086
+      SERVICE_DELIVERY_URI: http://delivery-service:8087
+      SERVICE_CONVERSATION_URI: http://conversation-service:8088
     ports:
       - "8080:8080"
     depends_on:
-      postgres:
+      redis:
         condition: service_healthy
     restart: unless-stopped
+
   identity-service:
     profiles: ["services", "full"]
     build:
@@ -147,8 +148,10 @@ services:
       dockerfile: services/identity-service/Dockerfile
     environment:
       SERVER_PORT: "8081"
+      DB_URL: jdbc:postgresql://postgres:5432/identity_db
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
@@ -157,7 +160,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
+
   merchant-service:
     profiles: ["services", "full"]
     build:
@@ -165,8 +171,11 @@ services:
       dockerfile: services/merchant-service/Dockerfile
     environment:
       SERVER_PORT: "8082"
+      DB_URL: jdbc:postgresql://postgres:5432/merchant_db
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
@@ -175,7 +184,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
+
   catalog-service:
     profiles: ["services", "full"]
     build:
@@ -183,26 +197,36 @@ services:
       dockerfile: services/catalog-service/Dockerfile
     environment:
       SERVER_PORT: "8083"
-      DB_USERNAME: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      MONGO_URI: mongodb://mongodb:27017/catalog_db?replicaSet=rs0
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
     ports:
       - "8083:8083"
     depends_on:
-      postgres:
+      mongodb:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     restart: unless-stopped
-  inventory-service:
+
+  settlement-service:
     profiles: ["services", "full"]
     build:
       context: ./backend
-      dockerfile: services/inventory-service/Dockerfile
+      dockerfile: services/settlement-service/Dockerfile
     environment:
       SERVER_PORT: "8084"
+      DB_URL: jdbc:postgresql://postgres:5432/settlement_db
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
@@ -211,7 +235,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
+
   order-service:
     profiles: ["services", "full"]
     build:
@@ -219,8 +246,11 @@ services:
       dockerfile: services/order-service/Dockerfile
     environment:
       SERVER_PORT: "8085"
+      DB_URL: jdbc:postgresql://postgres:5432/order_db
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
@@ -229,7 +259,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
+
   payment-service:
     profiles: ["services", "full"]
     build:
@@ -237,8 +272,10 @@ services:
       dockerfile: services/payment-service/Dockerfile
     environment:
       SERVER_PORT: "8086"
+      DB_URL: jdbc:postgresql://postgres:5432/payment_db
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
@@ -247,7 +284,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
+
   delivery-service:
     profiles: ["services", "full"]
     build:
@@ -255,8 +295,11 @@ services:
       dockerfile: services/delivery-service/Dockerfile
     environment:
       SERVER_PORT: "8087"
+      DB_URL: jdbc:postgresql://postgres:5432/delivery_db
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
@@ -265,41 +308,32 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
-  geolocation-service:
+
+  conversation-service:
     profiles: ["services", "full"]
     build:
       context: ./backend
-      dockerfile: services/geolocation-service/Dockerfile
+      dockerfile: services/conversation-service/Dockerfile
     environment:
       SERVER_PORT: "8088"
-      DB_USERNAME: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      MONGO_URI: mongodb://mongodb:27017/conversation_db?replicaSet=rs0
+      RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
     ports:
       - "8088:8088"
     depends_on:
-      postgres:
+      mongodb:
         condition: service_healthy
-    restart: unless-stopped
-  notification-service:
-    profiles: ["services", "full"]
-    build:
-      context: ./backend
-      dockerfile: services/notification-service/Dockerfile
-    environment:
-      SERVER_PORT: "8089"
-      DB_USERNAME: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      RABBITMQ_USERNAME: ${RABBITMQ_USER}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
-      JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
-    ports:
-      - "8089:8089"
-    depends_on:
-      postgres:
+      mongo-init:
+        condition: service_completed_successfully
+      rabbitmq:
         condition: service_healthy
     restart: unless-stopped
 
@@ -339,6 +373,5 @@ volumes:
   mongo-data:
   redis-data:
   rabbitmq-data:
-  mosquitto-data:
   minio-data:
   grafana-data:

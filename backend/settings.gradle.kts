@@ -17,13 +17,14 @@ dependencyResolutionManagement {
 // Gateway
 include(":infra:gateway")
 
-// Microsserviços de negócio
+// Oito microsserviços de negócio — ADR-021.
+// inventory e geolocation foram ADIADOS (marcos 10 e 11), não cancelados;
+// notification foi absorvido pelo conversation-service e não volta.
 include(":services:identity-service")
 include(":services:merchant-service")
 include(":services:catalog-service")
-include(":services:inventory-service")
+include(":services:settlement-service")
 include(":services:order-service")
 include(":services:payment-service")
 include(":services:delivery-service")
-include(":services:geolocation-service")
-include(":services:notification-service")
+include(":services:conversation-service")
