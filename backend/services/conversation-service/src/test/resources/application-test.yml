@@ -1,0 +1,5 @@
+# Serviço documental: nada de JPA aqui.
+logging:
+  level:
+    root: WARN
+    com.deliveryplatform: INFO

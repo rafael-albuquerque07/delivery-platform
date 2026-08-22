@@ -1,8 +1,0 @@
-spring:
-  jpa:
-    show-sql: false
-
-logging:
-  level:
-    root: WARN
-    com.deliveryplatform: INFO

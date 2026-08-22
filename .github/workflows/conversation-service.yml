@@ -1,0 +1,20 @@
+name: conversation-service
+
+on:
+  push:
+    paths:
+      - 'backend/services/conversation-service/**'
+      - 'backend/build-logic/**'
+      - 'backend/gradle/libs.versions.toml'
+      - '.github/workflows/conversation-service.yml'
+  pull_request:
+    paths:
+      - 'backend/services/conversation-service/**'
+      - 'backend/build-logic/**'
+      - 'backend/gradle/libs.versions.toml'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_service-ci.yml
+    with:
+      module: ':services:conversation-service'
