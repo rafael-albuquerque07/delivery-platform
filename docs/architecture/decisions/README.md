@@ -65,3 +65,11 @@ Rótulo que muda sem que a coisa mude — número de marco, nome de arquivo, nom
 de serviço — é troca direta, com o motivo na mensagem do commit. A ADR-016 foi
 o primeiro caso: a decisão continua a mesma, só o marco referenciado mudou de
 nome.
+
+**Emenda não termina no grep.** Varredura por padrão encontra texto que
+contradiz a decisão nova. Não encontra o que está ausente — uma ressalva que
+falta, um campo com nome que virou enganoso, um documento que deveria citar a
+ADR e não cita. Depois do grep, leia as seções que tocam o mesmo dado que a
+decisão governa. Foi assim que a ADR-013 revelou `Contato.consentimento` com
+nome da base legal que ela rejeitou, e o congelamento do endereço em
+`pedido.md` sem a ressalva que torna a anonimização possível.
