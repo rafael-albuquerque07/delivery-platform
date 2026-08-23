@@ -63,6 +63,10 @@ editado, nada é apagado.
 | `ADIANTAMENTO` | Painel | `valor`, `motivo`, `autor` |
 | `NAO_LIQUIDADO` | `PedidoEntregueV1` | `pedidoId`, `valorNaoRecebido`, `motivo` |
 
+**`PedidoRetiradoV1` não gera lançamento.** Retirada não envolve entregador —
+não há jornada para lançar, e o dinheiro do pedido retirado não passa por
+nenhum acerto de expediente.
+
 **Idempotência.** A chave natural de um lançamento de liquidação é
 `liquidacaoId`; a de uma entrega é `pedidoId`. Mensagem repetida **não** gera
 segundo lançamento — é a invariante 7 do `CLAUDE.md` aplicada onde ela mais dói:

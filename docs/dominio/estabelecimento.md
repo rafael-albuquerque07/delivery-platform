@@ -19,7 +19,8 @@ que é lido em que frequência.
 ```
 Estabelecimento  (raiz)
 ├── identificacao       id, nome, documento, telefone, endereco
-├── operacao            tipoDeOperacao, modalidadesAceitas, metodosPorModalidade
+├── operacao            tipoDeOperacao, modalidadesAceitas, metodosPorModalidade,
+│                       descontoDeRetirada
 ├── politicaDeTroco     fundoMaximoDeTroco, aceitaPedidoSemTrocoDisponivel
 ├── disponibilidade     horarioDeFuncionamento, pausa
 ├── politicas           responsabilizaEntregadorPorNaoLiquidado
@@ -391,6 +392,7 @@ mesmo tendo invalidação por evento.
 | M12 | `modalidadesAceitas` não vazio | Loja que não opera |
 | M13 | Um vínculo de entregador por par entregador × loja | Remuneração ambígua na jornada |
 | M14 | Pausa e fechamento não afetam pedido em andamento | Sábado à noite com pedidos cancelados em massa |
+| M15 | `descontoDeRetirada ≥ 0` | Desconto negativo vira acréscimo silencioso |
 
 ---
 

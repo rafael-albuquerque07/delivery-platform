@@ -148,7 +148,9 @@ Não valem, em nenhuma hipótese:
 - silêncio depois de um resumo.
 
 O resumo antes da confirmação mostra **itens, opções, endereço, taxa da área e
-total**, todos vindos da cotação. O botão carrega um identificador do rascunho e
+total**, todos vindos da cotação — ou, na retirada, **itens, opções e total com
+o desconto de retirada nomeado** (ADR-024), sem endereço nem taxa (I10). O
+botão carrega um identificador do rascunho e
 uma marca da cotação; se a cotação envelheceu, reconfirma-se com os números
 novos (ADR-018 — `PRICE_CHANGED`), nunca se cobra a diferença em silêncio.
 

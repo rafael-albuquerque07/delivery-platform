@@ -165,6 +165,8 @@ e reabra o VS Code.
 | Tentado a autorizar no gateway | Não. O gateway autentica; quem autoriza é o serviço, porque só ele sabe qual permissão cada endpoint exige. ADR-011 e ADR-012 |
 | Vai configurar segurança no gateway | `/api/v1/webhooks/**` é PÚBLICO, sem JWT — o PSP e o provedor do canal não têm token nosso, e autenticam por assinatura no corpo, dentro do serviço. O `SecurityFilterChain` precisa liberar exatamente esse prefixo e exigir autenticação no resto. **Ainda não escrito** — requisito do marco 1. ADR-012 |
 | Vai fazer um serviço usar código de outro | Não. Integração é por API ou evento. Nenhum módulo `:services:*` declara outro como dependência — ADR-001. **A verificação no build ainda não existe**; até existir, isto depende de ninguém errar |
+| Vai acrescentar `modalidade` na cotação | Não. Preço não varia por modalidade e `cotar` não a recebe. A diferença é a taxa (ADR-020) mais o `descontoDeRetirada` (ADR-024). Se a modalidade virar parâmetro do preço, ela vira pergunta de abertura da conversa |
+| Vai somar alguma coisa em `discount` | Hoje `discount` tem origem única — o desconto de retirada. Antes de acrescentar cupom, decomponha o campo: senão o comerciante deixa de separar o que deu para incentivar retirada do que queimou em promoção. ADR-024 |
 
 ---
 

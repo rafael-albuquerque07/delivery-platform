@@ -158,6 +158,10 @@ precoUnitario = precoBase + Σ acrescimo das opções escolhidas
 subtotal      = precoUnitario × quantidade
 ```
 
+**O preço não varia por modalidade** (ADR-024). A diferença entre entrega e
+retirada vive na taxa por área (ADR-020) e no `descontoDeRetirada` do
+estabelecimento — nunca no `precoBase`. Por isso `cotar` não recebe modalidade.
+
 Arredonda-se ao formar cada componente, nunca no fim (ADR-009).
 
 ### Vendabilidade derivada
@@ -299,10 +303,6 @@ tópico ambíguo é uma noite perdida daqui a três meses. Sugestão:
 
 ## 10. O que este documento deliberadamente não decide
 
-- **Preço diferente por modalidade.** Muita loja cobra mais na entrega que no
-  balcão, e o modelo atual tem um `precoBase` só. É pergunta de produto, não de
-  arquitetura, mas precisa de resposta antes do marco 2 — depois vira migration
-  em cima de cardápio publicado. **Pendência real.**
 - **Combos e promoções.** Não estão no PRD. Um combo não é produto com opções: é
   composição com preço próprio, e forçá-lo no modelo de grupos produz um
   cardápio que ninguém consegue manter.

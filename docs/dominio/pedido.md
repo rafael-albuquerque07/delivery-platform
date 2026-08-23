@@ -120,7 +120,7 @@ inválida** e lança `TransicaoInvalidaException` → HTTP 409.
 
 | # | De | Para | Gatilho | Guarda | Efeito |
 |---|---|---|---|---|---|
-| T01 | — | `RECEBIDO` | Cliente confirma por botão | Itens vendáveis · área atendida · invariantes de valor · regra do troco | Congela itens, taxa e área. `PedidoRecebidoV1` |
+| T01 | — | `RECEBIDO` | Cliente confirma por botão | Itens vendáveis · área atendida · invariantes de valor · regra do troco | Congela itens, taxa, área e desconto. `PedidoRecebidoV1` |
 | T02 | `RECEBIDO` | `CONFIRMADO` | Estabelecimento aceita | Loja aberta **ou** aceite manual explícito · `ALTERAR_STATUS` | Compromisso. `PedidoConfirmadoV1` |
 | T03 | `RECEBIDO` | `PAGO` | Webhook do PSP | Assinatura válida · `txid` correlacionado. **Marco 8** | Compromisso. `PedidoPagoV1` |
 | T04 | `RECEBIDO` | `AGUARDANDO_ESTOQUE` | Aceite com item controlado | `∃ item.stockControlledSnapshot` — **falso no MVP** | Solicita reserva |
@@ -194,6 +194,11 @@ Verificadas na construção e em toda transição — não em teste de integraç
 | I9 | `estado = CANCELADO → motivoCancelamento ≠ null` | "Cancelados" vira número sem diagnóstico |
 | I10 | `modalidade = RETIRADA → deliveryFee = zero ∧ nomeAreaSnapshot = null` | Cobra-se entrega de quem foi buscar |
 | I11 | Nenhum estado não-terminal sem transição de saída | Pedido preso para sempre (H4.4) |
+| I12 | `modalidade = RETIRADA → discount == descontoDeRetirada congelado` · `modalidade = ENTREGA → discount == zero` | Desconto prometido some no fechamento, ou entrega sai descontada sem motivo |
+
+> `I12` vale enquanto `discount` tiver **origem única**. No dia em que existir
+> cupom, ela é a primeira a ser revisitada — junto com a decisão de decompor o
+> campo (ADR-024, consequências negativas).
 
 **I7 é imposta em dois lugares, não só aqui.** O carrinho já recusa item de outro
 estabelecimento ao ser acrescentado — mensagem clara, antes de o cliente montar
@@ -213,6 +218,7 @@ No instante de `RECEBIDO`, o pedido copia — não referencia:
 | `stockControlledSnapshot` | catálogo | Marco 10 exigiria migration |
 | `nomeAreaSnapshot`, `taxaSnapshot` | `merchant-service` | Reajuste da taxa do bairro mudaria o histórico |
 | `enderecoTextual` | cliente | Cliente edita o endereço, o pedido antigo muda de destino |
+| `discount` (parcela de retirada) | `merchant-service` | Reajuste do desconto da loja mudaria pedidos passados |
 
 Depois disso o pedido **não consulta mais** catálogo nem estabelecimento para
 nada que afete valor. É o que torna a cobrança reconstruível meses depois.
