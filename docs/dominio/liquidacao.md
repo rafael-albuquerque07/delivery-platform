@@ -59,15 +59,24 @@ editado, nada é apagado.
 | Tipo | Origem | Campos próprios |
 |---|---|---|
 | `ENTREGA_CONCLUIDA` | `PedidoEntregueV1` | `pedidoId`, `momento` |
-| `LIQUIDACAO` | `PedidoEntregueV1` / `LiquidacaoConfirmadaV1` | `liquidacaoId`, `metodo`, `valorEfetivo`, `gorjeta`, `situacao` — duplica o que `pedido.md` §7 já registra no `order-service`, deliberadamente: nenhum serviço lê o banco de outro (ADR-002) |
+| `LIQUIDACAO_DE_ENTREGA` | `PedidoEntregueV1` / `LiquidacaoConfirmadaV1` | `liquidacaoId`, `metodo`, `valorEfetivo`, `gorjeta`, `situacao` — duplica o que `pedido.md` §7 já registra no `order-service`, deliberadamente: nenhum serviço lê o banco de outro (ADR-002) |
 | `ADIANTAMENTO` | Painel | `valor`, `motivo`, `autor` |
 | `NAO_LIQUIDADO` | `PedidoEntregueV1` | `pedidoId`, `valorNaoRecebido`, `motivo` |
 
-**`PedidoRetiradoV1` não gera lançamento.** Retirada não envolve entregador —
-não há jornada para lançar, e o dinheiro do pedido retirado não passa por
-nenhum acerto de expediente.
+**Dois objetos, nomes parecidos.** A `Liquidacao` de `pedido.md` I6 vive no
+`order-service`, dentro do `Pedido`, e registra que o dinheiro foi
+efetivamente recebido — método, valor efetivo, custódia. O `Lancamento` de
+tipo `LIQUIDACAO_DE_ENTREGA` desta tabela vive no `settlement-service`,
+dentro da `Jornada`, e é o reflexo daquela liquidação no acerto do
+entregador. **I6 exige a primeira; J1 restringe o segundo.** Toda entrega
+produz os dois. Toda retirada produz só o primeiro.
 
-**Idempotência.** A chave natural de um lançamento de liquidação é
+**`PedidoRetiradoV1` não gera lançamento.** Retirada não envolve entregador —
+não há jornada para lançar. A `Liquidacao` do pedido existe assim mesmo (I6:
+o dinheiro entrou no caixa da loja); o que não existe é reflexo dela em
+jornada nenhuma.
+
+**Idempotência.** A chave natural de um lançamento de liquidação de entrega é
 `liquidacaoId`; a de uma entrega é `pedidoId`. Mensagem repetida **não** gera
 segundo lançamento — é a invariante 7 do `CLAUDE.md` aplicada onde ela mais dói:
 contar a mesma entrega duas vezes infla a comissão e destrói o fechamento
@@ -294,7 +303,7 @@ comerciante desconfiar do sistema e voltar para o papel.
 
 | # | Invariante | O que quebra sem ela |
 |---|---|---|
-| J1 | Uma liquidação pertence a **exatamente uma** jornada | Valor contado duas vezes (H7.3) |
+| J1 | Uma liquidação **de entrega** pertence a exatamente uma jornada | Valor contado duas vezes (H7.3) |
 | J2 | Lançamento é somente-inserção; nunca `UPDATE`, nunca `DELETE` | Histórico reescrito |
 | J3 | Mensagem repetida não gera lançamento duplicado — chave em `processed_messages` | Comissão inflada |
 | J4 | `FECHADA` não transita para nenhum estado | Extrato muda depois de assinado |

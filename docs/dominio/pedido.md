@@ -196,6 +196,11 @@ Verificadas na construção e em toda transição — não em teste de integraç
 | I11 | Nenhum estado não-terminal sem transição de saída | Pedido preso para sempre (H4.4) |
 | I12 | `modalidade = RETIRADA → discount == descontoDeRetirada congelado` · `modalidade = ENTREGA → discount == zero` | Desconto prometido some no fechamento, ou entrega sai descontada sem motivo |
 
+A `Liquidacao` de I6 é o registro, dentro do `Pedido`, de que o dinheiro foi
+recebido. Não confundir com o `Lancamento` de tipo `LIQUIDACAO_DE_ENTREGA` do
+`settlement-service` (`liquidacao.md`), que é o reflexo dela na jornada do
+entregador — e que a retirada não produz.
+
 > `I12` vale enquanto `discount` tiver **origem única**. No dia em que existir
 > cupom, ela é a primeira a ser revisitada — junto com a decisão de decompor o
 > campo (ADR-024, consequências negativas).

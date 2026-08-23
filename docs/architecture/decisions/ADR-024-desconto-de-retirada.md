@@ -24,7 +24,7 @@ Antes de acrescentar qualquer coisa, vale ver o que existe:
 |---|---|---|
 | Taxa de entrega por área | ADR-020 | Não é cobrada |
 | Invariante I10 | `pedido.md` | `deliveryFee = zero ∧ nomeAreaSnapshot = null` |
-| Componente `discount` | ADR-009 | Existe, com `Money.zero()`, sem regra |
+| Componente `discount` | ADR-009 | Existe desde a origem, para "cupom ou desconto concedido" — sem regra concreta que o preencha |
 
 **Retirada já sai mais barata.** A pergunta real não é "como diferenciar", é "o
 comerciante precisa de mais alguma coisa além da taxa".
