@@ -212,6 +212,10 @@ No instante de `RECEBIDO`, o pedido copia — não referencia:
 Depois disso o pedido **não consulta mais** catálogo nem estabelecimento para
 nada que afete valor. É o que torna a cobrança reconstruível meses depois.
 
+O congelamento protege contra alteração no catálogo e no cadastro do cliente;
+anonimização por pedido de exclusão é a única exceção, e é destrutiva no lugar
+(ADR-013 §5).
+
 ---
 
 ## 6. Ajustes e valor efetivo

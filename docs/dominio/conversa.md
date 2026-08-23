@@ -35,7 +35,7 @@ Contato  (raiz)
 ├── telefone, nomeInformado
 ├── estabelecimentosConhecidos
 ├── enderecosConhecidos  [n]
-└── consentimento        base legal, momento, versão do aviso
+└── baseLegal            base legal, momento, versão do aviso
 ```
 
 **`Contato` é raiz própria e vive por cima da conversa.** A memória do histórico
