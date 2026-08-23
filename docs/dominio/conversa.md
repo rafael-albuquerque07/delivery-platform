@@ -330,17 +330,16 @@ telefone, nome, endereço completo, áudio de voz, às vezes localização.
 | Regra | Detalhe |
 |---|---|
 | Identificação | Assistente virtual se identifica no primeiro contato e **responde honestamente se perguntado diretamente** (H9.3). Nunca afirma ser humano |
-| Áudio | Transcrito e descartado. Guardar exige base legal própria e prazo declarado |
+| Áudio | Transcrito e descartado — descarte imediato após a transcrição. Guardar exige consentimento próprio (ADR-013 §4) |
 | Localização | Convertida em área e endereço textual. **Coordenada exata não é gravada nem logada** — o `CLAUDE.md` proíbe, e a P5 tornou desnecessária |
-| Conteúdo | Retenção com prazo declarado; conversa encerrada é anonimizada após o prazo |
-| Log | Sem telefone, sem endereço, sem conteúdo de mensagem. `correlationId` e ids internos bastam |
+| Conteúdo | Conteúdo de mensagem **excluído** 180 dias após o encerramento da conversa; `Contato` excluído após 24 meses de inatividade (ADR-013 §3) |
+| Log | Sem telefone, sem endereço, sem conteúdo de mensagem. `correlationId` e ids internos bastam. Retenção de 30 dias |
 | Interpretação | O que sai daqui para o provedor de modelo é o mínimo. Nome e telefone não precisam ir |
-| Exclusão | Pedido de exclusão apaga `Contato` e conteúdo; o pedido permanece, com o contato dissociado — obrigação fiscal e contábil não se apaga a pedido |
+| Exclusão | Pedido de exclusão apaga `Contato` e conteúdo; o pedido permanece, com o contato dissociado — obrigação fiscal e contábil não se apaga a pedido. O pedido permanece **anonimizado**, não excluído; o titular é informado do que foi conservado e por quê (ADR-013 §5) |
 
 A última linha é a que costuma passar batido: exclusão de dado pessoal **não**
 apaga pedido. São bases legais diferentes, e confundi-las cria tanto violação de
-LGPD quanto problema fiscal. A ADR-013, ainda a escrever, é o lugar dessa
-decisão.
+LGPD quanto problema fiscal. A ADR-013 é o lugar dessa decisão.
 
 ---
 
@@ -390,9 +389,6 @@ decisão.
 ## 15. O que este documento deliberadamente não decide
 
 - **Provedor de interpretação.** A porta existe justamente para adiar isso.
-- **Prazos concretos de retenção e anonimização.** É a **ADR-013**, ainda a
-  escrever, e precisa existir antes do marco 7 — o canal começa a
-  acumular dado pessoal no primeiro dia em que liga.
 - **Teto de valor de G3.** É configuração por estabelecimento, e o número inicial
   é decisão de produto.
 - **Texto da persona** (H9.3) — nome, tom regional, saudação. É conteúdo.

@@ -14,7 +14,7 @@
 | 010 | Saga do pedido: pivô em `PRONTO`, pagamento fora da transação | ✅ aceita · **reescrita pela v1.1** |
 | 011 | Autorização comercial: cache em processo, invalidação por evento, fail-closed | ✅ aceita |
 | 012 | Roteamento do gateway | ⬜ a escrever |
-| 013 | Retenção e anonimização de dados pessoais (LGPD) | ⚠️ **a escrever antes do marco 7** |
+| 013 | Retenção, anonimização e exclusão de dados pessoais | ✅ aceita |
 | 014 | Não adotar H2; Testcontainers como fonte de verdade | ✅ aceita · **emendada pela v1.1** |
 | 015 | Emitir JWT com `NimbusJwtEncoder` | ✅ aceita |
 | 016 | Front-end mínimo antes da PWA completa | ✅ aceita |

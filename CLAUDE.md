@@ -156,6 +156,8 @@ e reabra o VS Code.
 | Vai desabilitar `redhat.java` | O pacote Salesforce Apex o declara como dependência dura e o mantém ligado. Desabilite o Salesforce no workspace junto |
 | Tentado a atualizar o Gradle | **A 9.7.1 falha** em `compilePluginsBlocks` neste build-logic. O wrapper fixa 8.14.3, que é a única versão com build verde. Bump é tarefa própria, verificada com `--rerun-tasks --no-build-cache` |
 | `GRADLE_USER_HOME` apontando para dentro de `C:\Users\` | Não. Ver a configuração de ambiente acima |
+| Vai guardar coordenada, áudio ou número de cartão | Não guarde. Endereço textual e bairro no lugar da coordenada, transcrição no lugar do áudio, `txid` no lugar do cartão. A forma mais barata de cumprir a LGPD é não ter o dado — ADR-013 §4 |
+| Restaurou um banco a partir de backup | **Reaplique as exclusões de titular** com data posterior à do backup antes de o serviço voltar a atender. Backup restaurado ressuscita dado apagado — `docs/operacao/exclusao-de-titular.md` |
 
 ---
 
@@ -186,6 +188,9 @@ Documentos de referência:
 - Log sem token, senha, documento, dado de pagamento ou coordenada exata.
 - Webhook com assinatura validada e processamento idempotente — o endereço é
   público e a mensagem se repete.
+- **Todo dado pessoal é alcançável por identificador estável do titular**
+  (`usuarioId`, `contatoId`), indexado. Nunca só dentro de texto livre — sem isso
+  não há como cumprir pedido de exclusão. ADR-013 §6.
 
 ---
 
