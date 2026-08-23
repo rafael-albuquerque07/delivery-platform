@@ -195,6 +195,11 @@ Verificadas na construção e em toda transição — não em teste de integraç
 | I10 | `modalidade = RETIRADA → deliveryFee = zero ∧ nomeAreaSnapshot = null` | Cobra-se entrega de quem foi buscar |
 | I11 | Nenhum estado não-terminal sem transição de saída | Pedido preso para sempre (H4.4) |
 
+**I7 é imposta em dois lugares, não só aqui.** O carrinho já recusa item de outro
+estabelecimento ao ser acrescentado — mensagem clara, antes de o cliente montar
+um pedido inteiro. A invariante do agregado é a segunda guarda, porque o
+carrinho é estado externo e não se confia em validação que já passou (ADR-004).
+
 ---
 
 ## 5. Congelamento

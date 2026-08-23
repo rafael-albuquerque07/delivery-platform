@@ -85,6 +85,8 @@ Estas não são preferências de estilo. Quebrar qualquer uma é defeito.
    `processed_messages`.** Sem exceção.
 
 8. **Nenhum serviço lê o banco de outro.** Integração é por API ou evento.
+   ADR-002 — e é de lá que vêm Saga, outbox, idempotência e a duplicação
+   deliberada entre serviços.
 
 9. **Nenhum identificador vindo da URL é confiável** sem confronto com o usuário
    autenticado e as permissões no estabelecimento.
@@ -162,6 +164,7 @@ e reabra o VS Code.
 | Vai acrescentar rota no gateway | Por **recurso**, não por serviço, e `merchantId` sempre na mesma posição do caminho. Ordem de predicado importa: o primeiro que casa vence. Nunca acrescente um `/merchants/**` genérico acima dos específicos. ADR-012 |
 | Tentado a autorizar no gateway | Não. O gateway autentica; quem autoriza é o serviço, porque só ele sabe qual permissão cada endpoint exige. ADR-011 e ADR-012 |
 | Vai configurar segurança no gateway | `/api/v1/webhooks/**` é PÚBLICO, sem JWT — o PSP e o provedor do canal não têm token nosso, e autenticam por assinatura no corpo, dentro do serviço. O `SecurityFilterChain` precisa liberar exatamente esse prefixo e exigir autenticação no resto. **Ainda não escrito** — requisito do marco 1. ADR-012 |
+| Vai fazer um serviço usar código de outro | Não. Integração é por API ou evento. Nenhum módulo `:services:*` declara outro como dependência — ADR-001. **A verificação no build ainda não existe**; até existir, isto depende de ninguém errar |
 
 ---
 

@@ -1,7 +1,7 @@
 # Domínio — Liquidação e fechamento de expediente
 
 **Serviço:** `settlement-service` · **Status:** vigente (v1.1, 21/08/2026)
-**Fontes:** PRD §5 (P1, P2), PRD §6 E5, E6 e E7, ADR-009, ADR-022
+**Fontes:** PRD §5 (P1, P2), PRD §6 E5, E6 e E7, ADR-002, ADR-009, ADR-022
 **Invariantes do `CLAUDE.md` que este documento detalha:** 1, 3, 5, 7, 8
 
 > O PRD §1 diz que **esta** é a funcionalidade que vende o produto: "ao fim do
@@ -59,7 +59,7 @@ editado, nada é apagado.
 | Tipo | Origem | Campos próprios |
 |---|---|---|
 | `ENTREGA_CONCLUIDA` | `PedidoEntregueV1` | `pedidoId`, `momento` |
-| `LIQUIDACAO` | `PedidoEntregueV1` / `LiquidacaoConfirmadaV1` | `liquidacaoId`, `metodo`, `valorEfetivo`, `gorjeta`, `situacao` |
+| `LIQUIDACAO` | `PedidoEntregueV1` / `LiquidacaoConfirmadaV1` | `liquidacaoId`, `metodo`, `valorEfetivo`, `gorjeta`, `situacao` — duplica o que `pedido.md` §7 já registra no `order-service`, deliberadamente: nenhum serviço lê o banco de outro (ADR-002) |
 | `ADIANTAMENTO` | Painel | `valor`, `motivo`, `autor` |
 | `NAO_LIQUIDADO` | `PedidoEntregueV1` | `pedidoId`, `valorNaoRecebido`, `motivo` |
 
