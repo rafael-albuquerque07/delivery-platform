@@ -261,7 +261,7 @@ leitura, uma mudança futura na fórmula reescreve retroativamente extratos que
 entregador e comerciante já assinaram. O fechamento é um documento, não uma
 consulta.
 
-`totalDoDiaPorMetodo` do estabelecimento é a soma dos fechamentos do dia, e
+`totalDoDiaEmJornadasPorMetodo` do estabelecimento é a soma dos fechamentos do dia, e
 **tem que bater** com a soma das liquidações **de entrega** registradas
 (H7.3). Isso é teste, não esperança.
 
@@ -317,7 +317,7 @@ comerciante desconfiar do sistema e voltar para o papel.
 | J6 | `vinculoSnapshot` congelado na abertura | Remuneração muda no meio do turno |
 | J7 | Jornada não entra em `EM_CONFERENCIA` com pedido em rota | Fecha-se um turno que ainda está acontecendo |
 | J8 | Só existe uma jornada `ABERTA` por entregador × estabelecimento | Lançamentos se espalham entre turnos |
-| J9 | `Σ fechamentos.LD` do dia == `Σ liquidações **de entrega** DINHEIRO` do dia | O total do dia não bate (H7.3) |
+| J9 | `Σ fechamentos.LD` do dia == `Σ liquidações de entrega DINHEIRO` do dia | O total do dia não bate (H7.3) |
 | J10 | Todo lançamento tem origem rastreável — `pedidoId` ou autor humano | Aparece dinheiro sem procedência |
 
 ---
