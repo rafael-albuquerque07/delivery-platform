@@ -59,3 +59,9 @@ documento — e é essa a falha que este parágrafo existe para não repetir.
 Quando uma ADR nova **corrige um documento publicado** (um PDF em
 `docs/referencia/`, que não se reescreve), ela registra isso numa seção "Emenda
 que esta decisão provoca" no fim. Ver 011 e 023.
+
+Emenda é para mudança de decisão, de justificativa ou de custo assumido.
+Rótulo que muda sem que a coisa mude — número de marco, nome de arquivo, nome
+de serviço — é troca direta, com o motivo na mensagem do commit. A ADR-016 foi
+o primeiro caso: a decisão continua a mesma, só o marco referenciado mudou de
+nome.
