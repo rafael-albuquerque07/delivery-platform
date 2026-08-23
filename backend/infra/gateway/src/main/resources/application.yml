@@ -1,48 +1,128 @@
 server:
   port: ${SERVER_PORT:8080}
 
+# ─────────────────────────────────────────────────────────────────────────────
+# ATENÇÃO — o prefixo das rotas NUNCA foi verificado com o gateway no ar.
+#
+# A variante reativa e a variante WebMVC do Spring Cloud Gateway usam
+# NAMESPACES DIFERENTES para a mesma configuração. Este projeto usa a WebMVC
+# (spring-cloud-starter-gateway-server-webmvc, ver infra/gateway/build.gradle.kts),
+# e o prefixo abaixo é o que se espera dela na linha 2025.1.x.
+#
+# O build ficar verde NÃO prova nada aqui: nada sobe o gateway nos testes, e
+# configuração ignorada é silenciosa — o serviço sobe e simplesmente não roteia.
+#
+# No marco 1, ao subir o gateway pela primeira vez, CONFIRME que as rotas
+# existem de fato:
+#     curl localhost:8080/actuator/gateway/routes
+# Se vier vazio, o prefixo está errado. As duas formas conhecidas são
+# `spring.cloud.gateway.routes` (reativa) e a usada abaixo.
+# ─────────────────────────────────────────────────────────────────────────────
+
 spring:
   application:
     name: gateway
+
   cloud:
     gateway:
-      routes:
-        - id: identity
-          uri: ${SERVICE_IDENTITY_URI:http://localhost:8081}
-          predicates:
-            - Path=/api/v1/identity/**
-        - id: merchant
-          uri: ${SERVICE_MERCHANT_URI:http://localhost:8082}
-          predicates:
-            - Path=/api/v1/merchant/**
-        - id: catalog
-          uri: ${SERVICE_CATALOG_URI:http://localhost:8083}
-          predicates:
-            - Path=/api/v1/catalog/**
-        - id: settlement
-          uri: ${SERVICE_SETTLEMENT_URI:http://localhost:8084}
-          predicates:
-            - Path=/api/v1/settlement/**
-        - id: order
-          uri: ${SERVICE_ORDER_URI:http://localhost:8085}
-          predicates:
-            - Path=/api/v1/order/**
-        - id: payment
-          uri: ${SERVICE_PAYMENT_URI:http://localhost:8086}
-          predicates:
-            - Path=/api/v1/payment/**
-        - id: delivery
-          uri: ${SERVICE_DELIVERY_URI:http://localhost:8087}
-          predicates:
-            - Path=/api/v1/delivery/**
-        - id: conversation
-          uri: ${SERVICE_CONVERSATION_URI:http://localhost:8088}
-          predicates:
-            - Path=/api/v1/conversation/**
+      server:
+        webmvc:
+          # ADR-012 — rota por RECURSO, não por serviço. O cliente não sabe
+          # que existe order-service; sabe que pedido pertence a um
+          # estabelecimento. Mudar o dono de um recurso é uma linha aqui,
+          # não quebra de contrato público.
+          #
+          # A ORDEM IMPORTA: o primeiro predicado que casa vence. Rotas mais
+          # específicas primeiro; nunca acrescente um `/merchants/**` genérico
+          # acima destas, ou ele engole todas.
+          routes:
+
+            # ── sem escopo de estabelecimento ───────────────────────────
+            - id: auth
+              uri: ${SERVICE_IDENTITY_URI:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/auth/**
+
+            - id: me
+              uri: ${SERVICE_IDENTITY_URI:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/me/**
+
+            # ── escopo do estabelecimento ───────────────────────────────
+            # merchantId sempre na mesma posição: é dele que a invariante 9
+            # extrai o identificador a confrontar com o usuário autenticado.
+            - id: merchant-settings
+              uri: ${SERVICE_MERCHANT_URI:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/merchants/{merchantId}/settings/**
+
+            - id: merchant-team
+              uri: ${SERVICE_MERCHANT_URI:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/merchants/{merchantId}/team/**
+
+            - id: merchant-areas
+              uri: ${SERVICE_MERCHANT_URI:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/merchants/{merchantId}/areas/**
+
+            - id: merchant-couriers
+              uri: ${SERVICE_MERCHANT_URI:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/merchants/{merchantId}/couriers/**
+
+            - id: catalog
+              uri: ${SERVICE_CATALOG_URI:http://localhost:8083}
+              predicates:
+                - Path=/api/v1/merchants/{merchantId}/catalog/**
+
+            - id: shifts
+              uri: ${SERVICE_SETTLEMENT_URI:http://localhost:8084}
+              predicates:
+                - Path=/api/v1/merchants/{merchantId}/shifts/**
+
+            - id: orders
+              uri: ${SERVICE_ORDER_URI:http://localhost:8085}
+              predicates:
+                - Path=/api/v1/merchants/{merchantId}/orders/**
+
+            - id: payments
+              uri: ${SERVICE_PAYMENT_URI:http://localhost:8086}
+              predicates:
+                - Path=/api/v1/merchants/{merchantId}/payments/**
+
+            - id: deliveries
+              uri: ${SERVICE_DELIVERY_URI:http://localhost:8087}
+              predicates:
+                - Path=/api/v1/merchants/{merchantId}/deliveries/**
+
+            # ── visão do entregador ─────────────────────────────────────
+            - id: courier-self
+              uri: ${SERVICE_DELIVERY_URI:http://localhost:8087}
+              predicates:
+                - Path=/api/v1/couriers/me/**
+
+            # ── webhooks: PÚBLICOS, sem JWT ─────────────────────────────
+            # O PSP e o provedor do canal não têm token nosso. A autenticação
+            # deles é assinatura no corpo, validada DENTRO do serviço.
+            # Prefixo próprio e exclusivo: nenhuma outra rota mora sob
+            # /webhooks/, para que a exceção de segurança seja estreita.
+            - id: webhook-psp
+              uri: ${SERVICE_PAYMENT_URI:http://localhost:8086}
+              predicates:
+                - Path=/api/v1/webhooks/psp/**
+
+            - id: webhook-channel
+              uri: ${SERVICE_CONVERSATION_URI:http://localhost:8088}
+              predicates:
+                - Path=/api/v1/webhooks/channel/**
+
   data:
     redis:
       url: ${REDIS_URL}
 
+  # O gateway AUTENTICA (assinatura e validade do token). Quem AUTORIZA é o
+  # serviço — só ele sabe qual permissão cada endpoint exige. ADR-012.
   security:
     oauth2:
       resourceserver:
@@ -58,7 +138,9 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        # `gateway` exposto de propósito: é como se confere, no marco 1, que
+        # as rotas acima foram de fato lidas.
+        include: health,info,prometheus,gateway
   endpoint:
     health:
       probes:
