@@ -1,9 +1,8 @@
 # Domínio — Estabelecimento, equipe e áreas
 
 **Serviço:** `merchant-service` · **Status:** vigente (v1.1, 21/08/2026)
-**Fontes:** PRD §5 (P2, P3, P5), PRD §6 E1, E2 e E6.1, ADR-004, ADR-011, ADR-020, ADR-022
+**Fontes:** PRD §5 (P2, P3, P5), PRD §6 E1, E2 e E6.1, ADR-004, ADR-011, ADR-012, ADR-020, ADR-022
 **Invariantes do `CLAUDE.md` que este documento detalha:** 2, 8, 9
-**ADRs pendentes que este documento antecipa:** ADR-012 (roteamento do gateway)
 
 Este é o serviço do qual todos os outros dependem para saber **se aquela pessoa
 pode fazer aquilo naquela loja**. É também onde mora a configuração que
@@ -183,8 +182,9 @@ Os detalhes de TTL, invalidação e janela de tolerância estão na **ADR-011**.
 ### Identificador na URL nunca é confiável
 
 Invariante 9 do `CLAUDE.md`, e é aqui que ela se materializa. As rotas vivem sob
-`/merchants/{estabelecimentoId}/...` (ADR-012), e o `{estabelecimentoId}` é
-**entrada do atacante**, não contexto confiável.
+`/api/v1/merchants/{merchantId}/...` (ADR-012), e o `{merchantId}` da URL —
+`estabelecimentoId` no domínio — é **entrada do atacante**, não contexto
+confiável.
 
 Toda requisição confronta o `sub` do token com o identificador da URL através da
 porta acima. Sem vínculo ativo, 403 — e a resposta é idêntica para "loja não
