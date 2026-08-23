@@ -11,7 +11,7 @@ Escopo: autenticação, uma listagem e um formulário. Responsivo desde o primei
 componente. O objetivo é dar à API um consumidor real cedo, não construir a
 interface final.
 
-## 15.B — PWA completa (após o marco 8)
+## 15.B — PWA completa (após o marco 6)
 
 Manifest, service worker, cache do shell, tela offline, fila local, atualização
 segura do SW e push. Somam-se React Hook Form, Zod, MapLibre/Leaflet, Playwright
