@@ -114,6 +114,24 @@ Estas não são preferências de estilo. Quebrar qualquer uma é defeito.
 
 ---
 
+## Configuração de ambiente que funciona (Windows)
+
+Verificado em 23/08/2026, build verde de ponta a ponta com o VS Code aberto.
+Se o build quebrar, volte para exatamente isto antes de investigar.
+
+| Item | Valor |
+|---|---|
+| Repositório | `C:\dev\delivery-platform` — **fora** do perfil do usuário |
+| `GRADLE_USER_HOME` | `C:\gradle` — permanente, nível User, fora do perfil |
+| Gradle | **8.14.3**, fixado no wrapper |
+
+Definir a variável só com `$env:` não basta: vale numa janela só, e o VS Code
+herda o ambiente na inicialização. Use
+`[Environment]::SetEnvironmentVariable("GRADLE_USER_HOME","C:\gradle","User")`
+e reabra o VS Code.
+
+---
+
 ## Armadilhas deste repositório
 
 | Situação | O que fazer |
@@ -128,15 +146,15 @@ Estas não são preferências de estilo. Quebrar qualquer uma é defeito.
 | Precisa de permissão comercial em outro serviço | Consultar `merchant-service` via porta, com cache curto no Redis e política de **negar** quando indisponível |
 | `allowEmptyShould(true)` no ArchUnit | Muleta temporária: com só `.gitkeep` nas camadas, zero classes = falha. **Remova por serviço assim que ele tiver classes** — mantido depois, uma camada apagada ou pacote renomeado passa em silêncio |
 | Declarar versão de Testcontainers | Não declare. O BOM do Boot 4.1.x traz testcontainers-bom 2.x, onde os artefatos mudaram de nome: `org.testcontainers:testcontainers-junit-jupiter`, `-postgresql`, `-mongodb`, `-rabbitmq` |
-| Arquivo gerado sumindo de `build/` no Windows | Não é o build. É sync (OneDrive na pasta `Documents`) ou EDR em quarentena. Mantenha o repositório fora do perfil do usuário, ex. `C:\dev\`, e `GRADLE_USER_HOME` em `C:\gradle` |
 | Vai somar `total` num relatório | Não. `total` é o valor congelado no fechamento. O que entrou é `Σ Liquidacao.valorEfetivo`; o que o pedido vale hoje é `totalEfetivo` |
 | Vai calcular quanto o entregador ganha por pedido | Não existe. Remuneração vem do vínculo e é apurada por jornada — ADR-022 |
 | Vai colocar permissão ou papel dentro do JWT | Não. Permissão é do vínculo usuário × estabelecimento e é resolvida por requisição, com cache curto. No token vai só a identidade |
 | Serviço de autorização indisponível | **Negar.** Fail-closed é decisão assumida: liberar em caso de dúvida transforma uma queda em acesso irrestrito |
 | Faixa de horário que cruza a meia-noite | `fim < inicio` pertence ao dia de início e se estende ao seguinte. Teste com pedido à 01:00 é obrigatório |
-| Arquivo gerado sumindo de `build-logic/build/` no Windows | É a extensão **Java/Gradle do VS Code** rodando sync em segundo plano e disputando o diretório com o build da linha de comando. Desabilite `redhat.java` e `vscjava.vscode-gradle` no workspace e recarregue a janela. Matar o daemon não resolve — o watcher ressuscita em ~1 min |
-| Extensão do Java não desabilita | O pacote **Salesforce Apex** declara `redhat.java` como dependência dura e o mantém ligado. Desabilite o Salesforce no workspace também |
-| `GRADLE_USER_HOME` volta sozinho para o perfil do usuário | `$env:GRADLE_USER_HOME` vale só naquela janela do PowerShell. Torne permanente: `[Environment]::SetEnvironmentVariable("GRADLE_USER_HOME","C:\gradle","User")` — e reabra o VS Code, que herda o ambiente na inicialização |
+| Build quebra em `build-logic:compilePluginsBlocks` — arquivo ausente ou erro de parse | Primeiro volte à configuração de ambiente acima; foi assim que a série de falhas de 22/08 terminou. Se persistir, rode de um terminal fora do VS Code e desabilite `redhat.java` e `vscjava.vscode-gradle` no workspace. Causa-raiz nunca foi isolada |
+| Vai desabilitar `redhat.java` | O pacote Salesforce Apex o declara como dependência dura e o mantém ligado. Desabilite o Salesforce no workspace junto |
+| Tentado a atualizar o Gradle | **A 9.7.1 falha** em `compilePluginsBlocks` neste build-logic. O wrapper fixa 8.14.3, que é a única versão com build verde. Bump é tarefa própria, verificada com `--rerun-tasks --no-build-cache` |
+| `GRADLE_USER_HOME` apontando para dentro de `C:\Users\` | Não. Ver a configuração de ambiente acima |
 
 ---
 
