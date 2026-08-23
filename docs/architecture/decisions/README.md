@@ -25,9 +25,11 @@
 | 021 | Catálogo de serviços do MVP — oito serviços | ✅ aceita |
 | 022 | A remuneração do entregador pertence ao vínculo | ✅ aceita |
 | 023 | Fronteira `order` × `payment`: pedido é dono do registro | ✅ aceita |
+| 024 | Desconto de retirada, não preço por modalidade | ✅ aceita |
 
-**Vinte escritas, duas sem objeto, uma a escrever.** A 006 depende do desenho do
-carrinho, que só chega no marco 3 — escrevê-la agora seria decidir no vazio.
+**Vinte e uma escritas, duas sem objeto, uma a escrever.** A 006 depende do
+desenho do carrinho, que só chega no marco 3 — escrevê-la agora seria decidir no
+vazio.
 
 ## Onde mora o quê
 
@@ -76,7 +78,7 @@ documento — e é essa a falha que este parágrafo existe para não repetir.
 
 Quando uma ADR nova **corrige um documento publicado** (um PDF em
 `docs/referencia/`, que não se reescreve), ela registra isso numa seção "Emenda
-que esta decisão provoca" no fim. Ver 011, 013 e 023.
+que esta decisão provoca" no fim. Ver 011, 013, 023 e 024.
 
 Emenda é para mudança de decisão, de justificativa ou de custo assumido. Rótulo
 que muda sem que a coisa mude — número de marco, nome de arquivo, nome de
