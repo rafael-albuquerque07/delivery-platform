@@ -2,12 +2,12 @@
 
 | ADR | Decisão | Status |
 |---|---|---|
-| 001 | Monorepo | ⬜ a escrever |
-| 002 | Banco por serviço | ⬜ a escrever |
+| 001 | Monorepo para os oito serviços, o gateway e os contratos | ✅ aceita |
+| 002 | Um banco por serviço, sem exceção | ✅ aceita |
 | 003 | ~~Mensageria híbrida RabbitMQ + MQTT~~ | ⛔ sem objeto — MQTT saiu do MVP (020, 021) |
-| 004 | Um estabelecimento por pedido | ⬜ a escrever |
+| 004 | Um pedido pertence a exatamente um estabelecimento | ✅ aceita |
 | 005 | ~~PostGIS e Redis GEO~~ | ⛔ sem objeto — geoprocessamento saiu do MVP (020) |
-| 006 | Carrinho no Redis: TTL, durabilidade e ordem do checkout | ⬜ a escrever |
+| 006 | Carrinho no Redis: TTL, durabilidade e ordem do checkout | ⬜ a escrever — depende do marco 3 |
 | 007 | Mongock para versionamento de esquema no MongoDB | ✅ aceita |
 | 008 | MongoDB como replica set de nó único | ✅ aceita |
 | 009 | Modelo de valores do pedido | ✅ aceita · **emendada pela v1.1** |
@@ -26,9 +26,8 @@
 | 022 | A remuneração do entregador pertence ao vínculo | ✅ aceita |
 | 023 | Fronteira `order` × `payment`: pedido é dono do registro | ✅ aceita |
 
-Quatro continuam sem escrever — 001, 002, 004 e 006. As três primeiras
-descrevem decisões que já estão em vigor e nunca foram questionadas; a 006
-depende do desenho do carrinho, que só chega no marco 3.
+**Vinte escritas, duas sem objeto, uma a escrever.** A 006 depende do desenho do
+carrinho, que só chega no marco 3 — escrevê-la agora seria decidir no vazio.
 
 ## Onde mora o quê
 
@@ -44,6 +43,18 @@ que o código deve fazer agora.
 pressão.
 
 Quando dois divergirem, a divergência é o defeito. Corrija na mesma alteração.
+
+## Por onde começar a ler
+
+Quatro decisões sustentam quase todas as outras. Quem chega no projeto lê estas
+primeiro, nesta ordem:
+
+| | Por quê |
+|---|---|
+| **004** — um estabelecimento por pedido | É a premissa de que cinco outras dependem |
+| **002** — banco por serviço | Explica de onde vêm Saga, outbox e duplicação |
+| **021** — catálogo de serviços | Diz quais serviços existem e por que dois saíram |
+| **009** — modelo de valores | O dinheiro, que é o que o produto existe para acertar |
 
 ## Formato
 
@@ -69,8 +80,9 @@ que esta decisão provoca" no fim. Ver 011, 013 e 023.
 
 Emenda é para mudança de decisão, de justificativa ou de custo assumido. Rótulo
 que muda sem que a coisa mude — número de marco, nome de arquivo, nome de
-serviço — é troca direta, com o motivo na mensagem do commit. A ADR-016 foi o
-primeiro caso: a decisão continua a mesma, só o marco referenciado mudou de nome.
+serviço, número de seção — é troca direta, com o motivo na mensagem do commit. A
+ADR-016 foi o primeiro caso: a decisão continua a mesma, só o marco referenciado
+mudou de nome.
 
 **Emenda não termina no grep.** Varredura por padrão encontra texto que
 contradiz a decisão nova. Não encontra o que está ausente — uma ressalva que
