@@ -153,8 +153,8 @@ por um administrador existente, sobre um membro que já aceitou.
 ## 3. Como os outros serviços perguntam
 
 O `merchant-service` expõe uma consulta de autorização. Todos os demais a
-consomem por porta, com cache curto no Redis e **política de negar quando
-indisponível** — a armadilha já registrada no `CLAUDE.md`.
+consomem por porta, com cache **em processo** (Caffeine) e **política de negar
+quando indisponível** — ADR-011, e a armadilha já registrada no `CLAUDE.md`.
 
 ```java
 public interface AutorizacaoComercialPort {
@@ -168,8 +168,9 @@ record ContextoDeAcesso(UUID usuarioId, UUID estabelecimentoId,
 
 | Aspecto | Regra | Por quê |
 |---|---|---|
-| Cache | TTL curto no Redis, chave `usuarioId:estabelecimentoId` | Toda requisição de todo serviço passa aqui |
-| Invalidação | Evento `VinculoAlteradoV1` apaga a chave | O TTL é a rede de segurança, o evento é o caminho rápido |
+| Cache | **Em processo** (Caffeine), 60 s para resposta positiva e 10 s para negativa, chave `(usuarioId, estabelecimentoId)` — ADR-011 | Toda requisição de todo serviço passa aqui, e a cache existe para não sair do processo |
+| Invalidação | Evento `VinculoAlteradoV1` remove a entrada em cada instância | O TTL é a rede de segurança, o evento é o caminho rápido |
+| Queda do serviço | Negar. O TTL de 60 s **é** a janela de tolerância — não há modo degradado separado | Fail-closed que abre sob pressão não é fail-closed |
 | Indisponibilidade | **Negar** | Detalhado abaixo |
 | Ausência de vínculo | `Optional.empty()` → 403 com mensagem clara | Nunca 404: o 404 confirma ou nega a existência da loja |
 
@@ -397,9 +398,6 @@ mesmo tendo invalidação por evento.
 
 ## 9. O que este documento deliberadamente não decide
 
-- **TTL, janela de tolerância e estratégia de invalidação do cache.** É a
-  **ADR-011**, e precisa ser escrita antes do primeiro serviço que consome a
-  porta — ou seja, antes da etapa 3.
 - **Recuperação do administrador único que perdeu acesso.** M6 garante que
   existe um administrador; não garante que alguém consegue entrar como ele.
   Telefone trocado, aparelho perdido. **Pendência real** — precisa de decisão

@@ -109,8 +109,8 @@ cobrança Pix com `txid`, valida a assinatura do webhook, publica
 `LiquidacaoConfirmadaV1`, e no marco 8 trata cartão e Pix online. Isso preserva a
 invariante e dá ao `payment` um recorte claro em vez de um espelho do pedido.
 
-**Precisa virar ADR própria antes do marco 4**, que é quando o `payment` ganha
-código. Até lá o módulo existe no esqueleto sem que a fronteira esteja decidida.
+**Resolvido pela ADR-023** (23/08/2026): o `order` é dono do registro de
+liquidação, o `payment` é a fronteira com o PSP.
 
 ## Alternativas consideradas
 

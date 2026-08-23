@@ -143,7 +143,8 @@ e reabra o VS Code.
 | Tentado a adicionar H2 para acelerar teste | Não. Testcontainers contra a mesma imagem de produção. Ver ADR-014 |
 | Tentado a usar `subprojects {}` no build raiz | Não. Convention plugins em `build-logic/`. `subprojects` quebra o configuration cache |
 | Teste de integração lento localmente | `testcontainers.reuse.enable=true` em `~/.testcontainers.properties` |
-| Precisa de permissão comercial em outro serviço | Consultar `merchant-service` via porta, com cache curto no Redis e política de **negar** quando indisponível |
+| Precisa de permissão comercial em outro serviço | Consultar `merchant-service` via porta, com cache **em processo** (60 s, Caffeine) e política de **negar** quando indisponível — ADR-011. Nunca no Redis: a cache existe para evitar ida à rede |
+| Vai escalar um serviço para 2+ instâncias | A cache de autorização é em processo. O consumidor de `VinculoAlteradoV1` precisa de **fila exclusiva por instância** ligada a um exchange fanout. Com fila compartilhada, só uma instância invalida e as outras seguem com permissão revogada até o TTL — silenciosamente. ADR-011 |
 | `allowEmptyShould(true)` no ArchUnit | Muleta temporária: com só `.gitkeep` nas camadas, zero classes = falha. **Remova por serviço assim que ele tiver classes** — mantido depois, uma camada apagada ou pacote renomeado passa em silêncio |
 | Declarar versão de Testcontainers | Não declare. O BOM do Boot 4.1.x traz testcontainers-bom 2.x, onde os artefatos mudaram de nome: `org.testcontainers:testcontainers-junit-jupiter`, `-postgresql`, `-mongodb`, `-rabbitmq` |
 | Vai somar `total` num relatório | Não. `total` é o valor congelado no fechamento. O que entrou é `Σ Liquidacao.valorEfetivo`; o que o pedido vale hoje é `totalEfetivo` |
