@@ -248,7 +248,7 @@ minimização é imposta por assinatura, não por disciplina.
 
 ## Emendas que esta decisão provoca
 
-- `docs/dominio/conversa.md` §12 ganha os prazos concretos e §15 deixa de listar
+- `docs/dominio/conversa.md` §12 ganha os prazos concretos e §16 deixa de listar
   a ADR-013 como pendente.
 - `CLAUDE.md` ganha a regra do §6 — dado pessoal alcançável por identificador
   estável — que é restrição de modelagem, não de segurança.

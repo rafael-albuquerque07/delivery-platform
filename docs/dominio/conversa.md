@@ -1,7 +1,7 @@
 # Domínio — Canal, conversa e interpretação
 
 **Serviço:** `conversation-service` · **Status:** vigente (v1.1, 21/08/2026)
-**Fontes:** PRD §5 (P4), PRD §6 E8 e E9, Resposta v1.1 §5.3 e §6, ADR-018, ADR-020
+**Fontes:** PRD §5 (P4), PRD §6 E8 e E9, Resposta v1.1 §5.3 e §6, ADR-007, ADR-008, ADR-013, ADR-017, ADR-018, ADR-020
 **Invariantes do `CLAUDE.md` que este documento detalha:** 2, 6, 7, 9
 **Entra em dois tempos:** modo determinístico no marco 7, IA no marco 9
 
@@ -343,7 +343,25 @@ LGPD quanto problema fiscal. A ADR-013 é o lugar dessa decisão.
 
 ---
 
-## 13. Eventos
+## 13. Persistência
+
+Documental por decisão de aprendizado (ADR-017), e a forma ajuda: uma
+conversa é uma árvore de mensagens lida inteira, cuja forma varia conforme o
+canal.
+
+| Aspecto | Regra |
+|---|---|
+| Esquema | Todo índice e validador nasce em `changeUnit` do Mongock — ADR-007. Nunca comando no shell |
+| Transação | Replica set de nó único; sem ele não há transação multi-documento e portanto não há outbox — ADR-008 |
+| String de conexão | Precisa de `?replicaSet=rs0`. Sem o parâmetro o driver conecta em modo avulso e a transação falha em runtime, não no boot |
+| Índices mínimos | `(estabelecimentoId, contatoId)` · `(estabelecimentoId, estado)` para a fila de atendimento · `janela.expiraEm` |
+| Idempotência | `processed_messages` com o id da mensagem do provedor — §11 |
+| Retenção | Índice TTL sobre o conteúdo, com o prazo da ADR-013 §3. A retenção é imposta pelo banco, não por rotina que alguém precisa lembrar de rodar — e o índice nasce em `changeUnit`, como todo o resto |
+| Binário | Nunca no documento. Áudio não é guardado (ADR-013 §4); mídia que precise persistir vai para o MinIO por referência |
+
+---
+
+## 14. Eventos
 
 **Consome** — todos idempotentes, todos com `processed_messages`:
 
@@ -367,7 +385,7 @@ LGPD quanto problema fiscal. A ADR-013 é o lugar dessa decisão.
 
 ---
 
-## 14. Invariantes
+## 15. Invariantes
 
 | # | Invariante | O que quebra sem ela |
 |---|---|---|
@@ -386,7 +404,7 @@ LGPD quanto problema fiscal. A ADR-013 é o lugar dessa decisão.
 
 ---
 
-## 15. O que este documento deliberadamente não decide
+## 16. O que este documento deliberadamente não decide
 
 - **Provedor de interpretação.** A porta existe justamente para adiar isso.
 - **Teto de valor de G3.** É configuração por estabelecimento, e o número inicial
