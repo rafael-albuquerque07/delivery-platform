@@ -1,7 +1,7 @@
 # Domínio — Cardápio, opções e disponibilidade
 
 **Serviço:** `catalog-service` · **Status:** vigente (v1.1, 21/08/2026)
-**Fontes:** PRD §5 (P3, P6), PRD §6 E3, PRD §10 (marco 2), ADR-004, ADR-017, ADR-018
+**Fontes:** PRD §5 (P3, P6), PRD §6 E3, PRD §10 (marco 2), ADR-004, ADR-007, ADR-008, ADR-017, ADR-018
 **Invariantes do `CLAUDE.md` que este documento detalha:** 2, 4, 8
 **Entrega no marco 2** — é o segundo serviço com valor operável, logo depois de conta e equipe.
 
@@ -242,8 +242,8 @@ grupos e opções é uma árvore lida inteira, gravada inteira.
 
 | Aspecto | Regra |
 |---|---|
-| Esquema | Toda estrutura e todo índice nascem em `changeUnit` do Mongock. Nunca comando no shell |
-| Transação | Replica set de nó único — sem ele não há transação multi-documento e portanto não há outbox |
+| Esquema | Toda estrutura e todo índice nascem em `changeUnit` do Mongock — ADR-007. Nunca comando no shell |
+| Transação | Replica set de nó único — sem ele não há transação multi-documento e portanto não há outbox — ADR-008 |
 | Índices mínimos | `(estabelecimentoId, estadoDePublicacao)` · `(estabelecimentoId, categoriaId, ordem)` |
 | Cache | Cardápio público no Redis, TTL curto, invalidado por evento |
 | Imagem | `imagemRef` aponta para o MinIO. **Binário nunca entra no documento** |

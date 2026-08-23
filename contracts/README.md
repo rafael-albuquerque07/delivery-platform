@@ -4,7 +4,7 @@ Esquemas, não classes Java compartilhadas. Nada aqui vira dependência de códi
 entre serviços — a única coisa que se compartilha é o **formato**.
 
 - `openapi/` — um arquivo por serviço, validado no CI
-- `asyncapi/` — eventos RabbitMQ e tópicos MQTT
+- `asyncapi/` — eventos de domínio publicados via RabbitMQ
 - `events/` — JSON Schema por evento, versionado
 
 ## Regra de versionamento

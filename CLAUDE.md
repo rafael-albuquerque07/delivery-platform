@@ -161,6 +161,7 @@ e reabra o VS Code.
 | String de conexão do MongoDB sem `?replicaSet=rs0` | O driver conecta em modo avulso e a transação falha **em runtime**, não no boot — possivelmente semanas depois. Todo serviço documental precisa do parâmetro. ADR-008 |
 | Vai acrescentar rota no gateway | Por **recurso**, não por serviço, e `merchantId` sempre na mesma posição do caminho. Ordem de predicado importa: o primeiro que casa vence. Nunca acrescente um `/merchants/**` genérico acima dos específicos. ADR-012 |
 | Tentado a autorizar no gateway | Não. O gateway autentica; quem autoriza é o serviço, porque só ele sabe qual permissão cada endpoint exige. ADR-011 e ADR-012 |
+| Vai configurar segurança no gateway | `/api/v1/webhooks/**` é PÚBLICO, sem JWT — o PSP e o provedor do canal não têm token nosso, e autenticam por assinatura no corpo, dentro do serviço. O `SecurityFilterChain` precisa liberar exatamente esse prefixo e exigir autenticação no resto. **Ainda não escrito** — requisito do marco 1. ADR-012 |
 
 ---
 

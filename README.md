@@ -150,7 +150,7 @@ ADR-021.
 | **ADR-020** — taxa por área nomeada | Sem PostGIS, sem MQTT, sem motor de rotas |
 | **ADR-021** — oito serviços no MVP | Este `settings.gradle.kts`, este Compose, esta tabela |
 | **ADR-022** — remuneração no vínculo | Não existe campo de pagamento do entregador no pedido |
-| **ADR-012** — rotas por recurso | `application.yml` do gateway. **Pendência do marco 1:** o `SecurityFilterChain` que libera `/api/v1/webhooks/**` sem JWT e exige token em todo o resto ainda não está escrito — o pacote `security/` do gateway só tem `.gitkeep` |
+| **ADR-012** — rotas por recurso | `application.yml` do gateway reescrito: rotas por recurso, não por serviço |
 
 Índice completo em [`docs/architecture/decisions/`](docs/architecture/decisions/README.md).
 
