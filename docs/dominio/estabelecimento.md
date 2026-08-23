@@ -1,9 +1,9 @@
 # Domínio — Estabelecimento, equipe e áreas
 
 **Serviço:** `merchant-service` · **Status:** vigente (v1.1, 21/08/2026)
-**Fontes:** PRD §5 (P2, P3, P5), PRD §6 E1, E2 e E6.1, ADR-004, ADR-020, ADR-022
+**Fontes:** PRD §5 (P2, P3, P5), PRD §6 E1, E2 e E6.1, ADR-004, ADR-011, ADR-020, ADR-022
 **Invariantes do `CLAUDE.md` que este documento detalha:** 2, 8, 9
-**ADRs pendentes que este documento antecipa:** ADR-011 (cache e fail-closed), ADR-012 (roteamento do gateway)
+**ADRs pendentes que este documento antecipa:** ADR-012 (roteamento do gateway)
 
 Este é o serviço do qual todos os outros dependem para saber **se aquela pessoa
 pode fazer aquilo naquela loja**. É também onde mora a configuração que
@@ -171,7 +171,6 @@ record ContextoDeAcesso(UUID usuarioId, UUID estabelecimentoId,
 | Cache | **Em processo** (Caffeine), 60 s para resposta positiva e 10 s para negativa, chave `(usuarioId, estabelecimentoId)` — ADR-011 | Toda requisição de todo serviço passa aqui, e a cache existe para não sair do processo |
 | Invalidação | Evento `VinculoAlteradoV1` remove a entrada em cada instância | O TTL é a rede de segurança, o evento é o caminho rápido |
 | Queda do serviço | Negar. O TTL de 60 s **é** a janela de tolerância — não há modo degradado separado | Fail-closed que abre sob pressão não é fail-closed |
-| Indisponibilidade | **Negar** | Detalhado abaixo |
 | Ausência de vínculo | `Optional.empty()` → 403 com mensagem clara | Nunca 404: o 404 confirma ou nega a existência da loja |
 
 **Fail-closed, e o preço disso.** Se o `merchant-service` cair, nenhum outro
@@ -179,8 +178,7 @@ serviço autoriza nada, e a plataforma inteira para. É consequência assumida, 
 descuido: a alternativa — liberar em caso de dúvida — significa que uma queda
 vira acesso irrestrito aos dados de todas as lojas. Mitigação é disponibilidade
 (réplicas, cache com TTL que sobrevive a queda curta), não relaxamento da regra.
-Os detalhes de TTL, invalidação e janela de tolerância são a **ADR-011**, ainda
-a escrever.
+Os detalhes de TTL, invalidação e janela de tolerância estão na **ADR-011**.
 
 ### Identificador na URL nunca é confiável
 
