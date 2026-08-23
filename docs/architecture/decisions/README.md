@@ -8,12 +8,12 @@
 | 004 | Um estabelecimento por pedido | ⬜ a escrever |
 | 005 | ~~PostGIS e Redis GEO~~ | ⛔ sem objeto — geoprocessamento saiu do MVP (020) |
 | 006 | Carrinho no Redis: TTL, durabilidade e ordem do checkout | ⬜ a escrever |
-| 007 | Mongock para versionamento de esquema no MongoDB | 🟨 decidida, formalizar |
-| 008 | MongoDB como replica set de nó único | 🟨 decidida, formalizar |
+| 007 | Mongock para versionamento de esquema no MongoDB | ✅ aceita |
+| 008 | MongoDB como replica set de nó único | ✅ aceita |
 | 009 | Modelo de valores do pedido | ✅ aceita · **emendada pela v1.1** |
 | 010 | Saga do pedido: pivô em `PRONTO`, pagamento fora da transação | ✅ aceita · **reescrita pela v1.1** |
 | 011 | Autorização comercial: cache em processo, invalidação por evento, fail-closed | ✅ aceita |
-| 012 | Roteamento do gateway | ⬜ a escrever |
+| 012 | Roteamento do gateway por recurso, não por serviço | ✅ aceita |
 | 013 | Retenção, anonimização e exclusão de dados pessoais | ✅ aceita |
 | 014 | Não adotar H2; Testcontainers como fonte de verdade | ✅ aceita · **emendada pela v1.1** |
 | 015 | Emitir JWT com `NimbusJwtEncoder` | ✅ aceita |
@@ -26,6 +26,10 @@
 | 022 | A remuneração do entregador pertence ao vínculo | ✅ aceita |
 | 023 | Fronteira `order` × `payment`: pedido é dono do registro | ✅ aceita |
 
+Quatro continuam sem escrever — 001, 002, 004 e 006. As três primeiras
+descrevem decisões que já estão em vigor e nunca foram questionadas; a 006
+depende do desenho do carrinho, que só chega no marco 3.
+
 ## Onde mora o quê
 
 **ADR** responde *por que* uma decisão foi tomada, com alternativas e
@@ -36,7 +40,10 @@ consequências negativas. É histórico: uma ADR aceita não é reescrita por go
 tabelas de transição, fórmulas de apuração. É estado corrente: sempre reflete o
 que o código deve fazer agora.
 
-Quando as duas divergirem, a divergência é o defeito. Corrija na mesma alteração.
+**`docs/operacao/`** responde *como se executa* — runbook, procedimento sob
+pressão.
+
+Quando dois divergirem, a divergência é o defeito. Corrija na mesma alteração.
 
 ## Formato
 
@@ -58,18 +65,17 @@ documento — e é essa a falha que este parágrafo existe para não repetir.
 
 Quando uma ADR nova **corrige um documento publicado** (um PDF em
 `docs/referencia/`, que não se reescreve), ela registra isso numa seção "Emenda
-que esta decisão provoca" no fim. Ver 011 e 023.
+que esta decisão provoca" no fim. Ver 011, 013 e 023.
 
-Emenda é para mudança de decisão, de justificativa ou de custo assumido.
-Rótulo que muda sem que a coisa mude — número de marco, nome de arquivo, nome
-de serviço — é troca direta, com o motivo na mensagem do commit. A ADR-016 foi
-o primeiro caso: a decisão continua a mesma, só o marco referenciado mudou de
-nome.
+Emenda é para mudança de decisão, de justificativa ou de custo assumido. Rótulo
+que muda sem que a coisa mude — número de marco, nome de arquivo, nome de
+serviço — é troca direta, com o motivo na mensagem do commit. A ADR-016 foi o
+primeiro caso: a decisão continua a mesma, só o marco referenciado mudou de nome.
 
 **Emenda não termina no grep.** Varredura por padrão encontra texto que
 contradiz a decisão nova. Não encontra o que está ausente — uma ressalva que
 falta, um campo com nome que virou enganoso, um documento que deveria citar a
 ADR e não cita. Depois do grep, leia as seções que tocam o mesmo dado que a
-decisão governa. Foi assim que a ADR-013 revelou `Contato.consentimento` com
-nome da base legal que ela rejeitou, e o congelamento do endereço em
-`pedido.md` sem a ressalva que torna a anonimização possível.
+decisão governa. Foi assim que a ADR-013 revelou `Contato.consentimento` com nome
+da base legal que ela rejeitou, e o congelamento do endereço em `pedido.md` sem
+a ressalva que torna a anonimização possível.
