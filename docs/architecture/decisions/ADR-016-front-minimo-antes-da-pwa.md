@@ -15,10 +15,10 @@ mal desenhada rápido.
 
 Duas entregas:
 
-- **15.A — front mínimo (etapa 4).** React, TypeScript, Vite, Tailwind, React
+- **15.A — front mínimo (marco 3).** React, TypeScript, Vite, Tailwind, React
   Router, TanStack Query, cliente HTTP encapsulado, ESLint e Prettier. Escopo:
   autenticação, uma listagem e um formulário.
-- **15.B — PWA completa (após a etapa 8).** Manifest, service worker, cache,
+- **15.B — PWA completa (após o marco 8).** Manifest, service worker, cache,
   offline, push, mapa, React Hook Form, Zod, Playwright, axe-core.
 
 ## Consequências
@@ -26,8 +26,8 @@ Duas entregas:
 **Positivas** — a API ganha consumidor real cedo; backend e front não competem
 pela mesma janela de atenção; o service worker entra quando há o que cachear.
 
-**Negativas** — por várias etapas não há app instalável para demonstrar; se o
-projeto parar antes da etapa 8, a parte PWA não existirá.
+**Negativas** — por vários marcos não há app instalável para demonstrar; se o
+projeto parar antes do marco 8, a parte PWA não existirá.
 
 ## Alternativas consideradas
 
