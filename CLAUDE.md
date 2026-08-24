@@ -113,6 +113,12 @@ Estas não são preferências de estilo. Quebrar qualquer uma é defeito.
 - **Erro em `ProblemDetail`** (RFC 7807). Nunca stack trace na resposta.
 - **Timeout obrigatório** em toda chamada entre serviços. O padrão da biblioteca
   é esperar para sempre.
+- **`Instant` para quando algo aconteceu; `timestamptz` no banco, sempre UTC.**
+  Tempo civil — dia, hora do calendário da loja — só existe convertendo com o
+  `fusoHorario` do estabelecimento. **Nunca** `LocalDateTime` sem zona num campo
+  persistido, **nunca** `LocalDate.now()` ou `LocalDateTime.now()` (leem o fuso
+  do servidor, que é do datacenter e não da pizzaria), **nunca** aritmética
+  sobre hora local. ADR-025
 
 ---
 
@@ -167,6 +173,9 @@ e reabra o VS Code.
 | Vai fazer um serviço usar código de outro | Não. Integração é por API ou evento. Nenhum módulo `:services:*` declara outro como dependência — ADR-001. **A verificação no build ainda não existe**; até existir, isto depende de ninguém errar |
 | Vai acrescentar `modalidade` na cotação | Não. Preço não varia por modalidade e `cotar` não a recebe. A diferença é a taxa (ADR-020) mais o `descontoDeRetirada` (ADR-024). Se a modalidade virar parâmetro do preço, ela vira pergunta de abertura da conversa |
 | Vai somar alguma coisa em `discount` | Hoje `discount` tem origem única — o desconto de retirada. Antes de acrescentar cupom, decomponha o campo: senão o comerciante deixa de separar o que deu para incentivar retirada do que queimou em promoção. ADR-024 |
+| Vai perguntar "que dia é hoje" | Não existe sem a loja. É `diaOperacional(instante, fusoHorario)`, com corte às 04:00 — a venda à 01:30 de domingo é do dia operacional de sábado. ADR-025 |
+| Vai gravar hora de funcionamento, expediente ou fechamento | Instante em UTC no banco; a conversão para o calendário da loja acontece na leitura, com a zona explícita. Hora local persistida é uma hora sem lugar |
+| Vai recalcular o dia de um lançamento pelo momento dele | Não. `Lancamento` herda o `diaOperacional` da jornada, que é congelado na abertura. Recalcular quebra J9 num caso raro e invisível. ADR-025 |
 
 ---
 

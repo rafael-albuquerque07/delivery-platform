@@ -60,6 +60,9 @@ PosicaoDoEntregador  (raiz)   — um por entregador × estabelecimento
 └── entregasEmMaos         contagem
 ```
 
+`desde` e `ultimoRetornoEm` são `Instant` (UTC), nunca hora local — a mesma
+regra de todo instante persistido (ADR-025).
+
 **`custodia` é derivada, nunca digitada.** `valorAReceber` é o `totalEfetivo` do
 pedido; `trocoALevar` é o `trocoDevido` calculado pelo pedido (ADR-009). Um
 campo editável aqui seria a porta dos fundos da invariante 2 do `CLAUDE.md` — o

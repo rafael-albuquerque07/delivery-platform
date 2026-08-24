@@ -18,7 +18,7 @@ que é lido em que frequência.
 
 ```
 Estabelecimento  (raiz)
-├── identificacao       id, nome, documento, telefone, endereco
+├── identificacao       id, nome, documento, telefone, endereco, fusoHorario
 ├── operacao            tipoDeOperacao, modalidadesAceitas, metodosPorModalidade,
 │                       descontoDeRetirada
 ├── politicaDeTroco     fundoMaximoDeTroco, aceitaPedidoSemTrocoDisponivel
@@ -263,11 +263,32 @@ horarioDeFuncionamento : Map<DiaDaSemana, List<Faixa>>   Faixa = (inicio, fim)
 Múltiplas faixas por dia, porque almoço e jantar são turnos separados e a loja
 fecha no meio.
 
+**Todo horário aqui é civil, no fuso do estabelecimento.** `fusoHorario` é um
+identificador IANA — `America/Sao_Paulo`, `America/Manaus` —, obrigatório e
+validado contra o conjunto de zonas brasileiras (ADR-025). "A loja está aberta
+agora?" é sempre um instante convertido com essa zona; nunca a hora do
+servidor.
+
 **Faixa que cruza a meia-noite é o bug clássico.** A pizzaria abre 18h e fecha
 2h. Regra: uma faixa com `fim < inicio` pertence ao dia de **início** e se
 estende ao dia seguinte. Terça 18:00–02:00 significa "de terça às 18h até
 quarta às 2h" — e às 00:30 de quarta a loja está aberta **pela faixa de terça**.
 Testar isto com um pedido à 01:00 é obrigatório.
+
+### O dia operacional
+
+```
+HORA_DE_CORTE = 04:00        constante de domínio, igual para todas as lojas
+
+diaOperacional(instante, fuso):
+    local = instante convertido para fuso
+    se local.hora < 04:00  →  local.data − 1 dia
+    senão                  →  local.data
+```
+
+Uma venda à 01:30 de domingo pertence ao dia operacional de **sábado**, que é
+como o comerciante fala e como ele confere. É o critério que o `catalog` usa
+para o expediente de referência e o `settlement` para o total do dia — ADR-025.
 
 Pausa é outra coisa:
 
@@ -393,6 +414,7 @@ mesmo tendo invalidação por evento.
 | M13 | Um vínculo de entregador por par entregador × loja | Remuneração ambígua na jornada |
 | M14 | Pausa e fechamento não afetam pedido em andamento | Sábado à noite com pedidos cancelados em massa |
 | M15 | `descontoDeRetirada ≥ 0` | Desconto negativo vira acréscimo silencioso |
+| M16 | `fusoHorario` é identificador IANA válido do conjunto brasileiro, nunca nulo | Horário de funcionamento, expediente e fechamento erram juntos e em silêncio |
 
 ---
 
@@ -402,9 +424,6 @@ mesmo tendo invalidação por evento.
   existe um administrador; não garante que alguém consegue entrar como ele.
   Telefone trocado, aparelho perdido. **Pendência real** — precisa de decisão
   antes do primeiro cliente de verdade, e hoje não tem nenhuma.
-- **Fuso horário.** Todo o horário de funcionamento presume o fuso do
-  estabelecimento, que não está modelado. Loja única em Recife funciona por
-  acidente; a primeira loja em outro fuso quebra. **Pendência.**
 - **Limite de estabelecimentos por usuário** e de membros por estabelecimento.
   Não há regra; provavelmente não precisa haver antes de existir abuso.
 - **Formato e provedor do link de convite.** É integração, não domínio.

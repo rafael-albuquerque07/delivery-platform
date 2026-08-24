@@ -120,6 +120,20 @@ Três consequências que precisam estar no código:
    acabou no domingo. É o comportamento certo: o estoque físico também não se
    repõe sozinho.
 
+**`expedienteDeReferencia` é o `diaOperacional` da loja** (ADR-025). Isso
+responde o caso que faltava: a loja que abre **duas vezes no mesmo dia**.
+
+```
+06:00  abre           expediente = D
+11:00  acabou o pão   expedienteDeReferencia = D
+14:00  fecha
+18:00  abre de novo   expediente = D  →  D == D  →  NÃO reativa   ✓
+```
+
+O pão que acabou no almoço continua acabado no jantar, que é o comportamento
+certo — o estoque físico também não se repôs. No dia seguinte, `D+1 ≠ D`, e
+reativa.
+
 ### Disponibilidade da opção
 
 **Acréscimo ao PRD, e necessário.** E3 fala de disponibilidade por produto.

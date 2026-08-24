@@ -32,6 +32,7 @@ Jornada  (raiz)
 ├── entregadorId, estabelecimentoId
 ├── estado                  ABERTA | EM_CONFERENCIA | FECHADA
 ├── abertura                momento, responsavel, fundoDeTrocoEntregue
+├── diaOperacional          CONGELADO na abertura — ADR-025
 ├── vinculoSnapshot         remuneração CONGELADA na abertura
 ├── Lancamento        [n]   somente-inserção
 ├── Fechamento        [0,1] imutável depois de gravado
@@ -42,6 +43,12 @@ Jornada  (raiz)
 do Jorge às 22h, a jornada aberta às 18h continua valendo o que valia quando
 começou. Sem isso, o extrato muda depois de o entregador já ter visto o número —
 e é precisamente aí que a confiança se perde.
+
+**`diaOperacional` também é congelado, e é o da abertura.** Uma jornada aberta
+às 18h de sábado e fechada às 2h30 de domingo é a jornada de **sábado** — que é
+como as duas pessoas que a conferem a chamam. Congelar em vez de derivar tem o
+mesmo motivo do `vinculoSnapshot`: um documento assinado não muda porque uma
+constante mudou.
 
 ```
 VinculoSnapshot
@@ -75,6 +82,11 @@ produz os dois. Toda retirada produz só o primeiro.
 não há jornada para lançar. A `Liquidacao` do pedido existe assim mesmo (I6:
 o dinheiro entrou no caixa da loja); o que não existe é reflexo dela em
 jornada nenhuma.
+
+**Todo `Lancamento` herda o `diaOperacional` da sua jornada**, em vez de
+recalculá-lo pelo próprio momento. Sem isso, uma liquidação registrada às 05:00
+dentro de um turno aberto às 03:00 cairia num dia e o fechamento em outro — e J9
+quebraria por um caso que ninguém reproduziria em teste.
 
 **Idempotência.** A chave natural de um lançamento de liquidação de entrega é
 `liquidacaoId`; a de uma entrega é `pedidoId`. Mensagem repetida **não** gera
@@ -265,6 +277,9 @@ consulta.
 **tem que bater** com a soma das liquidações **de entrega** registradas
 (H7.3). Isso é teste, não esperança.
 
+"Do dia" aqui é o **dia operacional** (ADR-025), não o dia civil: a soma é sobre
+os fechamentos cujo `diaOperacional` é o dia procurado.
+
 **Este número não é o caixa da loja.** Ele consolida o que passou por jornada
 de entregador. Pedido retirado no balcão satisfaz I6 — a `Liquidacao` existe,
 o dinheiro entrou —, mas não gera lançamento nenhum e por isso não aparece
@@ -329,9 +344,5 @@ comerciante desconfiar do sistema e voltar para o papel.
   Se ela deve ser item concedível ou privilégio exclusivo de administrador
   continua em aberto.
 - **Formato do extrato exportável** (H7.2). É apresentação.
-- **Jornada que cruza a meia-noite.** O turno da pizzaria termina às 2h. A
-  jornada é do turno, não do dia civil — mas a agregação "total do dia" precisa
-  de um critério, e ele não foi decidido. **Pendência antes do marco do
-  `settlement-service`.**
 - **Fechamento de caixa da loja** (não do entregador), que consolida também
   vendas de balcão. É escopo maior, e depende deste.

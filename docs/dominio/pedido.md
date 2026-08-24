@@ -316,6 +316,8 @@ mudança de estado (invariante 7 do `CLAUDE.md`).
   estabelecimento, não regra do agregado.
 - **Numeração sequencial por loja** — reinicia diariamente? por ano? Precisa ser
   decidido antes do `order-service`, e não foi. **Pendência.**
+  A ADR-025 fixa **qual** dia — o `diaOperacional` do estabelecimento —, mas não
+  decide se reinicia.
 - **Prazo para o Pix `AGUARDANDO_CONFIRMACAO` virar `NAO_LIQUIDADO`.** Depende
   do PSP escolhido; hoje fica pendente indefinidamente e aparece no fechamento.
 - **Os controles comerciais contra abuso** citados em §2 — teto para cliente sem
