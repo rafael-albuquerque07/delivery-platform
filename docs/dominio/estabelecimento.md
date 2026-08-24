@@ -378,14 +378,9 @@ Todos com `correlationId`, todos via outbox na mesma transação da alteração.
 | `EstabelecimentoCriadoV1` | Cadastro concluído | `catalog`, `conversation` |
 | `VinculoAlteradoV1` | Membro criado, alterado, suspenso, removido | **Todos** — invalidação de cache de autorização |
 | `ConfiguracaoOperacionalAlteradaV1` | Tipo, modalidades, métodos, troco | `order`, `conversation` |
-| `DisponibilidadeAlteradaV1` ⚠ | Abriu, fechou, pausou, retomou — com `motivo` | `conversation`, **`catalog`** (reativa `ESGOTADO_HOJE`) |
+| `ExpedienteAlteradoV1` | Abriu, fechou, pausou, retomou — com `motivo` | `conversation`, **`catalog`** (reativa `ESGOTADO_HOJE`) |
 | `AreasDeEntregaAlteradasV1` | Área criada, alterada, desativada | `conversation` (lista de bairros) |
 | `VinculoEntregadorAlteradoV1` | Vínculo ou remuneração | `delivery`, `settlement` |
-
-⚠ **`DisponibilidadeAlteradaV1` colide com um evento de mesmo nome no
-`catalog-service`**, que significa outra coisa (produto esgotou). Sugestão:
-renomear este para `ExpedienteAlteradoV1`. Decidir antes do primeiro consumidor
-— ver [`catalogo.md`](catalogo.md) §8.
 
 O `motivo` desse evento não é decoração: o `catalog-service` só reativa produtos
 `ESGOTADO_HOJE` quando ele é `ABERTURA_DE_EXPEDIENTE`. Retomada de pausa **não**

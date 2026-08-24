@@ -97,7 +97,7 @@ acabou às 23h — voltando a oferecer o que não existe, no meio do pico.
 O gatilho correto é o **evento de abertura do estabelecimento**:
 
 ```
-DisponibilidadeAlteradaV1 (merchant-service)
+ExpedienteAlteradoV1 (merchant-service)
   motivo = ABERTURA_DE_EXPEDIENTE
       ↓
 catalog-service reativa todo produto e opção com:
@@ -286,12 +286,6 @@ Todos com `correlationId`, todos por outbox na mesma transação da alteração.
 `DisponibilidadeAlteradaV1` é o mais sensível a atraso. Entre a Marli marcar
 "acabou" e o canal parar de oferecer, cada segundo é um pedido que vai ser
 cancelado na cozinha.
-
-O `catalog-service` **consome** `DisponibilidadeAlteradaV1` do
-`merchant-service` (§3) — mesmo nome de evento, serviços diferentes, significados
-diferentes. **Renomeie um dos dois antes de escrever o primeiro consumidor**: um
-tópico ambíguo é uma noite perdida daqui a três meses. Sugestão:
-`ExpedienteAlteradoV1` no `merchant-service`.
 
 ---
 
