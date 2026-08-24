@@ -278,7 +278,7 @@ marco 11 trouxer rastreamento, é aí que a discussão volta.
 |---|---|---|
 | `EntregaAtribuidaV1` | D02, D03 | `conversation` (avisar o cliente que saiu para entrega é T16, não isto) |
 | `EntregadorRetornouV1` | §7 | Painel |
-| `EntregaDevolvidaV1` | D08 | `settlement` — o item voltou, a liquidação foi `NAO_LIQUIDADO` |
+| `EntregaDevolvidaV1` | D08 | painel — o item voltou à loja |
 
 Note que **este serviço não publica nada que o `settlement` use para dinheiro**.
 A apuração se alimenta de `PedidoEntregueV1`, que carrega a liquidação. Um

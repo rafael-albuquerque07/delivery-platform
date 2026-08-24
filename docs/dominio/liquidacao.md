@@ -78,6 +78,11 @@ dentro da `Jornada`, e é o reflexo daquela liquidação no acerto do
 entregador. **I6 exige a primeira; J1 restringe o segundo.** Toda entrega
 produz os dois. Toda retirada produz só o primeiro.
 
+**Todo cancelamento não produz nenhum dos dois.** Pedido cancelado não exige
+`Liquidacao` (I6 só alcança `ENTREGUE` e `RETIRADO`) e não gera lançamento —
+inclusive quando a entrega já tinha saído e voltou. Uma entrega devolvida é um
+pedido cancelado, não um pedido entregue e não pago.
+
 **`PedidoRetiradoV1` não gera lançamento.** Retirada não envolve entregador —
 não há jornada para lançar. A `Liquidacao` do pedido existe assim mesmo (I6:
 o dinheiro entrou no caixa da loja); o que não existe é reflexo dela em
