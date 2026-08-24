@@ -81,6 +81,11 @@ Quando uma ADR nova **corrige um documento publicado** (um PDF em
 `docs/referencia/`, que não se reescreve), ela registra isso numa seção "Emenda
 que esta decisão provoca" no fim. Ver 011, 013, 023 e 024.
 
+**A base publicada passou a ser a v2** (24/08/2026). O documento de
+arquitetura v2 já incorpora as emendas registradas nas ADRs 011, 013, 023 e
+024 — as seções delas continuam valendo como histórico da correção, e não como
+pendência. Emenda nova a partir daqui é contra o v2.
+
 Emenda é para mudança de decisão, de justificativa ou de custo assumido. Rótulo
 que muda sem que a coisa mude — número de marco, nome de arquivo, nome de
 serviço, número de seção — é troca direta, com o motivo na mensagem do commit. A
