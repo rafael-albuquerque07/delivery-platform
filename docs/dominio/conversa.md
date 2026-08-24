@@ -25,17 +25,17 @@ Conversa  (raiz)
 ├── estabelecimentoId, contatoId
 ├── modo               DETERMINISTICO | ASSISTIDO | HUMANO
 ├── estado             ATIVA | AGUARDANDO_HUMANO | EM_ATENDIMENTO_HUMANO | ENCERRADA
-├── janela             ultimaMensagemDoCliente, expiraEm
+├── janela             ultimaMensagemDoCliente: Instant, expiraEm: Instant
 ├── rascunhoDePedido   identificadores apenas — nunca valores
 ├── custo              mensagensEnviadas, tokensConsumidos, estimativa
 ├── Mensagem     [n]   somente-inserção
-└── Escalonamento[0,n] motivo, momento, resolvidoEm
+└── Escalonamento[0,n] motivo, momento: Instant, resolvidoEm: Instant
 
 Contato  (raiz)
 ├── telefone, nomeInformado
 ├── estabelecimentosConhecidos
 ├── enderecosConhecidos  [n]
-└── baseLegal            base legal, momento, versão do aviso
+└── baseLegal            base legal, momento: Instant, versão do aviso
 ```
 
 **`Contato` é raiz própria e vive por cima da conversa.** A memória do histórico

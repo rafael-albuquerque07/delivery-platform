@@ -20,7 +20,7 @@ Produto  (raiz)
 ├── precoBase                 Money
 ├── estadoDePublicacao        RASCUNHO | ATIVO | INATIVO
 ├── modoDeControle            SEM_CONTROLE | QUALITATIVO | QUANTITATIVO
-├── disponibilidade           estado, marcadoEm, expedienteDeReferencia
+├── disponibilidade           estado, marcadoEm: Instant, expedienteDeReferencia: LocalDate
 └── GrupoDeOpcoes      [n]
     ├── nome, minEscolhas, maxEscolhas, ordem
     └── Opcao          [n]    nome, acrescimo, disponivel, ordem

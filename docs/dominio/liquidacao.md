@@ -31,7 +31,7 @@ jornadas independentes, com remunerações possivelmente diferentes (H6.1).
 Jornada  (raiz)
 ├── entregadorId, estabelecimentoId
 ├── estado                  ABERTA | EM_CONFERENCIA | FECHADA
-├── abertura                momento, responsavel, fundoDeTrocoEntregue
+├── abertura                momento: Instant, responsavel, fundoDeTrocoEntregue
 ├── diaOperacional          CONGELADO na abertura — ADR-025
 ├── vinculoSnapshot         remuneração CONGELADA na abertura
 ├── Lancamento        [n]   somente-inserção
@@ -65,7 +65,7 @@ editado, nada é apagado.
 
 | Tipo | Origem | Campos próprios |
 |---|---|---|
-| `ENTREGA_CONCLUIDA` | `PedidoEntregueV1` | `pedidoId`, `momento` |
+| `ENTREGA_CONCLUIDA` | `PedidoEntregueV1` | `pedidoId`, `momento: Instant` |
 | `LIQUIDACAO_DE_ENTREGA` | `PedidoEntregueV1` / `LiquidacaoConfirmadaV1` | `liquidacaoId`, `metodo`, `valorEfetivo`, `gorjeta`, `situacao` — duplica o que `pedido.md` §7 já registra no `order-service`, deliberadamente: nenhum serviço lê o banco de outro (ADR-002) |
 | `ADIANTAMENTO` | Painel | `valor`, `motivo`, `autor` |
 | `NAO_LIQUIDADO` | `PedidoEntregueV1` | `pedidoId`, `valorNaoRecebido`, `motivo` |
@@ -261,7 +261,7 @@ materializadas — não recalculadas na leitura.
 
 ```
 Fechamento
-├── momento, responsavel
+├── momento: Instant, responsavel
 ├── F, E, LD, LC, LP, LA, LN, GD, GC, A        grandezas congeladas
 ├── dinheiroEsperado, dinheiroConferido, divergencia
 ├── creditos C, debitos D, saldoLiquido
@@ -297,7 +297,7 @@ AjusteDeFechamento              — somente-inserção
 ├── delta     Money             — pode ser negativo
 ├── motivo    texto obrigatório
 ├── autor     usuário
-└── momento   timestamp
+└── momento   Instant
 
 saldoEfetivo = Fechamento.saldoLiquido + Σ ajustes.delta
 ```

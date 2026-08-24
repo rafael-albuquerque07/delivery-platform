@@ -49,14 +49,14 @@ Entrega  (raiz)
 ├── pedidoId, estabelecimentoId
 ├── entregadorId            null enquanto PENDENTE
 ├── estado
-├── atribuicao              modo, momento, autor, sugeridoPeloRodizio
-├── Tentativa         [n]   somente-inserção — momento, resultado, motivo
+├── atribuicao              modo, momento: Instant, autor, sugeridoPeloRodizio
+├── Tentativa         [n]   somente-inserção — momento: Instant, resultado, motivo
 └── custodia                valorAReceber, trocoALevar   (derivados do pedido)
 
 PosicaoDoEntregador  (raiz)   — um por entregador × estabelecimento
 ├── situacao               NO_ESTABELECIMENTO | EM_ROTA | RETORNANDO | INDISPONIVEL
-├── desde                  timestamp
-├── ultimoRetornoEm        timestamp    ← é isto que ordena o rodízio
+├── desde                  Instant
+├── ultimoRetornoEm        Instant    ← é isto que ordena o rodízio
 └── entregasEmMaos         contagem
 ```
 

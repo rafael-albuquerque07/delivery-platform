@@ -26,7 +26,7 @@ Pedido  (raiz)
 ├── identificacao        id, numeroSequencialNaLoja, estabelecimentoId, origem
 ├── cliente              nome, telefone, referenciaExterna do canal
 ├── entrega              modalidade, enderecoTextual, nomeAreaSnapshot, taxaSnapshot
-├── pagamento            momentoDeclarado, metodoDeclarado, trocoPara
+├── pagamento            momentoDeclarado: enum (ONLINE | NA_ENTREGA | NA_RETIRADA — ADR-009, não é carimbo de tempo), metodoDeclarado, trocoPara
 ├── valores              itemsSubtotal, deliveryFee, tip, discount, total
 ├── estado               estado, subestado, motivoCancelamento
 ├── ItemDoPedido    [n]  congelado — nome, precoBase, opções, stockControlledSnapshot
@@ -242,7 +242,7 @@ totalEfetivo = total + Σ ajustes.delta
 
 `total` nunca é sobrescrito. Substituição de item, remoção, arredondamento por
 falta de moeda e correção posterior são todos `Ajuste` — com tipo, delta, motivo
-obrigatório, autor e momento.
+obrigatório, autor e momento (`Instant`).
 
 **Nenhum relatório soma `total` para dizer quanto entrou.** Soma `totalEfetivo`,
 ou melhor, soma `Liquidacao.valorEfetivo`. Isto vai ser esquecido; escreva o
@@ -264,7 +264,7 @@ Liquidacao
 ├── metodoLiquidado      DINHEIRO | CARTAO | PIX | NAO_LIQUIDADO
 ├── valorEfetivo         Money  — zero quando NAO_LIQUIDADO
 ├── situacao             CONFIRMADA | AGUARDANDO_CONFIRMACAO
-├── momento              timestamp
+├── momento              Instant
 ├── responsavelCustodia  ENTREGADOR | ESTABELECIMENTO | PLATAFORMA
 ├── registradoPor        usuário
 ├── referenciaExterna    txid do Pix, NSU do cartão | null

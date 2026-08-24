@@ -140,7 +140,7 @@ Convite
 ├── estabelecimentoId, telefone ou link
 ├── permissoesOferecidas  [n]
 ├── convidadoPor          usuário
-├── expiraEm              timestamp
+├── expiraEm              Instant
 └── estado                PENDENTE | ACEITO | EXPIRADO | CANCELADO
 ```
 
@@ -293,8 +293,12 @@ para o expediente de referência e o `settlement` para o total do dia — ADR-02
 Pausa é outra coisa:
 
 ```
-pausa : { ativa, pausadoAte | INDEFINIDA, motivo }
+pausa : { ativa, pausadoAte: Instant | INDEFINIDA, motivo }
 ```
+
+`pausadoAte` é `Instant` (UTC), como todo carimbo de tempo persistido —
+ADR-025. "Pausado até as 21h" é hora civil só na tela; o que se grava é o
+instante.
 
 | | Fechado por horário | Pausado |
 |---|---|---|
