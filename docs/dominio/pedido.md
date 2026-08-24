@@ -248,8 +248,7 @@ obrigatório, autor e momento (`Instant`).
 ou melhor, soma `Liquidacao.valorEfetivo`. Isto vai ser esquecido; escreva o
 teste que pega.
 
-Substituição de item (H4.3, **marco 10** — a anotação "marco 5" no PRD está
-velha, ver `catalogo.md` §6) é composta: um `Ajuste` de tipo `SUBSTITUICAO` com
+Substituição de item (H4.3, **marco 10**) é composta: um `Ajuste` de tipo `SUBSTITUICAO` com
 o delta, e o item original **permanece na lista**, marcado. Não se apaga o que o
 cliente pediu.
 

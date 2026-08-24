@@ -245,12 +245,6 @@ O campo existe desde o marco 2 e é congelado no item do pedido como
 dados quando o marco 10 chegar. Enquanto isso, `QUANTITATIVO` é valor **inválido
 na publicação**, com mensagem que diz o marco.
 
-> **Divergência a corrigir no PRD.** H3.3 e H4.3 dizem "*entra a partir do marco
-> 5*", e H10.1 diz "*marco 7*". A tabela do §10 — reescrita na revisão v1.1 —
-> coloca controle quantitativo e substituição de item no **marco 10** e emissão
-> fiscal no **marco 8**. As anotações inline não foram atualizadas junto. A
-> tabela §10 é a correta; as três anotações estão velhas.
-
 ---
 
 ## 7. Persistência e cache

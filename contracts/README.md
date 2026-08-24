@@ -16,3 +16,7 @@ depender dela.
 
 Contrato de evento é mais difícil de mudar que contrato REST — o consumidor
 pode estar processando uma mensagem antiga que já está na fila.
+
+O sufixo `V1` usado nos documentos de domínio — `PedidoRecebidoV1` — é a forma
+abreviada do par: `eventType: "PedidoRecebido"` mais `eventVersion: 1`. A
+versão vive no campo e no nome do arquivo de esquema, não no `eventType`.

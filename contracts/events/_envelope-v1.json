@@ -6,7 +6,7 @@
   "required": ["eventId", "eventType", "eventVersion", "occurredAt", "correlationId", "payload"],
   "properties": {
     "eventId": { "type": "string", "format": "uuid" },
-    "eventType": { "type": "string", "examples": ["OrderPlaced", "PaymentApproved"] },
+    "eventType": { "type": "string", "examples": ["PedidoRecebido", "LiquidacaoConfirmada"] },
     "eventVersion": { "type": "integer", "minimum": 1 },
     "occurredAt": { "type": "string", "format": "date-time" },
     "correlationId": { "type": "string" },
