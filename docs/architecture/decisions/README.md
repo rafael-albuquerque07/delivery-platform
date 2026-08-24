@@ -26,8 +26,9 @@
 | 022 | A remuneração do entregador pertence ao vínculo | ✅ aceita |
 | 023 | Fronteira `order` × `payment`: pedido é dono do registro | ✅ aceita |
 | 024 | Desconto de retirada, não preço por modalidade | ✅ aceita |
+| 025 | Fuso horário do estabelecimento e o dia operacional | ✅ aceita |
 
-**Vinte e uma escritas, duas sem objeto, uma a escrever.** A 006 depende do
+**Vinte e duas escritas, duas sem objeto, uma a escrever.** A 006 depende do
 desenho do carrinho, que só chega no marco 3 — escrevê-la agora seria decidir no
 vazio.
 
