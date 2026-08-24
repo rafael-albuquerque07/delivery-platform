@@ -244,6 +244,12 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 - Nenhum valor é contado duas vezes, mesmo com repetição de mensagem interna
 - Total do dia por método bate com a soma das liquidações registradas
 
+  > **Atendido apenas para entrega no MVP.** O fechamento consolida o que passou
+  > por jornada de entregador; pedido retirado no balcão registra liquidação e
+  > não gera lançamento. O total do estabelecimento — entrega, retirada e balcão
+  > — depende do fechamento de caixa da loja, que está nomeado em
+  > `docs/dominio/liquidacao.md` §9 e não tem dono.
+
 ### E8 — Canal WhatsApp
 
 **H8.1** Como cliente, quero pedir pelo WhatsApp sem instalar nada.
