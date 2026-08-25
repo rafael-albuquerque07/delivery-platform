@@ -35,8 +35,9 @@
 | 031 | Nome de evento é único no repositório | ✅ aceita |
 | 032 | A guarda da conferência pergunta, não escuta | ✅ aceita |
 | 033 | O estado da jornada é perguntado | ✅ aceita |
+| 034 | Resposta que vira snapshot nunca é cacheada | ✅ aceita |
 
-**Trinta escritas, duas sem objeto, uma a escrever.** A 006 depende do
+**Trinta e uma escritas, duas sem objeto, uma a escrever.** A 006 depende do
 desenho do carrinho, que só chega no marco 3 — escrevê-la agora seria decidir no
 vazio.
 

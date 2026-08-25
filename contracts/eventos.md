@@ -34,7 +34,7 @@ pergunta)
 | `EstabelecimentoCriadoV1` | `merchant` | `conversation` |
 | `VinculoAlteradoV1` | `merchant` | **todos** |
 | `ConfiguracaoOperacionalAlteradaV1` | `merchant` | `order`, `conversation` |
-| `ExpedienteAlteradoV1` | `merchant` | `catalog`, `conversation` |
+| `ExpedienteAlteradoV1` | `merchant` | `catalog`, `conversation`, `order` |
 | `AreasDeEntregaAlteradasV1` | `merchant` | `conversation` |
 | `VinculoEntregadorAlteradoV1` | `merchant` | `delivery` |
 | `ProdutoPublicadoV1` | `catalog` | `conversation` |

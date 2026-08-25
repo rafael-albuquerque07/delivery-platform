@@ -203,9 +203,12 @@ quanto vale otimizar a leitura.
   rodízio (`entrega.md` §5), e encadear guarda em guarda faz a invariante 1
   depender de dois serviços em vez de um.
 
-## Pendência que esta decisão não fecha
+## Pendência cancelada
 
-**O valor do TTL.** A ADR-011 também o deixou como "curto" sem número. Os dois
-deveriam usar o mesmo, e o número sai de medição, não de escolha — fica para
-quando houver tráfego. Registrado nos dois lugares para não virar dois valores
-diferentes por acidente.
+Esta ADR foi publicada dizendo que o TTL da ADR-011 não tinha número definido.
+**Está errado:** `docs/dominio/estabelecimento.md` §3 registra 60 s para resposta
+positiva e 10 s para negativa, atribuindo à ADR-011.
+
+A consulta de jornada usa os mesmos valores, e a assimetria funciona na direção
+certa pelo mesmo motivo — negar por engano custa dez segundos; permitir por
+engano custa uma entrega sem jornada onde lançar. Corrigido pela **ADR-034 §5**.
