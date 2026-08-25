@@ -11,6 +11,7 @@ do agregado, invariantes, tabela de transições, fórmulas de apuração.
 | [`catalogo.md`](catalogo.md) | `catalog-service` | Produto e opções, publicação, disponibilidade qualitativa, reativação por expediente, cotação |
 | [`entrega.md`](entrega.md) | `delivery-service` | Atribuição direta e rodízio, posição do entregador, custódia, retorno registrado |
 | [`conversa.md`](conversa.md) | `conversation-service` | Roteamento por número, modos, limites da interpretação, escalonamento, custo, LGPD |
+| [`pagamento.md`](pagamento.md) | `payment-service` | Cobrança Pix, webhook e assinatura, confirmação, devolução e divergência com o provedor |
 
 ## Como ler junto com as ADRs
 

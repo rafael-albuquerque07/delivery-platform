@@ -119,7 +119,8 @@ Dois caminhos para o mesmo dinheiro é contagem dupla, e J1 e J3 de
 - **Dado de pagamento fica em dois lugares.** `txid` e valor existem no `payment`
   e no `order`. Divergência entre os dois — "o PSP confirmou e o pedido continua
   pendente" — é possível, e precisa de **procedimento de reconciliação**, não de
-  um `catch`. Não está escrito ainda; é pendência do marco 4.
+  um `catch`. Escrito em `docs/operacao/reconciliacao-de-pagamento.md`, com os
+  quatro formatos da divergência em `pagamento.md` §8.
 - **Uma chamada síncrona a mais no caminho do pedido**, no passo 2. Com timeout e
   disjuntor; se o `payment` estiver fora, o pedido é fechado sem cobrança Pix e o
   cliente escolhe outro método. Não trava a venda.

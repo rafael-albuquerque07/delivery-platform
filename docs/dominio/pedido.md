@@ -31,7 +31,8 @@ Pedido  (raiz)
 ├── estado               estado, subestado, motivoCancelamento
 ├── ItemDoPedido    [n]  congelado — nome, precoBase, opções, stockControlledSnapshot
 ├── Ajuste          [n]  somente-inserção
-└── Liquidacao      [n]  somente-inserção
+├── Liquidacao      [n]  somente-inserção
+└── Devolucao       [n]  somente-inserção — ADR-030
 ```
 
 `origem` — `WHATSAPP | WEB | BALCAO` — é **atributo, não estado** (v1.1 §5.4). O
@@ -195,6 +196,8 @@ Verificadas na construção e em toda transição — não em teste de integraç
 | I10 | `modalidade = RETIRADA → deliveryFee = zero ∧ nomeAreaSnapshot = null` | Cobra-se entrega de quem foi buscar |
 | I11 | Nenhum estado não-terminal sem transição de saída | Pedido preso para sempre (H4.4) |
 | I12 | `modalidade = RETIRADA → discount == descontoDeRetirada congelado` · `modalidade = ENTREGA → discount == zero` | Desconto prometido some no fechamento, ou entrega sai descontada sem motivo |
+| I13 | `Σ Devolucao.valor ≤ Σ liquidações CONFIRMADAS` | Devolver mais do que entrou |
+| I14 | `formaDeDevolucao = ESTORNO_PSP → referenciaExterna ≠ null` quando `situacao = EXECUTADA` | "Estornei" sem prova de que estornou |
 
 A `Liquidacao` de I6 é o registro, dentro do `Pedido`, de que o dinheiro foi
 recebido. Não confundir com o `Lancamento` de tipo `LIQUIDACAO_DE_ENTREGA` do
@@ -290,9 +293,43 @@ Três regras que não são óbvias:
    pago — os dois fatos são verdadeiros e ambos precisam ficar registrados. A
    cobrança vira assunto do estabelecimento com o cliente, não um estado preso.
 
+### Devolução vista pelo pedido
+
+Uma quarta situação, que só aparece depois: **entrou mais dinheiro do que o
+pedido veio a valer.**
+
+```
+Σ liquidações CONFIRMADAS  >  totalEfetivo   →  há devolução devida
+```
+
+Gorjeta fica **fora** dessa conta. Ela é campo próprio (H5.2) e nunca foi
+devida — foi dada. Somá-la produz devolução onde não há.
+
+```
+Devolucao
+├── valor              Money — sempre positivo
+├── origem             AJUSTE_POSTERIOR | CANCELAMENTO_DE_PEDIDO_PAGO
+│                      | LIQUIDACAO_DUPLICADA | CONFIRMACAO_APOS_CANCELAMENTO
+├── formaDeDevolucao   ESTORNO_PSP | FORA_DO_SISTEMA
+├── situacao           DEVIDA | EXECUTADA | CANCELADA
+├── referenciaExterna  id do estorno no PSP | null
+├── motivo             obrigatório, sempre
+└── registradaPor      usuário
+```
+
+**Devolução não é liquidação com sinal trocado**, e não é `Ajuste`. Ajuste muda o
+que se **deve**; devolução registra o que precisa **voltar** — e quando um causa
+o outro, os dois existem ao mesmo tempo. A ADR-030 tem o raciocínio inteiro.
+
+No marco 4 **nenhuma** devolução é executada pelo sistema: a plataforma não
+custodiou o valor (P1), então `formaDeDevolucao = FORA_DO_SISTEMA` é o caso
+normal e `EXECUTADA` significa que alguém marcou. `ESTORNO_PSP` entra no marco 8.
+
+Detalhe dos quatro caminhos em [`pagamento.md`](pagamento.md) §6.
+
 ---
 
-## 8. Eventos publicados
+## 8. Eventos
 
 Todos com `correlationId` no envelope, todos via outbox na mesma transação da
 mudança de estado (invariante 7 do `CLAUDE.md`).
@@ -308,9 +345,26 @@ mudança de estado (invariante 7 do `CLAUDE.md`).
 | `PedidoRetiradoV1` | T24 | `settlement`, `conversation` |
 | `PedidoCanceladoV1` | T06, T07, T08, T11, T12, T15, T18, T23, T25 | `delivery`, `settlement`, `conversation` |
 | `LiquidacaoConfirmadaV1` | Webhook de Pix confirma | `settlement` |
+| `DevolucaoDevidaV1` | Nasce uma `Devolucao` | `payment` (só quando `ESTORNO_PSP`), `settlement` |
 
 `PedidoEntregueV1` e `PedidoRetiradoV1` **carregam a liquidação no payload**. O
 `settlement-service` não consulta o `order-service` para apurar (invariante 8).
+
+### Consumidos
+
+| Evento | Origem | O que o pedido faz |
+|---|---|---|
+| `LiquidacaoConfirmadaV1` | `payment` | Muda a `Liquidacao` para `CONFIRMADA`. Se o pedido estiver `CANCELADO`, confirma assim mesmo e gera `Devolucao` — ADR-030 §6 |
+| `CobrancaExpiradaV1` | `payment` | Registra que a cobrança venceu. **Não** muda estado do pedido |
+| `EstornoExecutadoV1` | `payment` | Muda a `Devolucao` para `EXECUTADA` — marco 8 |
+
+Idempotência por `liquidacaoId`, `cobrancaId` ou `devolucaoId`, conforme o
+evento — invariante 7 do `CLAUDE.md`.
+
+**Estes são os únicos.** T04 e T05 sugerem um evento de reserva vindo do
+`catalog`, e ele não existe: `AGUARDANDO_ESTOQUE` é inalcançável no MVP
+(`pedido.md` §2) e reserva só existe no modo `QUANTITATIVO`, no marco 10
+(`catalogo.md` §6). A linha entra na tabela quando o marco 10 entrar.
 
 ---
 

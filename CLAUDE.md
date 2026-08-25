@@ -95,6 +95,13 @@ Estas não são preferências de estilo. Quebrar qualquer uma é defeito.
     registradas e aparecem no fechamento. Abatê-las automaticamente do
     pagamento do entregador apaga a métrica que o produto existe para produzir.
 
+11. **Dinheiro que entrou a mais é registrado, não descontado em silêncio.**
+    `Σ liquidações confirmadas > totalEfetivo` gera `Devolucao` — objeto próprio,
+    somente-inserção, valor sempre positivo. **Nunca** liquidação negativa,
+    **nunca** um `Ajuste` no lugar. Na maior parte dos casos o sistema não
+    devolve nada: ele registra que é devido, porque não custodiou o valor (P1).
+    ADR-030
+
 ---
 
 ## Convenções de código
@@ -190,6 +197,12 @@ e reabra o VS Code.
 | Vai aceitar o CNPJ como prova de titularidade | Não. O documento do estabelecimento é **público no Brasil** — um ex-funcionário sabe, um estranho descobre. Exige-se documento do titular **mais** um elemento que só quem opera a loja controla: o número do canal da loja ou a origem do pagamento. ADR-029 §3 |
 | Vai executar recuperação assim que a prova convencer | Não. Notifica todos os membros ativos e **espera a janela** — hoje 72 h, proposta. Sem ela a tomada de conta é instantânea e irreversível, porque quem entra remove os outros. Contestação encerra o pedido. `docs/operacao/recuperacao-de-acesso.md` |
 | Vai escolher base legal para um tratamento novo | Execução de contrato é o padrão. Legítimo interesse tem **exatamente duas** hipóteses, ambas com teste de balanceamento escrito em `docs/operacao/legitimo-interesse.md` — uma terceira exige teste novo. Consentimento quase nunca: é revogável, e revogação obriga a apagar. ADR-013 §2 |
+| Vai implementar devolução ou estorno | São coisas diferentes. Estorno é uma **forma** de devolver, e só existe onde a plataforma custodiou o valor — cartão e Pix online, marco 8. No marco 4 não há um único caso: o sistema registra que é devido e alguém devolve por fora. ADR-030 |
+| Vai registrar devolução como liquidação negativa | Não. `Σ valorEfetivo` bateria sozinha e o custo apareceria em outro lugar: J1 e J3 passariam a filtrar sinal, o fechamento somaria dinheiro que o entregador não viu, e pagamento parcial deixaria de se distinguir de devolução. ADR-030 §3 |
+| Chegou webhook de Pix com o pedido já `CANCELADO` | Confirme a liquidação assim mesmo e gere `Devolucao` de origem `CONFIRMACAO_APOS_CANCELAMENTO`. Recusar não traz o dinheiro de volta, só o esconde — e `CANCELADO` é terminal, não há para onde levar o pedido. ADR-030 §6 |
+| Vai validar assinatura de webhook | Sobre o **corpo bruto**, antes de desserializar. Conferir o que já foi normalizado é não conferir. E a idempotência é pela chave **do provedor**, não pela nossa — o PSP reenvia por desenho. `pagamento.md` §4 |
+| Vai gerar cobrança Pix | Grave a correlação `txid ↔ pedidoId` **antes** de devolver o QR. O cliente paga em três segundos; o webhook pode chegar antes da sua resposta síncrona. `pagamento.md` §3, B5 |
+| Achou divergência com o extrato do PSP | Não edite o nosso lado para bater com o deles. Nunca confirme liquidação na mão. `docs/operacao/reconciliacao-de-pagamento.md` — e confira a fila morta antes, que é a causa mais provável |
 
 ---
 

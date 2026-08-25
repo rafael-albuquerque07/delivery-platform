@@ -31,8 +31,9 @@
 | 027 | O que conta como mudança compatível num evento | ✅ aceita |
 | 028 | Pedido mínimo por modalidade, sobre o subtotal dos itens | ✅ aceita |
 | 029 | Recuperação do administrador único | ✅ aceita |
+| 030 | Devolução não é estorno | ✅ aceita |
 
-**Vinte e seis escritas, duas sem objeto, uma a escrever.** A 006 depende do
+**Vinte e sete escritas, duas sem objeto, uma a escrever.** A 006 depende do
 desenho do carrinho, que só chega no marco 3 — escrevê-la agora seria decidir no
 vazio.
 

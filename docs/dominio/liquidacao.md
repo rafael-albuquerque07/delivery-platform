@@ -323,6 +323,16 @@ Sem a regra 1, um webhook de terceiro consegue reescrever um documento que duas
 pessoas já conferiram e assinaram. É a mesma classe de problema que faz o
 comerciante desconfiar do sistema e voltar para o papel.
 
+**Ajuste originado de devolução não é erro de conferência.** Quando um
+`AjusteDeFechamento` vem de uma `Devolucao` (ADR-030) — pagamento duplicado cuja
+confirmação chegou depois do fechamento, tipicamente —, o entregador **conferiu
+certo**. O valor entrou duas vezes; ele não errou.
+
+Se o extrato não distinguir os dois, o entregador leva a culpa por um acerto que
+estava correto — e é exatamente essa confiança que o `vinculoSnapshot` foi criado
+para proteger. A origem do ajuste precisa aparecer no extrato, não só no
+registro.
+
 ---
 
 ## 8. Invariantes
