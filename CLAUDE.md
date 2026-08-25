@@ -151,6 +151,63 @@ herda o ambiente na inicialização. Use
 `[Environment]::SetEnvironmentVariable("GRADLE_USER_HOME","C:\gradle","User")`
 e reabra o VS Code.
 
+### Docker — motor no WSL2, sem Docker Desktop
+
+Verificado em 25/08/2026. Docker Desktop **não** foi usado: em máquina Windows
+gerenciada ele esbarra em licença e em direito de instalação. O motor mora no
+WSL2 e a CLI do Windows fala com ele por TCP na loopback.
+
+| Item | Valor |
+|---|---|
+| CLI no Windows | `winget install Docker.DockerCLI` — binários estáticos, **sem plugins** |
+| Motor | Docker Engine 29.7.2 dentro do WSL2 Ubuntu, via `get.docker.com` |
+| systemd no WSL | `/etc/wsl.conf` com `[boot]` e `systemd=true` — **dentro** da distro |
+| Socket TCP | drop-in em `/etc/systemd/system/docker.service.d/tcp.conf` |
+| Rede | `%USERPROFILE%\.wslconfig` com `[wsl2]` e `networkingMode=mirrored` |
+| `DOCKER_HOST` | `tcp://127.0.0.1:2375`, nível **User** |
+
+O drop-in do systemd:
+
+```
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H unix:///var/run/docker.sock -H tcp://127.0.0.1:2375
+```
+
+**`127.0.0.1` e nunca `0.0.0.0`.** O próprio instalador avisa: acesso à API
+remota de um daemon privilegiado equivale a root na máquina. O modo espelhado do
+WSL faz a loopback do Windows e a do Ubuntu serem a mesma, então a ponte existe
+sem que a porta seja exposta à rede.
+
+A primeira linha vazia do `ExecStart=` não é engano — é o jeito de limpar o
+comando herdado da unidade original antes de substituí-lo.
+
+**O Testcontainers lê `DOCKER_HOST` sozinho.** Nenhuma configuração no Gradle,
+nenhum código condicional. É o que torna a ADR-014 viável nesta máquina.
+
+### `docker compose` não existe na CLI do Windows
+
+A instalação por `winget` traz o binário e nada mais. Rode pelo WSL:
+
+```powershell
+wsl -d Ubuntu -- bash -lc "cd /mnt/c/dev/delivery-platform && docker compose --profile full config -q"
+```
+
+Ou instale o plugin com `winget install Docker.DockerCompose`. **O download
+direto do GitHub por `Invoke-WebRequest` é cortado pelo proxy corporativo** —
+"conexão anulada pelo software no computador host" é essa assinatura, não falha
+de rede.
+
+### Antes de qualquer `docker compose up`
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Sem `.env`, as oito variáveis interpolam para string vazia e o compose só avisa.
+O Postgres recusa subir sem senha — falha alta, e é o comportamento desejado. O
+MinIO sobe com credencial em branco, que é pior porque parece funcionar.
+
 ---
 
 ## Armadilhas deste repositório
@@ -177,6 +234,10 @@ e reabra o VS Code.
 | Vai desabilitar `redhat.java` | O pacote Salesforce Apex o declara como dependência dura e o mantém ligado. Desabilite o Salesforce no workspace junto |
 | Tentado a atualizar o Gradle | **A 9.7.1 falha** em `compilePluginsBlocks` neste build-logic. O wrapper fixa 8.14.3, que é a única versão com build verde. Bump é tarefa própria, verificada com `--rerun-tasks --no-build-cache` |
 | `GRADLE_USER_HOME` apontando para dentro de `C:\Users\` | Não. Ver a configuração de ambiente acima |
+| Uma ferramenta "não existe" na sessão do agente | Confira você mesmo com `Get-Command`. Instalação por usuário fica em `%LOCALAPPDATA%`, e a sessão do agente não herda o PATH do seu perfil. Já aconteceu com o Gradle e com o Docker — nas duas vezes a ferramenta estava instalada |
+| Acabou de rodar `SetEnvironmentVariable(...,"User")` | A janela que executou o comando **não enxerga a própria escrita**. Grava no registro para processos futuros. Para testar na hora, `$env:NOME = "valor"` também |
+| Abriu aba nova do terminal e a variável não veio | Aba não é processo. A aba nova nasce filha do Windows Terminal que já estava aberto e herda o ambiente **daquele** processo. Feche o Terminal inteiro — e o VS Code — e abra de novo |
+| Vai colar um bloco de comandos no shell do WSL | Rode `sudo -v` antes. Se um `sudo` do meio do bloco pedir senha, as linhas seguintes viram tentativas de senha e o terminal as ecoa — parece que repetiu, e na verdade nada rodou |
 | Vai guardar coordenada, áudio ou número de cartão | Não guarde. Endereço textual e bairro no lugar da coordenada, transcrição no lugar do áudio, `txid` no lugar do cartão. A forma mais barata de cumprir a LGPD é não ter o dado — ADR-013 §4 |
 | Restaurou um banco a partir de backup | **Reaplique as exclusões de titular** com data posterior à do backup antes de o serviço voltar a atender. Backup restaurado ressuscita dado apagado — `docs/operacao/exclusao-de-titular.md` |
 | String de conexão do MongoDB sem `?replicaSet=rs0` | O driver conecta em modo avulso e a transação falha **em runtime**, não no boot — possivelmente semanas depois. Todo serviço documental precisa do parâmetro. ADR-008 |
