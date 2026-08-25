@@ -20,7 +20,7 @@ que é lido em que frequência.
 Estabelecimento  (raiz)
 ├── identificacao       id, nome, documento, telefone, endereco, fusoHorario
 ├── operacao            tipoDeOperacao, modalidadesAceitas, metodosPorModalidade,
-│                       descontoDeRetirada
+│                       descontoDeRetirada, pedidoMinimoPorModalidade
 ├── politicaDeTroco     fundoMaximoDeTroco, aceitaPedidoSemTrocoDisponivel
 ├── disponibilidade     horarioDeFuncionamento, pausa
 ├── politicas           responsabilizaEntregadorPorNaoLiquidado
@@ -231,6 +231,30 @@ foi de fato declarado e liquidado.
 `modalidadesAceitas` vazio é inválido — uma loja que não entrega nem deixa
 retirar não opera.
 
+### Pedido mínimo
+
+```
+pedidoMinimoPorModalidade : Map<Modalidade, Money>
+
+ENTREGA  → R$ 25,00
+RETIRADA → R$ 0,00        zero = sem mínimo
+```
+
+Matriz pelo mesmo motivo dos métodos de pagamento: mínimo para entrega e nenhum
+para retirada é a configuração comum, e o valor único não a expressa. **Zero é
+valor válido e significa "sem mínimo"** — não é ausência de configuração.
+
+**O mínimo é sobre `itemsSubtotal`, nunca sobre o `total`** (ADR-028). Sobre o
+total, a taxa de entrega ajudaria a atingi-lo: um mínimo de R$ 25 com taxa de
+R$ 9 viraria um mínimo de R$ 16 de comida — e de R$ 13 num bairro mais caro. O
+critério passaria a depender de onde o cliente mora.
+
+A recusa diz **quanto falta**, como a do troco: "O pedido mínimo para entrega é
+R$ 25,00. Faltam R$ 3,00." E **não há aceite manual por cima do mínimo** —
+diferente do aceite fora do horário, porque `T01` é a transição que cria o
+pedido, e uma exceção aqui deixaria o pedido nascer violando a guarda que o
+criou.
+
 ### Política de troco
 
 ```
@@ -414,6 +438,7 @@ mesmo tendo invalidação por evento.
 | M14 | Pausa e fechamento não afetam pedido em andamento | Sábado à noite com pedidos cancelados em massa |
 | M15 | `descontoDeRetirada ≥ 0` | Desconto negativo vira acréscimo silencioso |
 | M16 | `fusoHorario` é identificador IANA válido do conjunto brasileiro, nunca nulo | Horário de funcionamento, expediente e fechamento erram juntos e em silêncio |
+| M17 | `pedidoMinimoPorModalidade[m] ≥ 0` para toda modalidade aceita | Mínimo negativo, que não significa nada |
 
 ---
 

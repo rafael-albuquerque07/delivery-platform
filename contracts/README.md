@@ -10,13 +10,43 @@ entre serviços — a única coisa que se compartilha é o **formato**.
 ## Regra de versionamento
 
 Todo evento carrega `eventId`, `eventType`, `eventVersion`, `occurredAt`,
-`correlationId` e `payload`. Mudança incompatível cria uma nova versão
-(`order-placed-v2.json`); a anterior continua publicada até nenhum consumidor
-depender dela.
+`correlationId` e `payload`. A versão vive no campo `eventVersion` e no nome do
+arquivo de esquema — **nunca dentro do `eventType`**. `PedidoRecebidoV1`, como
+aparece nos documentos de domínio, é a forma abreviada do par.
 
-Contrato de evento é mais difícil de mudar que contrato REST — o consumidor
-pode estar processando uma mensagem antiga que já está na fila.
+### O que é compatível
 
-O sufixo `V1` usado nos documentos de domínio — `PedidoRecebidoV1` — é a forma
-abreviada do par: `eventType: "PedidoRecebido"` mais `eventVersion: 1`. A
-versão vive no campo e no nome do arquivo de esquema, não no `eventType`.
+| Compatível | Incompatível |
+|---|---|
+| acrescentar campo **opcional** ao `payload` | remover campo |
+| relaxar restrição — teto maior, piso menor | renomear campo |
+| acrescentar um evento novo | mudar o tipo de um campo |
+| — | tornar obrigatório um campo que era opcional |
+| — | acrescentar valor a um enum |
+| — | **mudar o significado de um campo mantendo nome e tipo** |
+
+A última é a perigosa: nenhum esquema pega. Mudança de semântica é mudança de
+versão, mesmo que o esquema não mude uma vírgula. ADR-027.
+
+### A ordem é o consumidor primeiro
+
+Contrato de evento é mais difícil de mudar que contrato REST, e por um motivo
+que não é óbvio: **a mensagem de ontem chega hoje**, para um código que mudou no
+meio. Três passos, três implantações:
+
+    1.  Consumidor passa a entender v1 E v2        implanta
+    2.  Produtor passa a emitir v2                 implanta
+    3.  Consumidor deixa de entender v1            implanta, depois de a fila drenar
+
+O passo 3 espera a **fila esvaziar**, não a implantação terminar. Inverter a
+ordem — produtor primeiro — quebra na janela entre as duas implantações.
+
+Como é monorepo, cada passo é um commit em vez de uma negociação entre
+repositórios (ADR-001). O monorepo resolve a coordenação; não resolve a
+implantação.
+
+### Como se sabe que a versão antiga pode sair
+
+Os oito consumidores estão neste repositório: é varredura, não confiança.
+Verificação no build, requisito do marco 3 — esquema obsoleto com consumidor
+**falha**; esquema sem consumidor nenhum é **avisado**.

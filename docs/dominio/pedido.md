@@ -120,7 +120,7 @@ inválida** e lança `TransicaoInvalidaException` → HTTP 409.
 
 | # | De | Para | Gatilho | Guarda | Efeito |
 |---|---|---|---|---|---|
-| T01 | — | `RECEBIDO` | Cliente confirma por botão | Itens vendáveis · área atendida · invariantes de valor · regra do troco | Congela itens, taxa, área e desconto. `PedidoRecebidoV1` |
+| T01 | — | `RECEBIDO` | Cliente confirma por botão | Itens vendáveis · área atendida · invariantes de valor · regra do troco · **pedido mínimo da modalidade** | Congela itens, taxa, área e desconto. `PedidoRecebidoV1` |
 | T02 | `RECEBIDO` | `CONFIRMADO` | Estabelecimento aceita | Loja aberta **ou** aceite manual explícito · `ALTERAR_STATUS` | Compromisso. `PedidoConfirmadoV1` |
 | T03 | `RECEBIDO` | `PAGO` | Webhook do PSP | Assinatura válida · `txid` correlacionado. **Marco 8** | Compromisso. `PedidoPagoV1` |
 | T04 | `RECEBIDO` | `AGUARDANDO_ESTOQUE` | Aceite com item controlado | `∃ item.stockControlledSnapshot` — **falso no MVP** | Solicita reserva |
@@ -204,6 +204,12 @@ entregador — e que a retirada não produz.
 > `I12` vale enquanto `discount` tiver **origem única**. No dia em que existir
 > cupom, ela é a primeira a ser revisitada — junto com a decisão de decompor o
 > campo (ADR-024, consequências negativas).
+
+> **Pedido mínimo é guarda de `T01`, não invariante do agregado.** A diferença
+> importa: invariante vale para sempre, e um pedido criado sob um mínimo de
+> R$ 20 continua válido depois de o comerciante subir o mínimo para R$ 30.
+> Modelá-lo como invariante tornaria inválido, retroativamente, um pedido que
+> nasceu certo. ADR-028
 
 **I7 é imposta em dois lugares, não só aqui.** O carrinho já recusa item de outro
 estabelecimento ao ser acrescentado — mensagem clara, antes de o cliente montar

@@ -350,4 +350,9 @@ comerciante desconfiar do sistema e voltar para o papel.
   continua em aberto.
 - **Formato do extrato exportável** (H7.2). É apresentação.
 - **Fechamento de caixa da loja** (não do entregador), que consolida também
-  vendas de balcão. É escopo maior, e depende deste.
+  vendas de balcão e pedidos retirados. Escopo maior, e depende deste.
+  **É do `settlement-service`** — é fechamento, mesmo domínio, mesma disciplina
+  de documento imutável —, e entra em **marco próprio, depois do marco 6**. Não
+  atrasa o 6: o produto vendável é o fechamento do entregador, e é ele que
+  resolve a dor que decide a compra. O critério de aceite H7.3 do PRD já está
+  marcado como atendido só para entrega até lá.

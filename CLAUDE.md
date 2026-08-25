@@ -119,6 +119,10 @@ Estas não são preferências de estilo. Quebrar qualquer uma é defeito.
   persistido, **nunca** `LocalDate.now()` ou `LocalDateTime.now()` (leem o fuso
   do servidor, que é do datacenter e não da pizzaria), **nunca** aritmética
   sobre hora local. ADR-025
+- **Consumidor tolera valor desconhecido.** Enum que chega com valor que este
+  serviço não conhece **não estoura, não bloqueia e não vira exceção** — vira
+  registro de que chegou algo não entendido. É o que torna a evolução de contrato
+  possível sem parar consumidor. ADR-027
 
 ---
 
@@ -176,6 +180,12 @@ e reabra o VS Code.
 | Vai perguntar "que dia é hoje" | Não existe sem a loja. É `diaOperacional(instante, fusoHorario)`, com corte às 04:00 — a venda à 01:30 de domingo é do dia operacional de sábado. ADR-025 |
 | Vai gravar hora de funcionamento, expediente ou fechamento | Instante em UTC no banco; a conversão para o calendário da loja acontece na leitura, com a zona explícita. Hora local persistida é uma hora sem lugar |
 | Vai recalcular o dia de um lançamento pelo momento dele | Não. `Lancamento` herda o `diaOperacional` da jornada, que é congelado na abertura. Recalcular quebra J9 num caso raro e invisível. ADR-025 |
+| Vai configurar retentativa de consumidor | Quatro tentativas com espera crescente (1 s, 4 s, 16 s), depois fila morta. **Nunca** requeue imediato — é laço apertado. **Nunca** retentativa infinita — é como se perde pedido em silêncio. ADR-026 |
+| Achou mensagem na fila morta | Não cancele pedido. Nunca. Leia `docs/operacao/mensagem-na-fila-morta.md` antes de mexer — e decida primeiro se a causa é transitória ou permanente, porque reprocessar causa permanente só muda o horário |
+| Apareceu sobra no fechamento de caixa | **Confira a fila morta do `settlement` antes de falar com o entregador.** Liquidação que não virou lançamento faz o dinheiro esperado ficar menor que o real, e a diferença aparece como sobra — parece erro de caixa e é mensagem perdida. ADR-026 §6 |
+| Vai acrescentar campo a um evento | Opcional é compatível; obrigatório não é. Valor novo em enum **não** é compatível. Mudar o significado mantendo nome e tipo é a pior de todas, e nenhum esquema pega. ADR-027 |
+| Vai mudar produtor e consumidor de um evento | Consumidor primeiro, sempre: entende as duas versões, depois o produtor muda, depois a tolerância sai — e só depois de a fila drenar. ADR-027 §3 |
+| Vai validar pedido mínimo | Sobre `itemsSubtotal`, **nunca** sobre o `total`. Sobre o total, a taxa de entrega ajuda o cliente a atingir o mínimo, e o mínimo efetivo passa a depender do bairro. ADR-028 |
 
 ---
 
