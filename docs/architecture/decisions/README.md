@@ -30,8 +30,9 @@
 | 026 | Fila morta, retentativa e reprocessamento | ✅ aceita |
 | 027 | O que conta como mudança compatível num evento | ✅ aceita |
 | 028 | Pedido mínimo por modalidade, sobre o subtotal dos itens | ✅ aceita |
+| 029 | Recuperação do administrador único | ✅ aceita |
 
-**Vinte e cinco escritas, duas sem objeto, uma a escrever.** A 006 depende do
+**Vinte e seis escritas, duas sem objeto, uma a escrever.** A 006 depende do
 desenho do carrinho, que só chega no marco 3 — escrevê-la agora seria decidir no
 vazio.
 

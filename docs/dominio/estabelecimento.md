@@ -128,6 +128,14 @@ que ninguém mais tem autoridade para dar.
 A3 é o que impede a loja de ficar órfã. A operação que a violaria falha com
 mensagem explícita — nunca com erro genérico, nunca em silêncio.
 
+**A3 garante que o administrador existe, não que alguém o alcança.** Telefone
+trocado, aparelho perdido, administrador que saiu da empresa — o registro
+continua lá e ninguém entra. O caminho de volta é a ADR-029, e ele tem uma regra
+que vale repetir aqui: **a recuperação opera sobre o vínculo, nunca sobre a
+credencial.** Ela cria ou promove um `Membro` naquele estabelecimento e não toca
+em `Usuario` — porque o mesmo usuário pode administrar outras lojas, e uma prova
+que valia para uma passaria a valer para todas.
+
 **Revogação também é limitada por A2.** Quem tem `GERENCIAR_EQUIPE` mas não tem
 `VER_VENDAS` não pode retirar `VER_VENDAS` de ninguém. Sem essa simetria, um
 gerente rebaixa colegas até o conjunto vazio usando uma permissão que ele
@@ -439,15 +447,12 @@ mesmo tendo invalidação por evento.
 | M15 | `descontoDeRetirada ≥ 0` | Desconto negativo vira acréscimo silencioso |
 | M16 | `fusoHorario` é identificador IANA válido do conjunto brasileiro, nunca nulo | Horário de funcionamento, expediente e fechamento erram juntos e em silêncio |
 | M17 | `pedidoMinimoPorModalidade[m] ≥ 0` para toda modalidade aceita | Mínimo negativo, que não significa nada |
+| M18 | Recuperação de estabelecimento cria ou promove `Membro` — nunca altera credencial de `Usuario` | Recuperar uma loja daria acesso às outras lojas do mesmo usuário |
 
 ---
 
 ## 9. O que este documento deliberadamente não decide
 
-- **Recuperação do administrador único que perdeu acesso.** M6 garante que
-  existe um administrador; não garante que alguém consegue entrar como ele.
-  Telefone trocado, aparelho perdido. **Pendência real** — precisa de decisão
-  antes do primeiro cliente de verdade, e hoje não tem nenhuma.
 - **Limite de estabelecimentos por usuário** e de membros por estabelecimento.
   Não há regra; provavelmente não precisa haver antes de existir abuso.
 - **Formato e provedor do link de convite.** É integração, não domínio.

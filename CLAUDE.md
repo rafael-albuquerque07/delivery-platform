@@ -186,6 +186,10 @@ e reabra o VS Code.
 | Vai acrescentar campo a um evento | Opcional é compatível; obrigatório não é. Valor novo em enum **não** é compatível. Mudar o significado mantendo nome e tipo é a pior de todas, e nenhum esquema pega. ADR-027 |
 | Vai mudar produtor e consumidor de um evento | Consumidor primeiro, sempre: entende as duas versões, depois o produtor muda, depois a tolerância sai — e só depois de a fila drenar. ADR-027 §3 |
 | Vai validar pedido mínimo | Sobre `itemsSubtotal`, **nunca** sobre o `total`. Sobre o total, a taxa de entrega ajuda o cliente a atingir o mínimo, e o mínimo efetivo passa a depender do bairro. ADR-028 |
+| Vai implementar recuperação de acesso | São **dois** problemas, não um. Recuperar conta é provar que você é aquela pessoa; recuperar estabelecimento é provar que o negócio é seu. O segundo **nunca** altera credencial de `Usuario` — cria ou promove `Membro`. Resetar a senha daria acesso a todas as outras lojas do mesmo usuário. ADR-029 §2 |
+| Vai aceitar o CNPJ como prova de titularidade | Não. O documento do estabelecimento é **público no Brasil** — um ex-funcionário sabe, um estranho descobre. Exige-se documento do titular **mais** um elemento que só quem opera a loja controla: o número do canal da loja ou a origem do pagamento. ADR-029 §3 |
+| Vai executar recuperação assim que a prova convencer | Não. Notifica todos os membros ativos e **espera a janela** — hoje 72 h, proposta. Sem ela a tomada de conta é instantânea e irreversível, porque quem entra remove os outros. Contestação encerra o pedido. `docs/operacao/recuperacao-de-acesso.md` |
+| Vai escolher base legal para um tratamento novo | Execução de contrato é o padrão. Legítimo interesse tem **exatamente duas** hipóteses, ambas com teste de balanceamento escrito em `docs/operacao/legitimo-interesse.md` — uma terceira exige teste novo. Consentimento quase nunca: é revogável, e revogação obriga a apagar. ADR-013 §2 |
 
 ---
 

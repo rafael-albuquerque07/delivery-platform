@@ -68,11 +68,42 @@ esquecê-la desfaz silenciosamente uma exclusão que já foi confirmada ao titul
 
 ---
 
+## Encarregado, canal e prazo
+
+**Os três valores desta seção são assumidos pela engenharia e aguardam
+confirmação jurídica.** As perguntas estão no §6 de
+[`revisao-juridica.md`](revisao-juridica.md). O mecanismo abaixo vale desde já —
+o que a revisão pode mudar é um endereço, um texto e um número.
+
+| | Assumido | O que a revisão decide |
+|---|---|---|
+| **Encarregado** | o titular do negócio — é operação de uma pessoa | se precisa ser pessoa física nomeada publicamente |
+| **Canal** | endereço de e-mail dedicado, publicado na política de privacidade e no aviso do primeiro contato do canal | se o contato pode ser institucional ou tem de ser nominal |
+| **Prazo** | **15 dias corridos**, para todos os direitos do art. 18 | se há prazos diferentes por direito |
+
+### Como o prazo corre
+
+> O prazo corre do **registro do pedido**, não do dia em que alguém o leu.
+
+Por isso o registro é o primeiro passo deste procedimento e não o segundo. Pedido
+que chegou por conversa de WhatsApp, por telefone ou por recado **não começa a
+correr** — peça que venha pelo canal publicado, e registre. Um pedido sem rastro
+é um prazo que ninguém consegue provar que cumpriu.
+
+### O mesmo canal atende todos os direitos
+
+Exclusão é o caso trabalhoso, mas o canal é um só. Confirmação de tratamento,
+acesso, correção, portabilidade e informação sobre compartilhamento usam **este
+mesmo registro e este mesmo prazo** — e acesso e portabilidade são a varredura
+deste procedimento no sentido inverso: os mesmos oito serviços, lendo em vez de
+apagar.
+
+---
+
 ## A escrever antes do primeiro cliente
 
 - Comandos concretos por serviço, com o SQL e os filtros exatos
 - Quem tem autoridade para executar
-- Prazo de resposta ao titular
-- Encarregado (DPO) e canal de atendimento
-- O mesmo procedimento para **acesso** e **portabilidade** (LGPD art. 18), que é
-  a mesma varredura no sentido inverso
+- **Confirmação jurídica** do prazo, da forma do encarregado e do texto do canal
+  — dossiê pronto em [`revisao-juridica.md`](revisao-juridica.md) §6. O mecanismo
+  já existe; falta o aval
