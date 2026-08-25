@@ -7,6 +7,27 @@ entre serviços — a única coisa que se compartilha é o **formato**.
 - `asyncapi/` — eventos de domínio publicados via RabbitMQ
 - `events/` — JSON Schema por evento, versionado
 
+## Regra de nome
+
+**Nome de evento é único no repositório inteiro** — não único por serviço. O
+barramento é um só, e `eventType` é o que o consumidor assina. ADR-031.
+
+Quando dois serviços querem o mesmo nome, quase sempre **um deles nomeou um
+atributo em vez de um fato**. É esse que se renomeia.
+
+Verificado no build a partir do marco 3, junto da verificação de esquema que a
+ADR-027 exige: **nome declarado por mais de um serviço falha.** É a mais barata
+das três — comparar uma lista com ela mesma — e pega o único defeito desta
+família que teste de integração não pega, porque cada serviço passa sozinho.
+
+Um consumidor declarado como **Todos** — hoje só `VinculoAlteradoV1` — é
+satisfeito pela descrição central em `docs/dominio/estabelecimento.md` §3.
+Repetir a linha nos sete documentos de domínio seria pior que a lacuna.
+
+A varredura, enquanto o build não a faz:
+
+    grep -rhoE "[A-Z][A-Za-z]+V[0-9]" docs/ contracts/ | sort | uniq -c
+
 ## Regra de versionamento
 
 Todo evento carrega `eventId`, `eventType`, `eventVersion`, `occurredAt`,

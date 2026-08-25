@@ -203,6 +203,9 @@ e reabra o VS Code.
 | Vai validar assinatura de webhook | Sobre o **corpo bruto**, antes de desserializar. Conferir o que já foi normalizado é não conferir. E a idempotência é pela chave **do provedor**, não pela nossa — o PSP reenvia por desenho. `pagamento.md` §4 |
 | Vai gerar cobrança Pix | Grave a correlação `txid ↔ pedidoId` **antes** de devolver o QR. O cliente paga em três segundos; o webhook pode chegar antes da sua resposta síncrona. `pagamento.md` §3, B5 |
 | Achou divergência com o extrato do PSP | Não edite o nosso lado para bater com o deles. Nunca confirme liquidação na mão. `docs/operacao/reconciliacao-de-pagamento.md` — e confira a fila morta antes, que é a causa mais provável |
+| Vai criar um evento novo | O nome tem de ser **único no repositório inteiro**, não no serviço. Varra os nomes existentes antes de escolher — a varredura está em `contracts/README.md`. Nome repetido entre serviços falha o build a partir do marco 3. ADR-031 |
+| Achou dois eventos com o mesmo nome | Renomeie o que nomeou um **atributo** em vez de um fato — quase sempre é um só dos dois. E renomeie **antes** de existir esquema e consumidor: depois disso são três implantações (ADR-027 §3), não uma edição de texto |
+| Vai consumir o evento de abertura da loja | É `ExpedienteAlteradoV1`, do `merchant`. Só reativa `ESGOTADO_HOJE` quando `motivo = ABERTURA_DE_EXPEDIENTE` — retomada de pausa não reativa nada, e a idempotência é por `expedienteDeReferencia`, nunca pelo id da mensagem. C11 |
 
 ---
 
