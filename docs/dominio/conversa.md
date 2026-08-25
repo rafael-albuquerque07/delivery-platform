@@ -382,6 +382,11 @@ canal.
 | `ExpedienteAlteradoV1` | `merchant` | Responder aberto/fechado corretamente |
 | `AreasDeEntregaAlteradasV1` | `merchant` | Lista de bairros |
 | `EstabelecimentoCriadoV1` | `merchant` | Passa a rotear o número da loja nova — §2 |
+| `ProdutoPublicadoV1` | `catalog` | Passa a oferecer o item novo |
+| `ProdutoAlteradoV1` | `catalog` | Nome, preço e opções no menu |
+| `ProdutoDespublicadoV1` | `catalog` | Para de oferecer |
+| `CategoriasReordenadasV1` | `catalog` | Ordem do menu numerado |
+| `ConfiguracaoOperacionalAlteradaV1` | `merchant` | Modalidades, métodos e regra de troco na conversa |
 
 **Publica:**
 

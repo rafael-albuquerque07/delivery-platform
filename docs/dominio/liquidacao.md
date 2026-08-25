@@ -110,6 +110,15 @@ contar a mesma entrega duas vezes infla a comissão e destrói o fechamento
 | `EM_CONFERENCIA` | `ABERTA` | Reabertura antes de fechar | Nenhum `Fechamento` gravado |
 | `EM_CONFERENCIA` | `FECHADA` | Comerciante confirma | `dinheiroConferido` informado |
 
+A guarda de `ABERTA → EM_CONFERENCIA` é verificada por **consulta síncrona ao
+`order-service`** no instante da transição, e não por projeção mantida aqui
+(ADR-032). A resposta traz **a lista** dos pedidos que travam: recusar sem dizer
+quais transforma a guarda em obstáculo.
+
+**Consulta que falha recusa a transição.** Não há caminho alternativo, e é
+deliberado — fechar o caixa sem saber se há dinheiro na rua é pior que não
+fechar. O comerciante espera e refaz; a jornada não tem pressa de segundos.
+
 **Não existe transição saindo de `FECHADA`.** Jornada fechada não é editável
 (H7.3). Correção posterior é `AjusteDeFechamento` — §7.
 
@@ -355,7 +364,41 @@ registro.
 
 ---
 
-## 8. Invariantes
+## 8. Eventos
+
+**Consome** — todos idempotentes, chave em `processed_messages` (invariante 7 do
+`CLAUDE.md`).
+
+| Evento | De | Efeito | Chave |
+|---|---|---|---|
+| `PedidoEntregueV1` | `order` | `ENTREGA_CONCLUIDA` e `LIQUIDACAO_DE_ENTREGA`, ou `NAO_LIQUIDADO` — §2 | `pedidoId` |
+| `LiquidacaoConfirmadaV1` | `payment` | Atualiza a situação do lançamento quando o Pix confirma depois | `liquidacaoId` |
+| `DevolucaoDevidaV1` | `order` | Só quando o valor devolvido passou pela mão do entregador. Jornada já fechada vira `AjusteDeFechamento` — §7 | `devolucaoId` |
+| `VinculoAlteradoV1` | `merchant` | Invalida a cache de autorização. Mecanismo em [`estabelecimento.md`](estabelecimento.md) §3 | — |
+
+**Publica: nada.** O fechamento é fim de cadeia — nenhum serviço reage a ele. Se
+o marco 8 fizer a emissão fiscal reagir, o evento nasce lá.
+
+### O que este serviço deliberadamente **não** consome
+
+Cada linha aqui era uma declaração de consumidor que nenhum comportamento
+sustentava. Registradas como decisão para não voltarem como suspeita.
+
+| Evento | Por que não |
+|---|---|
+| `PedidoRetiradoV1` | Retirada não envolve entregador — não há jornada para lançar. §2 diz isso com todas as letras |
+| `PedidoCanceladoV1` | Cancelamento não produz nenhum dos dois lançamentos |
+| `PedidoPagoV1` | Marco 8, e redundante: a liquidação chega dentro do `PedidoEntregueV1` |
+| `PedidoSaiuParaEntregaV1` | A guarda do §3 **pergunta** em vez de escutar — ADR-032 |
+| `VinculoEntregadorAlteradoV1` | `vinculoSnapshot` é lido na abertura e congelado (J6). Alteração posterior **não deve** mudar jornada aberta — é exatamente o ponto da invariante |
+
+A última é a mais fácil de errar: parece que o `settlement` precisa saber que a
+remuneração mudou. Precisa do contrário — precisa **não** saber, até a próxima
+abertura.
+
+---
+
+## 9. Invariantes
 
 | # | Invariante | O que quebra sem ela |
 |---|---|---|
@@ -372,7 +415,7 @@ registro.
 
 ---
 
-## 9. O que este documento deliberadamente não decide
+## 10. O que este documento deliberadamente não decide
 
 - **Quem pode abrir e fechar jornada.** É permissão contextual: a
   `GERENCIAR_JORNADA` definida em [`estabelecimento.md`](estabelecimento.md) §2.

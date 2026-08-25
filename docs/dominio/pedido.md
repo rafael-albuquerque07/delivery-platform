@@ -159,6 +159,11 @@ inválida** e lança `TransicaoInvalidaException` → HTTP 409.
 - nenhuma transição para `ENTREGUE` ou `RETIRADO` sem liquidação. **É a regra
   mais importante desta tabela.** É o que separa este sistema do caderno.
 
+**T20 e T21 não publicam evento, e isso é decisão.** Ninguém precisa saber que
+uma tentativa falhou: o `delivery` modela tentativa dentro da entrega, o
+`conversation` avisa o cliente por outro caminho, e o `settlement` **pergunta**
+em vez de escutar (ADR-032). Registrado em `contracts/eventos.md` §3.
+
 ### Como isto vira teste
 
 A tabela é dado, não código. O teste é parametrizado sobre ela:
@@ -338,13 +343,12 @@ mudança de estado (invariante 7 do `CLAUDE.md`).
 |---|---|---|
 | `PedidoRecebidoV1` | T01 | `conversation` |
 | `PedidoConfirmadoV1` | T02, T05 | `conversation` |
-| `PedidoPagoV1` | T03 | `conversation`, `settlement` |
+| `PedidoPagoV1` | T03 | `conversation` |
 | `PedidoProntoV1` | T14 | `delivery`, `conversation` |
 | `PedidoSaiuParaEntregaV1` | T16 | `conversation` |
 | `PedidoEntregueV1` | T19, T22 | `settlement`, `conversation` |
-| `PedidoRetiradoV1` | T24 | `settlement`, `conversation` |
-| `PedidoCanceladoV1` | T06, T07, T08, T11, T12, T15, T18, T23, T25 | `delivery`, `settlement`, `conversation` |
-| `LiquidacaoConfirmadaV1` | Webhook de Pix confirma | `settlement` |
+| `PedidoRetiradoV1` | T24 | `conversation` |
+| `PedidoCanceladoV1` | T06, T07, T08, T11, T12, T15, T18, T23, T25 | `delivery`, `payment`, `conversation` |
 | `DevolucaoDevidaV1` | Nasce uma `Devolucao` | `payment` (só quando `ESTORNO_PSP`), `settlement` |
 
 `PedidoEntregueV1` e `PedidoRetiradoV1` **carregam a liquidação no payload**. O
