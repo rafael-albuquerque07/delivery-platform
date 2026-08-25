@@ -265,9 +265,11 @@ cotação não usa cache** — a listagem é vitrine, a cotação é contrato.
 
 ---
 
-## 8. Eventos publicados
+## 8. Eventos
 
 Todos com `correlationId`, todos por outbox na mesma transação da alteração.
+
+### Publicados
 
 | Evento | Quando | Consumidores |
 |---|---|---|
@@ -280,6 +282,20 @@ Todos com `correlationId`, todos por outbox na mesma transação da alteração.
 `DisponibilidadeAlteradaV1` é o mais sensível a atraso. Entre a Marli marcar
 "acabou" e o canal parar de oferecer, cada segundo é um pedido que vai ser
 cancelado na cozinha.
+
+### Consumidos
+
+| Evento | Origem | O que o catálogo faz |
+|---|---|---|
+| `ExpedienteAlteradoV1` | `merchant` | Reativa todo `ESGOTADO_HOJE` quando `motivo = ABERTURA_DE_EXPEDIENTE` — §3. Retomada de pausa não reativa nada |
+| `VinculoAlteradoV1` | `merchant` | Invalida a cache de autorização. Mecanismo idêntico em todos os serviços, descrito em [`estabelecimento.md`](estabelecimento.md) §3 |
+
+Idempotência da reativação é por `expedienteDeReferencia` (C11), **não** pelo id
+da mensagem: o evento vai se repetir, e reprocessá-lo não pode reativar o que
+acabou depois da abertura.
+
+> `ExpedienteAlteradoV1` chamava-se `DisponibilidadeAlteradaV1` e colidia com o
+> evento de mesmo nome publicado aqui. **ADR-031.**
 
 ---
 

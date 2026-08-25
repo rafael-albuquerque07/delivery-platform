@@ -381,6 +381,7 @@ canal.
 | `DisponibilidadeAlteradaV1` | `catalog` | Parar de oferecer o que acabou |
 | `ExpedienteAlteradoV1` | `merchant` | Responder aberto/fechado corretamente |
 | `AreasDeEntregaAlteradasV1` | `merchant` | Lista de bairros |
+| `EstabelecimentoCriadoV1` | `merchant` | Passa a rotear o número da loja nova — §2 |
 
 **Publica:**
 

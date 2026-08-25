@@ -288,6 +288,13 @@ hoje é R$ 50" resolve; "pedido inválido" faz o cliente ir embora.
 
 ### Horário e pausa
 
+> **O expediente é a unidade.** Um expediente é uma abertura até o fechamento
+> correspondente — a pizzaria que abre às 18h e fecha às 2h tem **um**
+> expediente, não dois dias. É o que `liquidacao.md` fecha, o que `catalogo.md`
+> usa como `expedienteDeReferencia` para reativar o que acabou, e o que o
+> `ExpedienteAlteradoV1` comunica quando muda. Pausar e retomar acontecem
+> **dentro** de um expediente e não abrem outro.
+
 ```
 horarioDeFuncionamento : Map<DiaDaSemana, List<Faixa>>   Faixa = (inicio, fim)
 ```
@@ -407,12 +414,18 @@ Todos com `correlationId`, todos via outbox na mesma transação da alteração.
 
 | Evento | Quando | Consumidores |
 |---|---|---|
-| `EstabelecimentoCriadoV1` | Cadastro concluído | `catalog`, `conversation` |
+| `EstabelecimentoCriadoV1` | Cadastro concluído | `conversation` |
 | `VinculoAlteradoV1` | Membro criado, alterado, suspenso, removido | **Todos** — invalidação de cache de autorização |
 | `ConfiguracaoOperacionalAlteradaV1` | Tipo, modalidades, métodos, troco | `order`, `conversation` |
 | `ExpedienteAlteradoV1` | Abriu, fechou, pausou, retomou — com `motivo` | `conversation`, **`catalog`** (reativa `ESGOTADO_HOJE`) |
 | `AreasDeEntregaAlteradasV1` | Área criada, alterada, desativada | `conversation` (lista de bairros) |
 | `VinculoEntregadorAlteradoV1` | Vínculo ou remuneração | `delivery`, `settlement` |
+
+> Este evento se chamava `DisponibilidadeAlteradaV1` e colidia com um evento de
+> mesmo nome no `catalog-service`, que significa outra coisa. **ADR-031**
+> renomeou este, e não aquele: o `catalog` nomeava o conceito de domínio dele,
+> este aqui nomeava um atributo solto para um fato que o resto do repositório já
+> chama de expediente.
 
 O `motivo` desse evento não é decoração: o `catalog-service` só reativa produtos
 `ESGOTADO_HOJE` quando ele é `ABERTURA_DE_EXPEDIENTE`. Retomada de pausa **não**
