@@ -154,6 +154,10 @@ botão carrega um identificador do rascunho e
 uma marca da cotação; se a cotação envelheceu, reconfirma-se com os números
 novos (ADR-018 — `PRICE_CHANGED`), nunca se cobra a diferença em silêncio.
 
+Quando o estabelecimento tem pedido mínimo para a modalidade, o canal o informa
+**ao abrir o cardápio** — não na recusa. Descobrir o mínimo depois de montar o
+pedido inteiro custa turnos, e turno custa dinheiro (ADR-028).
+
 Só depois disso o `order-service` cria o pedido em `RECEBIDO`.
 
 ---

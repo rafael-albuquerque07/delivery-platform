@@ -121,5 +121,11 @@ confirma depois (`liquidacao.md` §7).
 - **Parada do consumidor por falha em série** — hoje uma queda longa despeja a
   fila de trabalho inteira na fila morta, e o §3 vira trabalho em lote. É
   pendência nomeada na ADR-026
+- **A métrica de profundidade ainda não existe.** A ADR-026 §7 decide que a
+  profundidade de cada fila morta é exposta ao Prometheus com alerta em zero,
+  mas o plugin `rabbitmq_prometheus` não está habilitado e não há alvo de
+  scrape para o broker — o `prometheus.yml` só aponta para o `/actuator` dos
+  serviços. Hoje a única forma de ver uma fila morta é a interface de
+  management, à mão. Requisito do marco 3, junto do primeiro consumidor
 - Painel com a profundidade das filas mortas ao lado da fila de pedidos, para o
   operador ver sem abrir console
