@@ -376,8 +376,17 @@ registro.
 | `DevolucaoDevidaV1` | `order` | Só quando o valor devolvido passou pela mão do entregador. Jornada já fechada vira `AjusteDeFechamento` — §7 | `devolucaoId` |
 | `VinculoAlteradoV1` | `merchant` | Invalida a cache de autorização. Mecanismo em [`estabelecimento.md`](estabelecimento.md) §3 | — |
 
-**Publica: nada.** O fechamento é fim de cadeia — nenhum serviço reage a ele. Se
-o marco 8 fizer a emissão fiscal reagir, o evento nasce lá.
+**Publica** — dois, e só para invalidação de cache.
+
+| Evento | Quando | Assinam |
+|---|---|---|
+| `JornadaAbertaV1` | abertura da jornada | `order`, `delivery` |
+| `JornadaFechadaV1` | `EM_CONFERENCIA → FECHADA` | `order`, `delivery` |
+
+**Ninguém mantém projeção de jornada.** A verdade continua aqui e é lida por
+porta síncrona; estes eventos apenas encurtam a janela de dado velho no cache de
+quem pergunta (ADR-033). `EM_CONFERENCIA` não publica — para efeito de despacho,
+o que fecha a janela é o fechamento.
 
 ### O que este serviço deliberadamente **não** consome
 

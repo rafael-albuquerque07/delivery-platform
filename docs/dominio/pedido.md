@@ -159,6 +159,13 @@ inválida** e lança `TransicaoInvalidaException` → HTTP 409.
 - nenhuma transição para `ENTREGUE` ou `RETIRADO` sem liquidação. **É a regra
   mais importante desta tabela.** É o que separa este sistema do caderno.
 
+**A guarda "entregador com jornada aberta" de T16 é resolvida por consulta ao
+`settlement`**, com cache curto invalidado por `JornadaAbertaV1` e
+`JornadaFechadaV1`, e **falha fechada**: sem confirmação, não há despacho
+(ADR-033). É o mesmo mecanismo da autorização contextual (ADR-011), pelo mesmo
+motivo — dado consultado muitas vezes, que muda poucas, em que errar para o lado
+permissivo quebra a invariante 1.
+
 **T20 e T21 não publicam evento, e isso é decisão.** Ninguém precisa saber que
 uma tentativa falhou: o `delivery` modela tentativa dentro da entrega, o
 `conversation` avisa o cliente por outro caminho, e o `settlement` **pergunta**
@@ -361,6 +368,9 @@ mudança de estado (invariante 7 do `CLAUDE.md`).
 | `LiquidacaoConfirmadaV1` | `payment` | Muda a `Liquidacao` para `CONFIRMADA`. Se o pedido estiver `CANCELADO`, confirma assim mesmo e gera `Devolucao` — ADR-030 §6 |
 | `CobrancaExpiradaV1` | `payment` | Registra que a cobrança venceu. **Não** muda estado do pedido |
 | `EstornoExecutadoV1` | `payment` | Muda a `Devolucao` para `EXECUTADA` — marco 8 |
+| `ConfiguracaoOperacionalAlteradaV1` | `merchant` | Modalidades, métodos e regra de troco aplicáveis ao pedido |
+| `JornadaAbertaV1` | `settlement` | **Invalida cache** de jornada aberta — não projeta |
+| `JornadaFechadaV1` | `settlement` | Idem |
 
 Idempotência por `liquidacaoId`, `cobrancaId` ou `devolucaoId`, conforme o
 evento — invariante 7 do `CLAUDE.md`.

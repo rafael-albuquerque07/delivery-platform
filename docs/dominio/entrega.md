@@ -186,6 +186,14 @@ empate     = menor contagem de entregas na jornada; persistindo, ordem de
              abertura da jornada — determinístico, nunca aleatório
 ```
 
+**`jornada ABERTA` e a ordem de abertura vêm do `settlement`**, por consulta que
+devolve a lista com `abertaEm` — uma chamada por sugestão, não uma por
+entregador. Cache curto, invalidado por `JornadaAbertaV1` e `JornadaFechadaV1`,
+**falha fechada**: sem resposta, não há sugestão de rodízio (ADR-033).
+
+A atribuição direta pelo operador **não escapa da guarda** — quem a aplica é T16,
+no `order`, na hora do despacho.
+
 **Quando o operador ignora a sugestão, isso é gravado** (`sugeridoPeloRodizio`
 guarda quem o sistema indicou). Não para vigiar ninguém: sem esse dado, "o
 rodízio não está funcionando" é uma discussão sem evidência, e a resposta quase
@@ -271,6 +279,8 @@ marco 11 trouxer rastreamento, é aí que a discussão volta.
 | `PedidoEntregueV1` | `order` | D07 |
 | `PedidoCanceladoV1` | `order` | D08, D09 |
 | `VinculoEntregadorAlteradoV1` | `merchant` | Entra ou sai do rodízio |
+| `JornadaAbertaV1` | `settlement` | **Invalida cache** de jornadas abertas — não projeta |
+| `JornadaFechadaV1` | `settlement` | Idem |
 
 **Publica:**
 

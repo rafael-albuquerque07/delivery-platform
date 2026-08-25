@@ -63,6 +63,8 @@ Estas não são preferências de estilo. Quebrar qualquer uma é defeito.
 1. **Nenhuma entrega ou retirada conclui sem liquidação registrada** — método
    efetivo, valor efetivo e responsável pela custódia. `NAO_LIQUIDADO` é registro
    válido; ausência de registro não é.
+   A garantia é estrutural porque T16 exige jornada aberta, e não porque alguém
+   se lembra de conferir — ver ADR-033, que é o que torna essa guarda exequível.
 
 2. **Valor cobrado vem do pedido.** Preço, total e taxa são sempre recalculados
    no servidor a partir do catálogo. Valor que chega no request é ignorado.
@@ -211,6 +213,10 @@ e reabra o VS Code.
 | Vai fazer um serviço saber o estado de um pedido | Pergunte, não projete — a menos que o serviço reaja continuamente. Guarda avaliada num instante vira consulta síncrona; projeção mantida por evento pode divergir, e a guarda passa quando não devia, em silêncio. ADR-032 |
 | Vai fechar a jornada de um entregador | A conferência só abre se ele não tiver pedido em `SAIU_PARA_ENTREGA` nem `NAO_ENTREGUE` — consulta ao `order`, no instante. Consulta que falha **recusa**, e não há caminho alternativo: fechar caixa sem saber se há dinheiro na rua é pior que não fechar. ADR-032 |
 | Achou uma alteração de vínculo de entregador | O `settlement` **não** reage a ela. `vinculoSnapshot` é congelado na abertura (J6) — mudar remuneração no meio do turno é precisamente o que a invariante impede |
+| Vai despachar um pedido | T16 exige jornada aberta, e isso é **consulta ao `settlement`** com cache curto — não projeção local. Falha fechada: sem resposta, sem despacho. É a invariante 1 que depende disso. ADR-033 |
+| Vai montar o rodízio | `jornada ABERTA` e a ordem de abertura vêm do `settlement`, em **uma** chamada que devolve a lista com `abertaEm`. Uma por entregador é N chamadas para montar uma sugestão |
+| Vai consumir `JornadaAbertaV1` ou `JornadaFechadaV1` | **Para invalidar cache, nunca para projetar.** A verdade mora no `settlement`. Projeção com evento perdido erra até alguém notar; cache com prazo erra por segundos. E vale a fila exclusiva por instância com exchange fanout, igual ao `VinculoAlteradoV1` — ADR-011 |
+| Vai decidir entre perguntar e escutar | Guarda avaliada **uma vez** por ciclo → consulta pura (ADR-032). Guarda avaliada **muitas vezes** → consulta com cache e invalidação por evento (ADR-033). Nos dois casos a verdade mora num serviço só, e nos dois casos falha fechada |
 
 ---
 
