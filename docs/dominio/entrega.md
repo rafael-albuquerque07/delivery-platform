@@ -276,7 +276,7 @@ marco 11 trouxer rastreamento, é aí que a discussão volta.
 
 | Evento | Quando | Consumidores |
 |---|---|---|
-| `EntregaAtribuidaV1` | D02, D03 | `conversation` (avisar o cliente que saiu para entrega é T16, não isto) |
+| `EntregaAtribuidaV1` | D02, D03 | Nenhum — `conversation` saiu da declaração; avisar o cliente que saiu para entrega é T16, não isto |
 | `EntregadorRetornouV1` | §7 | Painel |
 | `EntregaDevolvidaV1` | D08 | painel — o item voltou à loja |
 

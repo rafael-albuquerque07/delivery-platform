@@ -7,6 +7,18 @@ entre serviços — a única coisa que se compartilha é o **formato**.
 - `asyncapi/` — eventos de domínio publicados via RabbitMQ
 - `events/` — JSON Schema por evento, versionado
 
+## Onde mora o quê
+
+| | Responde |
+|---|---|
+| [`eventos.md`](eventos.md) | **quem publica e quem assina** — fonte única do pareamento |
+| `events/` | o esquema de cada evento |
+| `openapi/` · `asyncapi/` | os contratos de interface |
+| `docs/dominio/` | **o que** cada serviço faz com o evento que recebe |
+
+Divergência entre `eventos.md` e um documento de domínio é defeito. Corrija na
+mesma alteração.
+
 ## Regra de nome
 
 **Nome de evento é único no repositório inteiro** — não único por serviço. O

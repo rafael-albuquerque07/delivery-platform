@@ -250,7 +250,7 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
   > por jornada de entregador; pedido retirado no balcão registra liquidação e
   > não gera lançamento. O total do estabelecimento — entrega, retirada e balcão
   > — depende do fechamento de caixa da loja, que está nomeado em
-  > `docs/dominio/liquidacao.md` §9 e não tem dono.
+  > `docs/dominio/liquidacao.md` §10 e não tem dono.
 
 ### E8 — Canal WhatsApp
 

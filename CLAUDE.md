@@ -207,6 +207,10 @@ e reabra o VS Code.
 | Achou dois eventos com o mesmo nome | Renomeie o que nomeou um **atributo** em vez de um fato — quase sempre é um só dos dois. E renomeie **antes** de existir esquema e consumidor: depois disso são três implantações (ADR-027 §3), não uma edição de texto |
 | Vai consumir o evento de abertura da loja | É `ExpedienteAlteradoV1`, do `merchant`. Só reativa `ESGOTADO_HOJE` quando `motivo = ABERTURA_DE_EXPEDIENTE` — retomada de pausa não reativa nada, e a idempotência é por `expedienteDeReferencia`, nunca pelo id da mensagem. C11 |
 | Vai registrar dinheiro voltando para alguém | Três coisas se chamam devolver, e só uma é `Devolucao`. Troco na porta **não é nada** — se anula sozinho. Falta de moeda é `Ajuste` (H5.2); troco dado a mais é `divergencia`. Entregador acertando com a loja é `saldoLiquido < 0`. `Devolucao` é só loja → cliente, quando entrou mais do que o pedido veio a valer. ADR-030, `liquidacao.md` §4.2 |
+| Vai acrescentar consumidor a um evento | A declaração vive em `contracts/eventos.md`, e o comportamento no documento de domínio do consumidor. **Os dois, na mesma alteração.** Produtor que declara consumidor sem o consumidor documentar o que faz é como se acumulam handlers vazios. ADR-031 |
+| Vai fazer um serviço saber o estado de um pedido | Pergunte, não projete — a menos que o serviço reaja continuamente. Guarda avaliada num instante vira consulta síncrona; projeção mantida por evento pode divergir, e a guarda passa quando não devia, em silêncio. ADR-032 |
+| Vai fechar a jornada de um entregador | A conferência só abre se ele não tiver pedido em `SAIU_PARA_ENTREGA` nem `NAO_ENTREGUE` — consulta ao `order`, no instante. Consulta que falha **recusa**, e não há caminho alternativo: fechar caixa sem saber se há dinheiro na rua é pior que não fechar. ADR-032 |
+| Achou uma alteração de vínculo de entregador | O `settlement` **não** reage a ela. `vinculoSnapshot` é congelado na abertura (J6) — mudar remuneração no meio do turno é precisamente o que a invariante impede |
 
 ---
 

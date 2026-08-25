@@ -97,7 +97,7 @@ GERENCIAR_JORNADA
 > **`GERENCIAR_JORNADA` é acréscimo ao PRD**, e está marcado como tal. Abrir
 > turno, registrar adiantamento e fechar jornada mexem em dinheiro e não cabem
 > em nenhuma das permissões de H2.1 — `VER_VENDAS` é leitura, `VER_ENTREGA` é
-> outra coisa. `docs/dominio/liquidacao.md` §9 deixou essa pergunta em aberto; é
+> outra coisa. `docs/dominio/liquidacao.md` §10 deixou essa pergunta em aberto; é
 > aqui que ela se fecha. Se a decisão for que apenas administrador abre jornada,
 > a permissão vira um preset e não um item — mas continua precisando existir.
 
@@ -419,7 +419,7 @@ Todos com `correlationId`, todos via outbox na mesma transação da alteração.
 | `ConfiguracaoOperacionalAlteradaV1` | Tipo, modalidades, métodos, troco | `order`, `conversation` |
 | `ExpedienteAlteradoV1` | Abriu, fechou, pausou, retomou — com `motivo` | `conversation`, **`catalog`** (reativa `ESGOTADO_HOJE`) |
 | `AreasDeEntregaAlteradasV1` | Área criada, alterada, desativada | `conversation` (lista de bairros) |
-| `VinculoEntregadorAlteradoV1` | Vínculo ou remuneração | `delivery`, `settlement` |
+| `VinculoEntregadorAlteradoV1` | Vínculo ou remuneração | `delivery` |
 
 > Este evento se chamava `DisponibilidadeAlteradaV1` e colidia com um evento de
 > mesmo nome no `catalog-service`, que significa outra coisa. **ADR-031**

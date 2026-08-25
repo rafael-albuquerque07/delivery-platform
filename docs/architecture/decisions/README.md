@@ -33,8 +33,9 @@
 | 029 | Recuperação do administrador único | ✅ aceita |
 | 030 | Devolução não é estorno | ✅ aceita |
 | 031 | Nome de evento é único no repositório | ✅ aceita |
+| 032 | A guarda da conferência pergunta, não escuta | ✅ aceita |
 
-**Vinte e oito escritas, duas sem objeto, uma a escrever.** A 006 depende do
+**Vinte e nove escritas, duas sem objeto, uma a escrever.** A 006 depende do
 desenho do carrinho, que só chega no marco 3 — escrevê-la agora seria decidir no
 vazio.
 
