@@ -171,6 +171,17 @@ uma tentativa falhou: o `delivery` modela tentativa dentro da entrega, o
 `conversation` avisa o cliente por outro caminho, e o `settlement` **pergunta**
 em vez de escutar (ADR-032). Registrado em `contracts/eventos.md` §3.
 
+**A guarda "área atendida" de T01 é respondida pela `DeliveryQuotePort`** — a
+mesma chamada que produz `taxaSnapshot` (ADR-019, ADR-020). Ela é síncrona e
+**não é cacheada**: a resposta é congelada no pedido, e taxa velha gravada é
+preço errado que o cliente já confirmou (ADR-034).
+
+**A guarda "loja aberta" de T02 vem da `OperacaoDoEstabelecimentoPort`**, esta
+com cache curto invalidado por `ExpedienteAlteradoV1`, porque a resposta é usada
+e descartada. Mesma porta responde o `tipoDeOperacao` que I8 valida. Falha
+fechada nas duas — salvo o aceite manual explícito, que é o outro ramo da guarda
+de T02 e não pergunta nada.
+
 ### Como isto vira teste
 
 A tabela é dado, não código. O teste é parametrizado sobre ela:
@@ -371,6 +382,10 @@ mudança de estado (invariante 7 do `CLAUDE.md`).
 | `ConfiguracaoOperacionalAlteradaV1` | `merchant` | Modalidades, métodos e regra de troco aplicáveis ao pedido |
 | `JornadaAbertaV1` | `settlement` | **Invalida cache** de jornada aberta — não projeta |
 | `JornadaFechadaV1` | `settlement` | Idem |
+| `ExpedienteAlteradoV1` | `merchant` | **Invalida cache** de operação da loja — não projeta |
+
+`AreasDeEntregaAlteradasV1` **não** é consumido aqui, e é decisão: sem cache de
+cotação, não há entrada a invalidar. ADR-034 §1.
 
 Idempotência por `liquidacaoId`, `cobrancaId` ou `devolucaoId`, conforme o
 evento — invariante 7 do `CLAUDE.md`.

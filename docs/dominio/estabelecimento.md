@@ -181,12 +181,46 @@ record ContextoDeAcesso(UUID usuarioId, UUID estabelecimentoId,
 | Queda do serviço | Negar. O TTL de 60 s **é** a janela de tolerância — não há modo degradado separado | Fail-closed que abre sob pressão não é fail-closed |
 | Ausência de vínculo | `Optional.empty()` → 403 com mensagem clara | Nunca 404: o 404 confirma ou nega a existência da loja |
 
+### O que a operação da loja responde
+
+```java
+public interface OperacaoDoEstabelecimentoPort {
+    /** Vazio quando o estabelecimento não existe — nunca nulo. */
+    Optional<OperacaoAtual> operacao(UUID estabelecimentoId);
+}
+
+record OperacaoAtual(boolean aberto, TipoDeOperacao tipoDeOperacao) {}
+```
+
+`aberto` já considera horário **e** pausa: quem pergunta não recompõe a regra
+das faixas que cruzam a meia-noite. Ela mora aqui, num lugar só.
+
+Dois consumidores hoje, os dois no `order-service`: a guarda "loja aberta" de
+T02 e a validação de subestado de I8. Mesma cache do
+`AutorizacaoComercialPort` — 60 s positivo, 10 s negativo —, invalidada por
+`ExpedienteAlteradoV1`, e **falha fechada**.
+
+O aceite manual fora do horário continua valendo (§4): a guarda de T02 é "loja
+aberta **ou** aceite manual explícito", e o segundo ramo não pergunta nada.
+
 **Fail-closed, e o preço disso.** Se o `merchant-service` cair, nenhum outro
 serviço autoriza nada, e a plataforma inteira para. É consequência assumida, não
 descuido: a alternativa — liberar em caso de dúvida — significa que uma queda
 vira acesso irrestrito aos dados de todas as lojas. Mitigação é disponibilidade
 (réplicas, cache com TTL que sobrevive a queda curta), não relaxamento da regra.
 Os detalhes de TTL, invalidação e janela de tolerância estão na **ADR-011**.
+
+### As três portas, e a política de cache de cada uma
+
+| Porta | Cache | Por quê |
+|---|---|---|
+| `AutorizacaoComercialPort` | 60 s positivo · 10 s negativo | ADR-011 |
+| `OperacaoDoEstabelecimentoPort` | idem | Resposta usada e descartada |
+| `DeliveryQuotePort` (ADR-019, ADR-020) | **nenhum** | A resposta é **congelada** no pedido como `taxaSnapshot` — cache aqui grava dado velho para sempre. ADR-034 |
+
+**Porta sem essa coluna preenchida não está documentada.** O padrão das três
+decisões anteriores é "consulte e guarde"; a terceira linha existe para que
+ninguém o aplique por analogia onde ele corrompe.
 
 ### Identificador na URL nunca é confiável
 
