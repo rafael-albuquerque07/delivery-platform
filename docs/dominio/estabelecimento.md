@@ -189,16 +189,22 @@ public interface OperacaoDoEstabelecimentoPort {
     Optional<OperacaoAtual> operacao(UUID estabelecimentoId);
 }
 
-record OperacaoAtual(boolean aberto, TipoDeOperacao tipoDeOperacao) {}
+record OperacaoAtual(boolean aberto,
+                     TipoDeOperacao tipoDeOperacao,
+                     int maxEntregasSimultaneas) {}
 ```
 
 `aberto` já considera horário **e** pausa: quem pergunta não recompõe a regra
 das faixas que cruzam a meia-noite. Ela mora aqui, num lugar só.
 
-Dois consumidores hoje, os dois no `order-service`: a guarda "loja aberta" de
-T02 e a validação de subestado de I8. Mesma cache do
-`AutorizacaoComercialPort` — 60 s positivo, 10 s negativo —, invalidada por
-`ExpedienteAlteradoV1`, e **falha fechada**.
+Mesma cache do `AutorizacaoComercialPort` — 60 s positivo, 10 s negativo — e
+**falha fechada**. Invalidada por **dois** eventos, porque a resposta compõe
+dois assuntos: `ExpedienteAlteradoV1` muda `aberto`; `ConfiguracaoOperacionalAlteradaV1`
+muda `tipoDeOperacao` e `maxEntregasSimultaneas`. Perder qualquer um dos dois
+deixa a resposta velha até o TTL.
+
+Três consumidores: o `order` para a guarda de T02 e para I8, e o `delivery`
+para o rodízio.
 
 O aceite manual fora do horário continua valendo (§4): a guarda de T02 é "loja
 aberta **ou** aceite manual explícito", e o segundo ramo não pergunta nada.
@@ -450,7 +456,7 @@ Todos com `correlationId`, todos via outbox na mesma transação da alteração.
 |---|---|---|
 | `EstabelecimentoCriadoV1` | Cadastro concluído | `conversation` |
 | `VinculoAlteradoV1` | Membro criado, alterado, suspenso, removido | **Todos** — invalidação de cache de autorização |
-| `ConfiguracaoOperacionalAlteradaV1` | Tipo, modalidades, métodos, troco | `order`, `conversation` |
+| `ConfiguracaoOperacionalAlteradaV1` | Tipo, modalidades, métodos, troco, `maxEntregasSimultaneas` | `order`, `delivery`, `conversation` |
 | `ExpedienteAlteradoV1` | Abriu, fechou, pausou, retomou — com `motivo` | `conversation`, **`catalog`** (reativa `ESGOTADO_HOJE`) |
 | `AreasDeEntregaAlteradasV1` | Área criada, alterada, desativada | `conversation` (lista de bairros) |
 | `VinculoEntregadorAlteradoV1` | Vínculo ou remuneração | `delivery` |

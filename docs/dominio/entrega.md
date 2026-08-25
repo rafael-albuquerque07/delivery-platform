@@ -194,6 +194,10 @@ entregador. Cache curto, invalidado por `JornadaAbertaV1` e `JornadaFechadaV1`,
 A atribuição direta pelo operador **não escapa da guarda** — quem a aplica é T16,
 no `order`, na hora do despacho.
 
+**`maxEntregasSimultaneas` vem da `OperacaoDoEstabelecimentoPort`**, na mesma
+cache curta e com a mesma falha fechada (ADR-034). `entregasEmMaos` é local —
+este serviço conhece as entregas que ele mesmo atribuiu.
+
 **Quando o operador ignora a sugestão, isso é gravado** (`sugeridoPeloRodizio`
 guarda quem o sistema indicou). Não para vigiar ninguém: sem esse dado, "o
 rodízio não está funcionando" é uma discussão sem evidência, e a resposta quase
@@ -281,6 +285,7 @@ marco 11 trouxer rastreamento, é aí que a discussão volta.
 | `VinculoEntregadorAlteradoV1` | `merchant` | Entra ou sai do rodízio |
 | `JornadaAbertaV1` | `settlement` | **Invalida cache** de jornadas abertas — não projeta |
 | `JornadaFechadaV1` | `settlement` | Idem |
+| `ConfiguracaoOperacionalAlteradaV1` | `merchant` | **Invalida cache** de operação da loja — não projeta |
 
 **Publica:**
 

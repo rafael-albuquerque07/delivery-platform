@@ -33,7 +33,7 @@ pergunta)
 | `EstornoExecutadoV1` | `payment` | `order` |
 | `EstabelecimentoCriadoV1` | `merchant` | `conversation` |
 | `VinculoAlteradoV1` | `merchant` | **todos** |
-| `ConfiguracaoOperacionalAlteradaV1` | `merchant` | `order`, `conversation` |
+| `ConfiguracaoOperacionalAlteradaV1` | `merchant` | `order`, `delivery`, `conversation` |
 | `ExpedienteAlteradoV1` | `merchant` | `catalog`, `conversation`, `order` |
 | `AreasDeEntregaAlteradasV1` | `merchant` | `conversation` |
 | `VinculoEntregadorAlteradoV1` | `merchant` | `delivery` |

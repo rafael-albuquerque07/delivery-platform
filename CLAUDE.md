@@ -217,11 +217,12 @@ e reabra o VS Code.
 | Vai montar o rodízio | `jornada ABERTA` e a ordem de abertura vêm do `settlement`, em **uma** chamada que devolve a lista com `abertaEm`. Uma por entregador é N chamadas para montar uma sugestão |
 | Vai consumir `JornadaAbertaV1` ou `JornadaFechadaV1` | **Para invalidar cache, nunca para projetar.** A verdade mora no `settlement`. Projeção com evento perdido erra até alguém notar; cache com prazo erra por segundos. E vale a fila exclusiva por instância com exchange fanout, igual ao `VinculoAlteradoV1` — ADR-011 |
 | Vai decidir entre perguntar e escutar | Guarda avaliada **uma vez** por ciclo → consulta pura (ADR-032). Guarda avaliada **muitas vezes** → consulta com cache e invalidação por evento (ADR-033). Nos dois casos a verdade mora num serviço só, e nos dois casos falha fechada |
-| Vai resolver uma guarda que depende de outro serviço — a resposta é **congelada** no agregado | Consulta **sem cache** (ADR-034). Falha fechada |
+| Vai resolver guarda que depende de outro serviço — ramo 1 | O **erro sobrevive à leitura**? Resposta congelada no agregado, ou mostrada ao cliente como o número que ele confirma → consulta **sem cache**. ADR-034 |
 | Vai resolver uma guarda que depende de outro serviço — avaliada **uma vez** por ciclo | Consulta pura (ADR-032). Falha fechada |
 | Vai resolver uma guarda que depende de outro serviço — avaliada **muitas vezes** | Consulta + cache + invalidação por evento (ADR-011, ADR-033). Falha fechada |
 | Vai cachear a cotação de entrega | **Não.** A resposta da `DeliveryQuotePort` vira `taxaSnapshot` dentro do pedido. Cache aqui não produz dado velho por um minuto — produz dado velho para sempre, gravado, e é o que o cliente paga. ADR-034 |
 | Vai perguntar se a loja está aberta | `OperacaoDoEstabelecimentoPort`, que já compõe horário **e** pausa — não recomponha a regra das faixas que cruzam a meia-noite fora do `merchant`. Cache curto, invalidada por `ExpedienteAlteradoV1`, falha fechada |
+| Vai cachear cotação em qualquer serviço | Não, nos dois lugares onde ela existe. No `order` a resposta vira `taxaSnapshot`; no `conversation` ela vira o total que o cliente confirma e que T01 vai contradizer. ADR-034 §1 |
 
 ---
 

@@ -57,12 +57,32 @@ vira valor cobrado, vira histórico.
 Onde a resposta é usada e descartada, cache é otimização. Onde ela é copiada,
 cache é corrupção com atraso.
 
+### Emenda de 25/08/2026 — o critério é mais geral que "congelada"
+
+O `OperacaoPort.cotar()` do `conversa.md` §10 não congela nada: quem congela é o
+`order` em T01, com a `DeliveryQuotePort`, e a invariante 2 garante que o valor
+cobrado é recalculado no servidor. Pela letra do §1, ele poderia ser cacheado.
+Não pode — uma cotação velha mostrada ao cliente vira o total que ele **confirma**,
+e T01 calcula outro. O H4.2 promete o contrário.
+
+Os dois casos são a mesma coisa dita de forma estreita. A regra é:
+
+> **Cache é seguro quando o erro morre junto com a leitura.**
+>
+> Resposta congelada no agregado não morre — vira campo gravado.
+> Resposta mostrada ao cliente como o número que ele confirma não morre — vira
+> compromisso.
+
+"Congelada" continua sendo o caso mais comum e o mais fácil de reconhecer. Não é
+o único.
+
 ### 2. A árvore de decisão, para a próxima guarda
 
 ```
 A guarda depende de estado de outro serviço?
 │
-├── a resposta é CONGELADA no agregado?
+├── o erro SOBREVIVE à leitura? (congelada no agregado,
+│   ou mostrada ao cliente como número que ele confirma)
 │      → consulta síncrona, SEM CACHE                        ADR-034
 │
 ├── é avaliada uma vez por ciclo de vida?

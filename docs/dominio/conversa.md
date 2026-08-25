@@ -310,6 +310,24 @@ interface OperacaoPort {       // catálogo, estabelecimento, pedido
 }
 ```
 
+### Política de cache — ADR-034
+
+Porta sem esta coluna preenchida não está documentada.
+
+| Operação | Cache | Por quê |
+|---|---|---|
+| `OperacaoPort.cotar()` | **nenhum** | O total mostrado é o que o cliente **confirma**. Cotação velha vira compromisso que T01 contradiz — H4.2 |
+| `OperacaoPort.criarPedido()` | não se aplica | É escrita |
+| `OperacaoPort.cardapio()` | curto | Vitrine, não contrato. Invalidado pelos eventos de produto e categoria que o §14 já consome — o `catalog` tem cache próprio (`catalogo.md` §7) e vale o mesmo raciocínio: listagem pode servir dado de segundos atrás **porque a cotação não usa cache** |
+| `InterpretacaoPort.interpretar()` | **nenhum** | Ver abaixo |
+| `CanalPort.enviar()` | não se aplica | É escrita, e o que ela precisa é idempotência, não cache |
+
+**Por que interpretação não se cacheia**, sendo o que mais custa (§7): a entrada
+é o contexto da conversa, que muda a cada turno, então a taxa de acerto seria
+próxima de zero — e um acerto seria pior que uma falha, porque devolveria a
+`Proposta` de outro momento da conversa. O caminho para reduzir custo é **menos
+turnos** (H8.3), não repetir resposta.
+
 `InterpretacaoPort` devolve `Proposta`, e `Proposta` **não tem campo de valor**.
 A porta é onde a regra do topo deixa de ser recomendação e vira tipo.
 
