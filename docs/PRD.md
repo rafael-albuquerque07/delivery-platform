@@ -231,7 +231,9 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 **H7.1** Como comerciante, quero abrir e fechar a jornada de cada entregador.
 - Abertura registra fundo de troco entregue, horário e responsável
 - Durante a jornada acumulam-se entregas concluídas, valores recebidos por método e adiantamentos
-- Fechamento apura: dinheiro a devolver, divergência, remuneração devida e saldo líquido
+- Fechamento apura: dinheiro a devolver (= `saldoLiquido` negativo — **não** é a
+  `Devolucao` da ADR-030, que é da loja para o cliente), divergência,
+  remuneração devida e saldo líquido
 
 **H7.2** Como comerciante, quero um extrato por entregador ao fim do dia.
 - Créditos: diária, comissões, taxas fixas, gorjetas recebidas em cartão

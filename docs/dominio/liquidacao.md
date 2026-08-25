@@ -162,6 +162,13 @@ está errado no preparo de caixa.
 > sozinho. O fundo só existe para o caso em que ele não consegue fazer o troco
 > com o que já tem em mãos.
 
+> **Problema de troco nunca vira `Devolucao`.** Faltou moeda e ele devolveu R$ 10
+> em vez de R$ 12: o cliente aceitou pagar 40 em vez de 38, e isso é `Ajuste` de
+> arredondamento no pedido (H5.2), que **sobe** o `totalEfetivo`. Devolveu R$ 14
+> por engano: ele está com R$ 2 a menos, e isso é `divergencia` na conferência.
+> Nenhum dos dois é devolução ao cliente — em nenhum dos dois entrou dinheiro a
+> mais que precise voltar.
+
 ### 4.3 Extrato
 
 Segue a estrutura de H7.2, literalmente.
@@ -182,6 +189,19 @@ saldoLiquido = C − D
 - `saldoLiquido > 0` → **a loja paga** esse valor ao entregador.
 - `saldoLiquido < 0` → **o entregador entrega** esse valor à loja, e fica com o
   restante do dinheiro como pagamento. É como a operação já funciona no balcão.
+
+> **Três coisas diferentes se chamam "devolver" neste produto.** O H7.1 do PRD
+> chama este saldo negativo de *dinheiro a devolver*, e é o mesmo número — por
+> isso o texto acima diz "entrega" e não "devolve".
+>
+> | De → para | Quando | O que é aqui |
+> |---|---|---|
+> | Troco: entregador → cliente | na porta | **nada.** Se anula sozinho — §4.2 |
+> | Acerto: entregador → loja | no fechamento | `saldoLiquido < 0`, esta linha |
+> | `Devolucao`: loja → cliente | depois | ADR-030, e **não passa por aqui** |
+>
+> A terceira só toca a jornada quando o valor devolvido passou pela mão do
+> entregador, e aí vira `AjusteDeFechamento` — §7, nunca `saldoLiquido`.
 
 `LA`, `LP` e `LN` **não entram em nenhuma das duas colunas**:
 

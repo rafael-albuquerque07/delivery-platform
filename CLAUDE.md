@@ -206,6 +206,7 @@ e reabra o VS Code.
 | Vai criar um evento novo | O nome tem de ser **único no repositório inteiro**, não no serviço. Varra os nomes existentes antes de escolher — a varredura está em `contracts/README.md`. Nome repetido entre serviços falha o build a partir do marco 3. ADR-031 |
 | Achou dois eventos com o mesmo nome | Renomeie o que nomeou um **atributo** em vez de um fato — quase sempre é um só dos dois. E renomeie **antes** de existir esquema e consumidor: depois disso são três implantações (ADR-027 §3), não uma edição de texto |
 | Vai consumir o evento de abertura da loja | É `ExpedienteAlteradoV1`, do `merchant`. Só reativa `ESGOTADO_HOJE` quando `motivo = ABERTURA_DE_EXPEDIENTE` — retomada de pausa não reativa nada, e a idempotência é por `expedienteDeReferencia`, nunca pelo id da mensagem. C11 |
+| Vai registrar dinheiro voltando para alguém | Três coisas se chamam devolver, e só uma é `Devolucao`. Troco na porta **não é nada** — se anula sozinho. Falta de moeda é `Ajuste` (H5.2); troco dado a mais é `divergencia`. Entregador acertando com a loja é `saldoLiquido < 0`. `Devolucao` é só loja → cliente, quando entrou mais do que o pedido veio a valer. ADR-030, `liquidacao.md` §4.2 |
 
 ---
 
