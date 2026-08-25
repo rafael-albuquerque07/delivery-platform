@@ -27,7 +27,7 @@ services:
     # ADR-014: seis serviços relacionais; o default de 100 conexões é apertado.
     command: ["postgres", "-c", "max_connections=200"]
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./infra/database/init:/docker-entrypoint-initdb.d:ro
@@ -37,6 +37,12 @@ services:
       timeout: 5s
       retries: 10
 
+  # Sem autenticação, por decisão. Habilitar auth num replica set exige --keyFile,
+  # que é um segredo em arquivo com permissão 400 — precisaria ser gerado pelo
+  # mongo-init e mantido fora do Git, e isso é complexidade de produção dentro de
+  # um compose de desenvolvimento. A porta liga em 127.0.0.1 (ver ports), que é o
+  # que remove a exposição. Se este compose um dia servir a algo além da máquina
+  # do desenvolvedor, isto vira decisão de novo — e aí é ADR.
   mongodb:
     profiles: ["core", "full"]
     image: mongo:8
@@ -44,7 +50,7 @@ services:
     # e sem transação não há Outbox — ADR-008/ADR-017.
     command: ["--replSet", "rs0", "--bind_ip_all"]
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo-data:/data/db
     healthcheck:
@@ -68,9 +74,9 @@ services:
     profiles: ["core", "full"]
     image: redis:7-alpine
     # AOF ligado: reiniciar o container não pode apagar estado de sessão ativo.
-    command: ["redis-server", "--appendonly", "yes"]
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis-data:/data
     healthcheck:
@@ -86,8 +92,8 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
@@ -104,8 +110,8 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
-      - "9000:9000"
-      - "9090:9001"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9090:9001"
     volumes:
       - minio-data:/data
     healthcheck:
@@ -123,7 +129,7 @@ services:
       dockerfile: infra/gateway/Dockerfile
     environment:
       SERVER_PORT: "8080"
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
       SERVICE_IDENTITY_URI: http://identity-service:8081
@@ -135,7 +141,7 @@ services:
       SERVICE_DELIVERY_URI: http://delivery-service:8087
       SERVICE_CONVERSATION_URI: http://conversation-service:8088
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     depends_on:
       redis:
         condition: service_healthy
@@ -156,7 +162,7 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:8081"
     depends_on:
       postgres:
         condition: service_healthy
@@ -174,13 +180,13 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/merchant_db
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
     ports:
-      - "8082:8082"
+      - "127.0.0.1:8082:8082"
     depends_on:
       postgres:
         condition: service_healthy
@@ -198,13 +204,13 @@ services:
     environment:
       SERVER_PORT: "8083"
       MONGO_URI: mongodb://mongodb:27017/catalog_db?replicaSet=rs0
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
     ports:
-      - "8083:8083"
+      - "127.0.0.1:8083:8083"
     depends_on:
       mongodb:
         condition: service_healthy
@@ -231,7 +237,7 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
     ports:
-      - "8084:8084"
+      - "127.0.0.1:8084:8084"
     depends_on:
       postgres:
         condition: service_healthy
@@ -249,13 +255,13 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/order_db
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
     ports:
-      - "8085:8085"
+      - "127.0.0.1:8085:8085"
     depends_on:
       postgres:
         condition: service_healthy
@@ -280,7 +286,7 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
     ports:
-      - "8086:8086"
+      - "127.0.0.1:8086:8086"
     depends_on:
       postgres:
         condition: service_healthy
@@ -298,13 +304,13 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/delivery_db
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
     ports:
-      - "8087:8087"
+      - "127.0.0.1:8087:8087"
     depends_on:
       postgres:
         condition: service_healthy
@@ -327,7 +333,7 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
     ports:
-      - "8088:8088"
+      - "127.0.0.1:8088:8088"
     depends_on:
       mongodb:
         condition: service_healthy
@@ -342,7 +348,7 @@ services:
     profiles: ["observability", "full"]
     image: prom/prometheus:latest
     ports:
-      - "9091:9090"
+      - "127.0.0.1:9091:9090"
     volumes:
       - ./infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
@@ -352,7 +358,7 @@ services:
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
 
@@ -360,13 +366,13 @@ services:
     profiles: ["observability", "full"]
     image: grafana/loki:latest
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
 
   tempo:
     profiles: ["observability", "full"]
     image: grafana/tempo:latest
     ports:
-      - "3200:3200"
+      - "127.0.0.1:3200:3200"
 
 volumes:
   postgres-data:

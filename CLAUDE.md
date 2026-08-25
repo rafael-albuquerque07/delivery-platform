@@ -223,6 +223,8 @@ e reabra o VS Code.
 | Vai cachear a cotação de entrega | **Não.** A resposta da `DeliveryQuotePort` vira `taxaSnapshot` dentro do pedido. Cache aqui não produz dado velho por um minuto — produz dado velho para sempre, gravado, e é o que o cliente paga. ADR-034 |
 | Vai perguntar se a loja está aberta | `OperacaoDoEstabelecimentoPort`, que já compõe horário **e** pausa — não recomponha a regra das faixas que cruzam a meia-noite fora do `merchant`. Cache curto, invalidada por `ExpedienteAlteradoV1`, falha fechada |
 | Vai cachear cotação em qualquer serviço | Não, nos dois lugares onde ela existe. No `order` a resposta vira `taxaSnapshot`; no `conversation` ela vira o total que o cliente confirma e que T01 vai contradizer. ADR-034 §1 |
+| Vai publicar porta nova no compose | `127.0.0.1:` na frente, sempre. Sem o prefixo, o Docker liga em `0.0.0.0` e o serviço fica alcançável da rede local — e dois dos bancos deste compose sobem sem senha |
+| Vai preencher o `.env` achando que autenticou o Mongo | Não autenticou. O `MONGO_URI` dos serviços não tem credencial e o container não lê `MONGO_USER`. É decisão registrada no `docker-compose.yml`, e o que protege é o bind em `127.0.0.1` |
 
 ---
 
