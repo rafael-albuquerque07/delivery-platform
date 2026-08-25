@@ -27,8 +27,11 @@
 | 023 | Fronteira `order` × `payment`: pedido é dono do registro | ✅ aceita |
 | 024 | Desconto de retirada, não preço por modalidade | ✅ aceita |
 | 025 | Fuso horário do estabelecimento e o dia operacional | ✅ aceita |
+| 026 | Fila morta, retentativa e reprocessamento | ✅ aceita |
+| 027 | O que conta como mudança compatível num evento | ✅ aceita |
+| 028 | Pedido mínimo por modalidade, sobre o subtotal dos itens | ✅ aceita |
 
-**Vinte e duas escritas, duas sem objeto, uma a escrever.** A 006 depende do
+**Vinte e cinco escritas, duas sem objeto, uma a escrever.** A 006 depende do
 desenho do carrinho, que só chega no marco 3 — escrevê-la agora seria decidir no
 vazio.
 
@@ -80,11 +83,6 @@ documento — e é essa a falha que este parágrafo existe para não repetir.
 Quando uma ADR nova **corrige um documento publicado** (um PDF em
 `docs/referencia/`, que não se reescreve), ela registra isso numa seção "Emenda
 que esta decisão provoca" no fim. Ver 011, 013, 023 e 024.
-
-**A base publicada passou a ser a v2** (24/08/2026). O documento de
-arquitetura v2 já incorpora as emendas registradas nas ADRs 011, 013, 023 e
-024 — as seções delas continuam valendo como histórico da correção, e não como
-pendência. Emenda nova a partir daqui é contra o v2.
 
 Emenda é para mudança de decisão, de justificativa ou de custo assumido. Rótulo
 que muda sem que a coisa mude — número de marco, nome de arquivo, nome de
