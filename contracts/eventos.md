@@ -23,8 +23,8 @@ pergunta)
 | `PedidoConfirmadoV1` | `order` | `conversation` |
 | `PedidoPagoV1` | `order` | `conversation` |
 | `PedidoProntoV1` | `order` | `delivery`, `conversation` |
-| `PedidoSaiuParaEntregaV1` | `order` | `conversation` |
-| `PedidoEntregueV1` | `order` | `settlement`, `conversation` |
+| `PedidoSaiuParaEntregaV1` | `order` | `delivery`, `conversation` |
+| `PedidoEntregueV1` | `order` | `delivery`, `settlement`, `conversation` |
 | `PedidoRetiradoV1` | `order` | `conversation` |
 | `PedidoCanceladoV1` | `order` | `delivery`, `payment`, `conversation` |
 | `DevolucaoDevidaV1` | `order` | `payment`, `settlement` |
@@ -42,16 +42,18 @@ pergunta)
 | `ProdutoDespublicadoV1` | `catalog` | `conversation` |
 | `DisponibilidadeAlteradaV1` | `catalog` | `conversation` |
 | `CategoriasReordenadasV1` | `catalog` | `conversation` |
-| `EntregaDevolvidaV1` | `delivery` | — ver §4 |
+| `JornadaAbertaV1` | `settlement` | `order`, `delivery` — invalidação de cache (ADR-033) |
+| `JornadaFechadaV1` | `settlement` | `order`, `delivery` — invalidação de cache (ADR-033) |
 
 **`VinculoAlteradoV1` é o único com consumidor coletivo**, e é infraestrutura, não
 domínio: todo serviço que resolve permissão invalida a entrada de cache ao
 recebê-lo. O mecanismo é descrito uma vez, em `docs/dominio/estabelecimento.md`
 §3, e não se repete nos sete documentos de domínio.
 
-**O `settlement` não publica evento nenhum.** É consumidor terminal: o
-fechamento é o fim da cadeia, e nada no sistema reage a ele. Se um dia o marco 8
-fizer a emissão fiscal reagir ao fechamento, o evento nasce aí.
+**O `settlement` publica dois eventos, e só para invalidar cache.** Nenhum
+consumidor mantém projeção de jornada: a verdade continua no `settlement` e é
+consultada por porta síncrona; o evento é o caminho rápido e o TTL é a rede de
+segurança (ADR-033). É a mesma forma do `VinculoAlteradoV1` na ADR-011.
 
 ---
 
@@ -65,6 +67,7 @@ backend **é esperada** — não é furo de pareamento.
 | `EntregadorRetornouV1` | `delivery` | Painel de despacho |
 | `ConversaEscalonadaV1` | `conversation` | Fila de atendimento humano |
 | `CustoDeConversaExcedidoV1` | `conversation` | Alerta de teto |
+| `EntregaDevolvidaV1` | `delivery` | Painel — o item voltou à loja |
 
 ---
 
@@ -110,3 +113,15 @@ A partir do marco 3, o build falha com:
 E avisa, sem falhar, com evento cujo consumidor declarado não tem código que
 assine — porque durante a construção de um marco isso é normal por algumas
 semanas, e depois deixa de ser.
+
+### Como esta tabela se constrói, e o erro que ela já cometeu
+
+**A linha de consumidores é a união do que o produtor declara com o que cada
+consumidor documenta.** Nunca só o lado do produtor.
+
+A primeira versão desta matriz foi montada a partir das tabelas de eventos
+publicados, e por isso herdou os furos delas: dois eventos tinham o `delivery`
+como consumidor documentado em `entrega.md` desde sempre, e o `pedido.md` nunca
+o declarou. A matriz reproduziu a omissão em vez de expô-la.
+
+Construir de um lado só faz a verificação concordar com o defeito.
