@@ -36,8 +36,9 @@
 | 032 | A guarda da conferência pergunta, não escuta | ✅ aceita |
 | 033 | O estado da jornada é perguntado | ✅ aceita |
 | 034 | Resposta que vira snapshot nunca é cacheada | ✅ aceita |
+| 035 | Domínio em português, o resto em inglês | ✅ aceita |
 
-**Trinta e duas escritas, duas sem objeto — estas com registro próprio desde
+**Trinta e três escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

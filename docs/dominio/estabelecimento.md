@@ -235,9 +235,8 @@ ninguém o aplique por analogia onde ele corrompe.
 ### Identificador na URL nunca é confiável
 
 Invariante 9 do `CLAUDE.md`, e é aqui que ela se materializa. As rotas vivem sob
-`/api/v1/merchants/{merchantId}/...` (ADR-012), e o `{merchantId}` da URL —
-`estabelecimentoId` no domínio — é **entrada do atacante**, não contexto
-confiável.
+`/api/v1/merchants/{estabelecimentoId}/...` (ADR-012), e o
+`{estabelecimentoId}` da URL é **entrada do atacante**, não contexto confiável.
 
 Toda requisição confronta o `sub` do token com o identificador da URL através da
 porta acima. Sem vínculo ativo, 403 — e a resposta é idêntica para "loja não

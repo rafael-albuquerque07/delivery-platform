@@ -41,11 +41,10 @@ ordem das categorias seria um dado replicado em N documentos, e a primeira
 reordenação deixaria metade desatualizada.
 
 > **Nota de nomenclatura.** A ADR-018 modela isto em inglês (`Product`,
-> `optionGroups`, `minSelect`). Os documentos de domínio da v1.1 usam português,
-> que é a linguagem em que o negócio fala — *bairro*, *troco*, *jornada*,
-> *comanda* não têm tradução honesta. A divergência é real e precisa de decisão
-> antes do primeiro código: sugestão é **domínio em português, infraestrutura e
-> framework em inglês**. Está anotado como pendência em §9.
+> `optionGroups`, `minSelect`), e o código nascerá em português — `Produto`,
+> `gruposDeOpcoes`, `minEscolhas`. A regra está na **ADR-035**: o negócio fala
+> português, o meio fala inglês, e o adaptador traduz. A ADR-018 não se
+> reescreve; ela registra a decisão como foi tomada.
 
 ---
 
@@ -326,10 +325,6 @@ acabou depois da abertura.
   cardápio que ninguém consegue manter.
 - **Cardápio por faixa de horário** — café da manhã até as 10h. Recorrente em
   padaria e lanchonete, ausente do PRD.
-- **Idioma da nomenclatura** (§1). Domínio em português, infraestrutura em
-  inglês é a sugestão; a ADR-018 usa inglês e precisa de um passe de tradução ou
-  de uma decisão explícita de conviver com os dois. **Decidir antes do primeiro
-  código do `catalog-service`.**
 - **Limite de opções por grupo e grupos por produto.** A lista interativa do
   WhatsApp tem teto de linhas por seção (H8.1), o que na prática impõe um limite
   — mas ele é do canal, e é o `conversation-service` que deve paginá-lo, não o

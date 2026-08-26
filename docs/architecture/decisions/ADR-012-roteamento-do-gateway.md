@@ -168,3 +168,15 @@ BFF próprio, decidido em ADR própria, não uma regra escondida no roteador.
   interface técnica, e o vocabulário de interface HTTP é inglês por convenção
   ampla — mesmo argumento que mantém `GET`, `Content-Type` e `orders`. O domínio
   continua em português onde o negócio fala.
+
+## Emenda de 26/08/2026 — o identificador da rota é do domínio
+
+O parâmetro da rota é `{estabelecimentoId}`, não `{merchantId}`. O segmento
+`merchants` é endereço — parte do meio, junto com `/api/v1`; o identificador é
+conceito de negócio atravessando a fronteira.
+
+Mantê-lo em português é o que faz a invariante 9 do `CLAUDE.md` — *identificador
+da URL nunca é confiável* — falar da mesma coisa que o domínio chama de
+`estabelecimentoId`, sem tradução no meio de um raciocínio de segurança.
+
+Regra completa em **ADR-035**.

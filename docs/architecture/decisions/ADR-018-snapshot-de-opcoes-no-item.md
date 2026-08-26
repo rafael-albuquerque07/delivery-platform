@@ -189,3 +189,24 @@ graça:
   conversa pertencer ao contato, que o `conversation-service` já garante.
 
 E `pricedAt` continua existindo: é a marca da cotação, com outro nome.
+
+## Emenda de 26/08/2026 — o modelo acima está em inglês; o código nasce em português
+
+O modelo desta ADR usa `Product`, `basePrice`, `stockControlled`,
+`optionGroups`, `minSelect`, `priceDelta`. A **ADR-035** decidiu que o domínio
+fala português.
+
+**O texto acima não se reescreve** — ele registra a decisão como foi tomada, e a
+decisão era sobre *snapshot de opções no item e cotação pelo catálogo*, não
+sobre idioma. O que muda é o código, quando o `catalog-service` for escrito no
+marco 2:
+
+| Aqui | No código |
+|---|---|
+| `Product` · `basePrice` | `Produto` · `precoBase` |
+| `stockControlled` | `modoDeControle` — `catalogo.md` §1 modela como enum de três estados, não como booleano |
+| `optionGroups` · `minSelect` · `maxSelect` | `gruposDeOpcoes` · `minEscolhas` · `maxEscolhas` |
+| `Option` · `priceDelta` | `Opcao` · `acrescimo` |
+| `POST /internal/catalog/quote` | prefixo fica; os campos do payload viram domínio |
+
+Os nomes da coluna da direita são os que `catalogo.md` §1 já usa.
