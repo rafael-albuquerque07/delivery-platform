@@ -237,10 +237,11 @@ entregador — e que a retirada não produz.
 > Modelá-lo como invariante tornaria inválido, retroativamente, um pedido que
 > nasceu certo. ADR-028
 
-**I7 é imposta em dois lugares, não só aqui.** O carrinho já recusa item de outro
-estabelecimento ao ser acrescentado — mensagem clara, antes de o cliente montar
-um pedido inteiro. A invariante do agregado é a segunda guarda, porque o
-carrinho é estado externo e não se confia em validação que já passou (ADR-004).
+**I7 é imposta em dois lugares, não só aqui.** O rascunho da conversa recusa
+item de outro estabelecimento por construção — a conversa é com **uma** loja, e
+não há onde a segunda caberia (ADR-006 §2). A invariante do agregado é a segunda
+guarda, porque o rascunho é estado de **outro serviço** e não se confia em
+validação que já passou (ADR-004).
 
 ---
 

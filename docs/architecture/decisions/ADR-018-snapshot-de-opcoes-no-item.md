@@ -154,3 +154,38 @@ o cliente não controle o valor, que é a alternativa rejeitada no fim deste
 documento.
 
 Leia "o carrinho no Redis (ADR-006)" como "o rascunho da conversa (ADR-006)".
+
+### E o fluxo de checkout descrito acima também é da v1.0
+
+A seção "O que o `order-service` continua validando" e a seguinte descrevem um
+fluxo de requisição e resposta com **cliente autenticado** dono de um carrinho,
+que reenvia no checkout o `expectedTotal` que viu. Esse cliente não existe:
+P3 põe o comerciante como cliente do produto, e o consumidor é um número de
+telefone numa conversa — sem login e sem sessão.
+
+**A decisão desta ADR não depende disso** e continua inteira: opções congeladas
+no item, cotação pelo catálogo, preço nunca vindo do carrinho. O que muda é
+*quem* pergunta e *como* o cliente diz o que viu.
+
+| | Vigente |
+|---|---|
+| Onde o pedido é montado | `Conversa.rascunhoDePedido` — ADR-006 |
+| O que o cliente vê | o resumo antes da confirmação — `conversa.md` §5 |
+| Como ele diz o que viu | o botão carrega identificador do rascunho **e uma marca da cotação** |
+| Cotação envelhecida | reconfirma com os números novos — `PRICE_CHANGED` |
+
+O `expectedTotal` reenviado pelo cliente **não é mais o mecanismo**, e a
+substituição é ganho: a marca da cotação é referência, não valor. Nada de
+dinheiro volta do cliente, e a invariante 2 do `CLAUDE.md` deixa de precisar ser
+lembrada nesse ponto — não há valor chegando para ser ignorado.
+
+As três validações que a seção lista continuam corretas, com uma ficando de
+graça:
+
+- **um único estabelecimento** — agora **estrutural**: a conversa é com uma
+  loja (ADR-006 §2);
+- **quantidade ≥ 1** — continua, no `order`, em T01;
+- **posse pelo cliente autenticado** — **sem objeto**; o equivalente é a
+  conversa pertencer ao contato, que o `conversation-service` já garante.
+
+E `pricedAt` continua existindo: é a marca da cotação, com outro nome.
