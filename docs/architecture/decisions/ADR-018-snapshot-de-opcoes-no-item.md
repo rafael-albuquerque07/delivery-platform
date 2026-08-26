@@ -136,3 +136,21 @@ Nunca se cobra a diferença em silêncio.
   cobrado.
 - **Congelar apenas o preço das opções, sem os nomes.** Rejeitada: o pedido
   deixa de ser reimprimível, e suporte ao cliente vira arqueologia.
+
+## Emenda de 26/08/2026 — o carrinho citado aqui não existe
+
+O texto acima cita a ADR-006 e a descreve como "carrinho no Redis, que guarda
+apenas identificadores". Quando isto foi escrito, a ADR-006 **não existia** — a
+citação apoiava-se numa decisão nunca tomada.
+
+Ela existe agora, e decidiu o contrário do que a citação presume: **não há
+carrinho.** O que há é `rascunhoDePedido`, campo do agregado `Conversa`, em
+MongoDB.
+
+**O que esta decisão exige continua verdadeiro**, e é mais fraco do que a
+citação sugere: o rascunho **não guarda preço**. Guarda identificadores; o preço
+vem da cotação, no fechamento. Onde ele mora nunca importou aqui — importa que
+o cliente não controle o valor, que é a alternativa rejeitada no fim deste
+documento.
+
+Leia "o carrinho no Redis (ADR-006)" como "o rascunho da conversa (ADR-006)".

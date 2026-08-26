@@ -7,7 +7,7 @@
 | 003 | ~~Mensageria híbrida RabbitMQ + MQTT~~ | ⛔ sem objeto — MQTT saiu do MVP (020, 021) |
 | 004 | Um pedido pertence a exatamente um estabelecimento | ✅ aceita |
 | 005 | ~~PostGIS e Redis GEO~~ | ⛔ sem objeto — geoprocessamento saiu do MVP (020) |
-| 006 | Carrinho no Redis: TTL, durabilidade e ordem do checkout | ⬜ a escrever — depende do marco 3 |
+| 006 | O rascunho pertence à conversa; não existe carrinho | ✅ aceita |
 | 007 | Mongock para versionamento de esquema no MongoDB | ✅ aceita |
 | 008 | MongoDB como replica set de nó único | ✅ aceita |
 | 009 | Modelo de valores do pedido | ✅ aceita · **emendada pela v1.1** |
@@ -37,9 +37,8 @@
 | 033 | O estado da jornada é perguntado | ✅ aceita |
 | 034 | Resposta que vira snapshot nunca é cacheada | ✅ aceita |
 
-**Trinta e uma escritas, duas sem objeto, uma a escrever.** A 006 depende do
-desenho do carrinho, que só chega no marco 3 — escrevê-la agora seria decidir no
-vazio.
+**Trinta e duas escritas, duas sem objeto — estas com registro próprio desde
+25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê
 

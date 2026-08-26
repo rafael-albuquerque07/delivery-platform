@@ -46,6 +46,11 @@ conversa, essa memória morreria com ela.
 da regra do topo. Um `precoBase` guardado aqui seria um número fora do controle
 do catálogo, e alguém acabaria somando.
 
+Que o rascunho viva aqui, e não num carrinho à parte, é decisão registrada na
+**ADR-006** — junto com o motivo de ele não ter TTL próprio: os dois relógios
+que importam, a `janela` de 24 horas (§8) e a validade do rascunho (§16), já são
+da conversa.
+
 ---
 
 ## 2. Roteamento multiestabelecimento

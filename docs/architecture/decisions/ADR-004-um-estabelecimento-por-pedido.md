@@ -76,6 +76,13 @@ com dois telefonemas, e o sistema não finge o contrário.
 - **A regra precisa de guarda no carrinho, não só no pedido.** É fácil implementar
   só no fechamento e produzir uma experiência ruim: o cliente monta tudo e leva
   recusa no fim.
+
+> **Emenda de 26/08/2026.** A guarda no carrinho deixou de precisar existir. A
+> ADR-006 pôs o rascunho dentro do agregado `Conversa`, que tem
+> `estabelecimentoId` na raiz e é roteada por número — não há onde um segundo
+> estabelecimento caberia. A guarda em T01 **continua**, porque estado externo
+> não se confia duas vezes.
+
 - **Fecha a porta para virar marketplace.** Se a premissa P3 cair, esta ADR cai
   junto — e junto com ela as cinco da tabela acima. É a decisão mais estrutural
   do sistema, e por isso a mais cara de reverter.
