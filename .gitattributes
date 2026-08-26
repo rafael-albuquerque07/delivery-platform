@@ -1,0 +1,16 @@
+# Normaliza para LF no repositório, qualquer que seja o sistema de quem escreve.
+* text=auto eol=lf
+
+# Exceções: scripts do Windows precisam de CRLF para funcionar.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# O wrapper do Gradle: um de cada.
+gradlew      text eol=lf
+gradlew.bat  text eol=crlf
+
+# Binários — nunca normalizar, nunca tentar diferenciar.
+*.pdf binary
+*.png binary
+*.jar binary
