@@ -270,7 +270,7 @@ Se o `./gradlew test` falhar por daemon indisponível, rode
 | Declarar versão de Testcontainers | Não declare. O BOM do Boot 4.1.x traz testcontainers-bom 2.x, onde os artefatos mudaram de nome: `org.testcontainers:testcontainers-junit-jupiter`, `-postgresql`, `-mongodb`, `-rabbitmq` |
 | Vai somar `total` num relatório | Não. `total` é o valor congelado no fechamento. O que entrou é `Σ Liquidacao.valorEfetivo`; o que o pedido vale hoje é `totalEfetivo` |
 | Vai calcular quanto o entregador ganha por pedido | Não existe. Remuneração vem do vínculo e é apurada por jornada — ADR-022 |
-| Vai colocar permissão ou papel dentro do JWT | Não. Permissão é do vínculo usuário × estabelecimento e é resolvida por requisição, com cache curto. No token vai só a identidade |
+| Vai colocar permissão ou papel dentro do JWT | Não. O token carrega **seis** claims e nada mais: `iss`, `sub`, `aud`, `iat`, `exp`, `jti`. Sem `roles`, sem `scope`, sem lista de estabelecimentos. Permissão é do vínculo usuário × estabelecimento e é resolvida por requisição, com cache curto e falha fechada. ADR-011, ADR-015 emendada |
 | Serviço de autorização indisponível | **Negar.** Fail-closed é decisão assumida: liberar em caso de dúvida transforma uma queda em acesso irrestrito |
 | Faixa de horário que cruza a meia-noite | `fim < inicio` pertence ao dia de início e se estende ao seguinte. Teste com pedido à 01:00 é obrigatório |
 | Build quebra em `build-logic:compilePluginsBlocks` — arquivo ausente ou erro de parse | Primeiro volte à configuração de ambiente acima; foi assim que a série de falhas de 22/08 terminou. Se persistir, rode de um terminal fora do VS Code e desabilite `redhat.java` e `vscjava.vscode-gradle` no workspace. Causa-raiz nunca foi isolada |

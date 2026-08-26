@@ -40,3 +40,43 @@ authorization code + PKCE, não há SSO nem login de terceiro sem migrar antes.
   evolução, correta quando surgir cliente de terceiro.
 - **Keycloak ou provedor gerenciado.** Rejeitada: acrescenta um container e
   retira do projeto o aprendizado de identidade.
+
+## Emenda de 26/08/2026 — `roles` e `scope` saem da lista de claims
+
+A lista de claims acima foi escrita em 16/08 e contradiz a **ADR-011**, de
+23/08, que decidiu o contrário e cita esta ADR entre as relacionadas — sem
+emendá-la. O `estabelecimento.md` §2 e a tabela de armadilhas do `CLAUDE.md`
+seguem a ADR-011.
+
+**`roles` é o `papel`**, e não pode entrar no token por dois motivos que o
+`estabelecimento.md` §2 registra:
+
+- **fica velho.** A Marli revoga o acesso do Rafa às 20h e o token dele continua
+  valendo até expirar;
+- **é por estabelecimento.** Um token que carregasse o papel em cada loja
+  cresceria com o número de vínculos e vazaria a lista de lojas do usuário em
+  toda requisição.
+
+**`scope` sai junto, por outro motivo: nada o leria.** A autorização é resolvida
+por requisição contra o `merchant-service` (ADR-011), com cache curto e falha
+fechada. Um `scope` sem consumidor é um campo com aparência de permissão
+esperando que alguém o use — e é assim que a permissão volta para dentro do
+token, seis meses depois, sem ninguém decidir isso.
+
+### O conjunto vigente
+
+| Claim | Para quê |
+|---|---|
+| `iss` | quem emitiu — confere com o JWKS |
+| `sub` | qual usuário. **É o único dado de identidade** |
+| `aud` | para quais serviços o token vale |
+| `iat` · `exp` | validade curta |
+| `jti` | identidade do token, para revogação e detecção de reúso |
+
+**Nada além disso.** Permissão, papel e lista de estabelecimentos ficam fora e
+são resolvidos por requisição.
+
+A justificativa original desta ADR — formato OAuth para que a migração futura
+troque apenas o emissor — **continua valendo**: os seis claims acima são todos
+padrão OAuth 2.1/OIDC. O que muda é que dois da lista original descreviam
+autorização que este sistema decidiu não carregar no token.

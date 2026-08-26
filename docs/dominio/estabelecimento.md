@@ -73,6 +73,10 @@ usuário pode fazer", é **"o que este usuário pode fazer nesta loja"**.
 | Validade, emissor, assinatura | Papel |
 | | Lista de estabelecimentos |
 
+A lista completa de claims está na **ADR-015**, emendada em 26/08/2026
+justamente por causa desta tabela: a versão original incluía `roles` e `scope`,
+escritos antes de a ADR-011 existir.
+
 Colocar permissão no token quebra de duas formas. Primeiro, ela fica **velha**:
 a Marli revoga o acesso do Rafa às 20h e o token dele continua valendo até
 expirar. Segundo, ela é **por estabelecimento** — um token que carregasse todas
