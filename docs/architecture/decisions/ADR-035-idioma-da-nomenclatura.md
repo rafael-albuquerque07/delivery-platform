@@ -102,6 +102,8 @@ assunto é do negócio.
 | `CatalogPort` | → `CatalogoPort` | marco 2 |
 | Modelo da ADR-018 — `Product`, `basePrice`, `minSelect`, `priceDelta` | **não se reescreve a ADR.** Emenda apontando para cá; o código nasce em português | marco 2 |
 | `POST /internal/catalog/quote` e o payload dele | prefixo fica; campos do payload viram domínio — `estabelecimentoId`, `produtoId` | marco 2 |
+| `ADR-020` — `AreaEntrega` com `merchantId`; `DeliveryQuote`; método `quote()` | O `estabelecimento.md` §5 já tem a versão vigente — `AreaDeEntrega`, `identificadorNormalizado`, sem `merchantId`. A ADR-020 **não se reescreve**; emenda apontando para o domínio, e o código segue o §5 | marco 3 |
+| `ADR-018` — `stockControlled: boolean` | **Não é só idioma.** O domínio tem `modoDeControle`, enum de três estados (`SEM_CONTROLE \| QUALITATIVO \| QUANTITATIVO`). A ADR-018 é anterior ao enum, e traduzir o booleano fixaria um conceito que não existe | marco 2 |
 
 **Nada disso é feito agora.** Renomear porta que ninguém implementou é editar
 texto por gosto; o momento certo é quando o código encostar nela, e aí o
