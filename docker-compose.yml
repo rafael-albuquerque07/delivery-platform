@@ -18,6 +18,7 @@ services:
 
   # ─────────────────────────────────────────────────────── core
   postgres:
+    restart: unless-stopped
     profiles: ["core", "full"]
     image: postgres:17-alpine
     environment:
@@ -44,6 +45,7 @@ services:
   # que remove a exposição. Se este compose um dia servir a algo além da máquina
   # do desenvolvedor, isto vira decisão de novo — e aí é ADR.
   mongodb:
+    restart: unless-stopped
     profiles: ["core", "full"]
     image: mongo:8
     # Replica set de nó único: sem ele não há transação multi-documento,
@@ -59,6 +61,9 @@ services:
       timeout: 5s
       retries: 10
 
+  # restart: "no" é deliberado. Este contêiner inicializa o replica set e sai
+  # com 0 — é de um tiro só. Com unless-stopped ele reiniciaria para sempre,
+  # reexecutando o rs.initiate() a cada volta.
   mongo-init:
     profiles: ["core", "full"]
     image: mongo:8
@@ -71,6 +76,7 @@ services:
     restart: "no"
 
   redis:
+    restart: unless-stopped
     profiles: ["core", "full"]
     image: redis:7-alpine
     # AOF ligado: reiniciar o container não pode apagar estado de sessão ativo.
@@ -86,6 +92,7 @@ services:
       retries: 5
 
   rabbitmq:
+    restart: unless-stopped
     profiles: ["core", "full"]
     image: rabbitmq:4-management-alpine
     environment:
@@ -103,6 +110,7 @@ services:
       retries: 5
 
   minio:
+    restart: unless-stopped
     profiles: ["core", "full"]
     image: minio/minio:latest
     command: ["server", "/data", "--console-address", ":9001"]
@@ -345,6 +353,7 @@ services:
 
   # ──────────────────────────────────────────── observabilidade
   prometheus:
+    restart: unless-stopped
     profiles: ["observability", "full"]
     image: prom/prometheus:latest
     ports:
@@ -353,6 +362,7 @@ services:
       - ./infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
   grafana:
+    restart: unless-stopped
     profiles: ["observability", "full"]
     image: grafana/grafana:latest
     environment:
@@ -363,12 +373,14 @@ services:
       - grafana-data:/var/lib/grafana
 
   loki:
+    restart: unless-stopped
     profiles: ["observability", "full"]
     image: grafana/loki:latest
     ports:
       - "127.0.0.1:3100:3100"
 
   tempo:
+    restart: unless-stopped
     profiles: ["observability", "full"]
     image: grafana/tempo:latest
     ports:

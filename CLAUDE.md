@@ -208,6 +208,34 @@ Sem `.env`, as oito variáveis interpolam para string vazia e o compose só avis
 O Postgres recusa subir sem senha — falha alta, e é o comportamento desejado. O
 MinIO sobe com credencial em branco, que é pior porque parece funcionar.
 
+### A VM precisa estar viva quando o build roda
+
+O WSL2 encerra a distro quando nenhuma sessão está anexada, e leva os
+contêineres junto. O Testcontainers fala com o daemon por `DOCKER_HOST` — se a
+VM estiver desligada na hora do `./gradlew test`, o teste falha por motivo que
+não tem nada a ver com o código.
+
+| Peça | O que faz |
+|---|---|
+| Tarefa **WSL Ubuntu keepalive**, no logon | roda `wsl -d Ubuntu -- sleep infinity` e segura a VM |
+| `restart: unless-stopped` no compose | traz os contêineres de volta quando o daemon sobe |
+| `systemctl enable docker` | traz o daemon de volta quando a distro sobe |
+
+As três juntas fecham o ciclo. Uma só não fecha: manter a VM viva **não** faz
+contêiner parado voltar, e política de reinício **não** liga VM desligada.
+
+Diagnóstico rápido quando algo não responde:
+
+```
+wsl -l --running                → a distro está de pé?
+wsl -d Ubuntu -- uptime -s      → desde quando? (se for recente, ela caiu)
+wsl -d Ubuntu -- systemctl is-active docker
+docker info --format "{{.ServerVersion}}"
+```
+
+`Exited (255)` no Postgres depois de a VM cair é normal: os outros atendem o
+SIGTERM e saem com 0; ele demora mais que o tempo limite e leva SIGKILL.
+
 ---
 
 ## Armadilhas deste repositório
