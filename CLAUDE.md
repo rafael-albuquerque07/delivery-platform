@@ -215,14 +215,26 @@ contêineres junto. O Testcontainers fala com o daemon por `DOCKER_HOST` — se 
 VM estiver desligada na hora do `./gradlew test`, o teste falha por motivo que
 não tem nada a ver com o código.
 
+**Não há guardião da VM, e é decisão.** Três tentativas, três falhas
+diferentes:
+
+| Tentativa | Falhou como |
+|---|---|
+| Tarefa agendada no logon | `Register-ScheduledTask` → "Acesso negado" (conta de domínio) |
+| `.wslconfig` com `vmIdleTimeout` | chave inexistente na WSL 2.6.3 — ignorada com aviso |
+| `sleep infinity` na Inicialização | o processo sobreviveu seis horas e a VM caiu assim mesmo |
+
+Não é perda: `systemctl enable docker` mais `restart: unless-stopped` trazem os
+cinco contêineres de pé em **~13 segundos** a partir da VM desligada, medido em
+26/08/2026. O primeiro comando `wsl` ou `docker` do dia acorda tudo.
+
 | Peça | O que faz |
 |---|---|
-| Tarefa **WSL Ubuntu keepalive**, no logon | roda `wsl -d Ubuntu -- sleep infinity` e segura a VM |
 | `restart: unless-stopped` no compose | traz os contêineres de volta quando o daemon sobe |
 | `systemctl enable docker` | traz o daemon de volta quando a distro sobe |
 
-As três juntas fecham o ciclo. Uma só não fecha: manter a VM viva **não** faz
-contêiner parado voltar, e política de reinício **não** liga VM desligada.
+As duas juntas fecham o ciclo. Política de reinício **não** liga VM desligada —
+mas o primeiro comando `wsl`/`docker` do dia já liga, e o resto segue sozinho.
 
 Diagnóstico rápido quando algo não responde:
 
@@ -235,6 +247,9 @@ docker info --format "{{.ServerVersion}}"
 
 `Exited (255)` no Postgres depois de a VM cair é normal: os outros atendem o
 SIGTERM e saem com 0; ele demora mais que o tempo limite e leva SIGKILL.
+
+Se o `./gradlew test` falhar por daemon indisponível, rode
+`wsl -d Ubuntu -- true`, espere quinze segundos e repita.
 
 ---
 
@@ -266,6 +281,7 @@ SIGTERM e saem com 0; ele demora mais que o tempo limite e leva SIGKILL.
 | Acabou de rodar `SetEnvironmentVariable(...,"User")` | A janela que executou o comando **não enxerga a própria escrita**. Grava no registro para processos futuros. Para testar na hora, `$env:NOME = "valor"` também |
 | Abriu aba nova do terminal e a variável não veio | Aba não é processo. A aba nova nasce filha do Windows Terminal que já estava aberto e herda o ambiente **daquele** processo. Feche o Terminal inteiro — e o VS Code — e abra de novo |
 | Vai colar um bloco de comandos no shell do WSL | Rode `sudo -v` antes. Se um `sudo` do meio do bloco pedir senha, as linhas seguintes viram tentativas de senha e o terminal as ecoa — parece que repetiu, e na verdade nada rodou |
+| Vai tentar manter a VM do WSL2 sempre viva | Não crie guardião. Três tentativas falharam — tarefa agendada (`Acesso negado` em conta de domínio), `vmIdleTimeout` no `.wslconfig` (chave inexistente na WSL 2.6.3), `sleep infinity` (a VM caiu de qualquer jeito). `restart: unless-stopped` + `systemctl enable docker` bastam: ~13 s do zero, e o primeiro `wsl`/`docker` do dia já dispara a volta |
 | Vai guardar coordenada, áudio ou número de cartão | Não guarde. Endereço textual e bairro no lugar da coordenada, transcrição no lugar do áudio, `txid` no lugar do cartão. A forma mais barata de cumprir a LGPD é não ter o dado — ADR-013 §4 |
 | Restaurou um banco a partir de backup | **Reaplique as exclusões de titular** com data posterior à do backup antes de o serviço voltar a atender. Backup restaurado ressuscita dado apagado — `docs/operacao/exclusao-de-titular.md` |
 | String de conexão do MongoDB sem `?replicaSet=rs0` | O driver conecta em modo avulso e a transação falha **em runtime**, não no boot — possivelmente semanas depois. Todo serviço documental precisa do parâmetro. ADR-008 |
