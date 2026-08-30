@@ -237,7 +237,7 @@ Três tentativas, três falhas diferentes:
 | Tarefa agendada no logon | `Register-ScheduledTask` → "Acesso negado" (conta de domínio) |
 | `.wslconfig` com `vmIdleTimeout` | chave inexistente na WSL 2.6.3 — ignorada com aviso |
 | `sleep infinity` na Inicialização | o processo sobreviveu seis horas e a VM caiu assim mesmo |
-| Tarefa agendada no logon, retomada em 30/08/2026 | **Funcionou.** `Ready` após `Register-ScheduledTask`, `Running` após `Start-ScheduledTask`, `wsl -l --running` confirmando o Ubuntu. Motivo da diferença com a tentativa original: a confirmar, pendente do `RunLevel` |
+| Tarefa agendada no logon, **com os padrões** | ✅ funciona — 30/08/2026. `Ready` após `Register-ScheduledTask`, `Running` após `Start-ScheduledTask`, `wsl -l --running` confirmando o Ubuntu. Roda como o próprio usuário: `LogonType Interactive`, `RunLevel Limited`. A tentativa da primeira linha falhou com "Acesso negado"; o comando dela não foi preservado, mas a diferença provável é ter pedido elevação (`-RunLevel Highest`) ou conta `SYSTEM` — nenhum dos dois é possível para conta de domínio sem admin, e nenhum dos dois é necessário para manter uma VM viva |
 
 Não é perda: `systemctl enable docker` mais `restart: unless-stopped` trazem os
 cinco contêineres de pé em **~13 segundos** a partir da VM desligada, medido em
