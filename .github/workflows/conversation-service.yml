@@ -1,17 +1,26 @@
 name: conversation-service
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'backend/services/conversation-service/**'
       - 'backend/build-logic/**'
       - 'backend/gradle/libs.versions.toml'
+      - 'backend/gradlew'
+      - 'backend/gradle/wrapper/**'
+      - 'backend/settings.gradle.kts'
+      - '.github/workflows/_service-ci.yml'
       - '.github/workflows/conversation-service.yml'
   pull_request:
     paths:
       - 'backend/services/conversation-service/**'
       - 'backend/build-logic/**'
       - 'backend/gradle/libs.versions.toml'
+      - 'backend/gradlew'
+      - 'backend/gradle/wrapper/**'
+      - 'backend/settings.gradle.kts'
+      - '.github/workflows/_service-ci.yml'
 
 jobs:
   ci:

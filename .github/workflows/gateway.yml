@@ -1,17 +1,26 @@
 name: gateway
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'backend/infra/gateway/**'
       - 'backend/build-logic/**'
       - 'backend/gradle/libs.versions.toml'
+      - 'backend/gradlew'
+      - 'backend/gradle/wrapper/**'
+      - 'backend/settings.gradle.kts'
+      - '.github/workflows/_service-ci.yml'
       - '.github/workflows/gateway.yml'
   pull_request:
     paths:
       - 'backend/infra/gateway/**'
       - 'backend/build-logic/**'
       - 'backend/gradle/libs.versions.toml'
+      - 'backend/gradlew'
+      - 'backend/gradle/wrapper/**'
+      - 'backend/settings.gradle.kts'
+      - '.github/workflows/_service-ci.yml'
 
 jobs:
   ci:

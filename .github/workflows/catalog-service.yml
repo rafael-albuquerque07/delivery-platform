@@ -1,17 +1,26 @@
 name: catalog-service
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'backend/services/catalog-service/**'
       - 'backend/build-logic/**'
       - 'backend/gradle/libs.versions.toml'
+      - 'backend/gradlew'
+      - 'backend/gradle/wrapper/**'
+      - 'backend/settings.gradle.kts'
+      - '.github/workflows/_service-ci.yml'
       - '.github/workflows/catalog-service.yml'
   pull_request:
     paths:
       - 'backend/services/catalog-service/**'
       - 'backend/build-logic/**'
       - 'backend/gradle/libs.versions.toml'
+      - 'backend/gradlew'
+      - 'backend/gradle/wrapper/**'
+      - 'backend/settings.gradle.kts'
+      - '.github/workflows/_service-ci.yml'
 
 jobs:
   ci:
