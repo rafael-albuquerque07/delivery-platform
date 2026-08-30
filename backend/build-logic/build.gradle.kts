@@ -19,6 +19,10 @@ fun catalogPlugin(alias: String, artifact: String): String {
     return "$artifact:${plugin.version.requiredVersion}"
 }
 
+// implementation, não compileOnly: os convention plugins deste módulo aplicam o
+// plugin do Spring Boot nos serviços que os usam. Isso executa o plugin, não só
+// referencia seu tipo — então ele precisa estar disponível em runtime, no
+// classpath deste build, e não só em tempo de compilação.
 dependencies {
     implementation(
         catalogPlugin("spring-boot", "org.springframework.boot:spring-boot-gradle-plugin")
