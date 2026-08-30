@@ -48,7 +48,7 @@ pergunta)
 **`VinculoAlteradoV1` é o único com consumidor coletivo**, e é infraestrutura, não
 domínio: todo serviço que resolve permissão invalida a entrada de cache ao
 recebê-lo. O mecanismo é descrito uma vez, em `docs/dominio/estabelecimento.md`
-§3, e não se repete nos sete documentos de domínio.
+§3, e não se repete nos oito documentos de domínio.
 
 **O `settlement` publica dois eventos, e só para invalidar cache.** Nenhum
 consumidor mantém projeção de jornada: a verdade continua no `settlement` e é
@@ -82,6 +82,7 @@ Registrado para que a ausência seja decisão, e não esquecimento.
 | T17 · `PRONTO → AGUARDANDO_CLIENTE` | Retirada no balcão não move nenhum outro serviço |
 | T04 · reserva de estoque | `AGUARDANDO_ESTOQUE` é inalcançável até o marco 10 |
 | Fechamento de jornada | Fim de cadeia — §1 |
+| `identity-service` — nenhum evento de domínio | Criar conta não é fato que outro serviço precise saber; o `merchant` descobre o usuário quando um vínculo é criado, e ninguém mais tem interesse. Detalhado em `docs/dominio/usuario.md` §5 |
 
 ---
 
