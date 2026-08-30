@@ -1,0 +1,19 @@
+# Varredura de segredo é preocupação do repositório inteiro, não de um módulo.
+# Sem filtro de caminho, de propósito: commit que só mexe em docs/ ou na raiz
+# é exatamente onde um .env vazaria.
+name: security
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

@@ -214,7 +214,9 @@ registro próprio dizendo por quê. Índice em
   estrutura nasce em Flyway (SQL) ou Mongock (MongoDB).
 - **Publica → Outbox. Consome → `processed_messages`.** Sem exceção. Retrofit de
   Outbox significa revisitar todo ponto de publicação.
-- **Nenhum segredo no Git.** Só `.env.example`, com nomes. Gitleaks roda no CI.
+- **Nenhum segredo no Git.** Só `.env.example`, com nomes. Gitleaks roda em
+  **todo push**, no workflow `security` — sem filtro de caminho, porque o
+  commit que só mexe em documentação é exatamente onde um `.env` vazaria.
 - **Timeout em toda chamada entre serviços.** O default é esperar para sempre, e
   a primeira chamada sem timeout é uma indisponibilidade latente.
 - **`correlationId` desde o começo.** É código, não infraestrutura — e precisa

@@ -36,8 +36,3 @@ jobs:
       - name: Testes (unitários, arquitetura e integração)
         working-directory: backend
         run: ./gradlew ${{ inputs.module }}:test --no-daemon
-
-      - name: Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
