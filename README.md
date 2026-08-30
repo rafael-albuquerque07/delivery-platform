@@ -110,7 +110,7 @@ Em revisão manual, a arquitetura erode em duas semanas.
 | Serviço | Porta | Persistência | Documento de domínio |
 |---|---:|---|---|
 | gateway | 8080 | — | — |
-| identity-service | 8081 | PostgreSQL | — (autenticação, sem domínio de negócio) |
+| identity-service | 8081 | PostgreSQL | `Usuario` (ADR-035) — sem documento próprio |
 | merchant-service | 8082 | PostgreSQL + Redis | [`estabelecimento.md`](docs/dominio/estabelecimento.md) |
 | catalog-service | 8083 | MongoDB + Redis | [`catalogo.md`](docs/dominio/catalogo.md) |
 | settlement-service | 8084 | PostgreSQL | [`liquidacao.md`](docs/dominio/liquidacao.md) |
@@ -163,6 +163,48 @@ ADR-021.
 | [`CLAUDE.md`](CLAUDE.md) | Invariantes e convenções — leitura obrigatória antes do primeiro commit |
 | [`docs/architecture/decisions/`](docs/architecture/decisions/README.md) | Por que cada decisão foi tomada, com alternativas e consequências |
 | `docs/referencia/*.pdf` | Versões publicadas da arquitetura, do PRD e da revisão de escopo |
+
+---
+
+## Trinta e três ADRs e nenhuma classe de negócio
+
+Isso é deliberado, e o objeto de estudo aqui é o raciocínio de projeto.
+
+Três práticas sustentam o resto:
+
+- **ADR não se reescreve.** Quando uma decisão muda, a antiga ganha uma **emenda
+  datada** ao fim; o corpo continua registrando a decisão como foi tomada,
+  inclusive quando estava errada. A ADR-018 tem uma seção inteira descrevendo um
+  fluxo da v1.0 que o produto não tem mais — ela fica, com a emenda explicando.
+- **Nome de evento é único no repositório inteiro** (ADR-031). Quando dois
+  serviços colidiram, o desempate foi: quem nomeou um *atributo* em vez de um
+  *fato* é quem renomeia.
+- **O domínio fala português, o meio fala inglês, o adaptador traduz** (ADR-035).
+  O critério é uma pergunta: *a Marli usaria essa palavra?* Ela diz troco,
+  bairro, jornada, comanda. Não diz `money` nem `repository` — e por isso `Money`
+  e `Repository` ficam, porque são nomes de padrão e não palavras de negócio.
+
+O ganho apareceu de forma mensurável. As últimas revisões acharam, entre outras:
+
+- uma invariante que prendia dois de três campos e deixava o terceiro livre;
+- um valor de entrega guardado em dois campos — um congelado, o outro cobrado — e
+  nenhuma regra ligando os dois;
+- uma ADR de 16/08 contradizendo outra de 23/08 que a citava entre as
+  relacionadas e não a emendou;
+- duas ADRs com garantia viva escrita sobre nome de campo, que nenhuma emenda de
+  modelo saberia visitar.
+
+Nada disso custa em documento. Tudo isso custaria migration depois de existir em
+código.
+
+E o contrapeso, que também está no histórico: sete rodadas varrendo documentos
+acharam defeitos reais, e **dez minutos lendo o `docker-compose.yml` acharam dois
+bancos sem senha publicados em `0.0.0.0`**. Documento só mente quando alguém lê;
+infraestrutura mente até alguém ligar.
+
+Trinta e três ADRs escritas, mais duas numeradas que ficaram sem objeto e têm
+registro próprio dizendo por quê. Índice em
+[`docs/architecture/decisions/`](docs/architecture/decisions/README.md).
 
 ---
 
