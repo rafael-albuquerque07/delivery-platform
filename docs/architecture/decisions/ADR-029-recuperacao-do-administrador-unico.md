@@ -57,6 +57,12 @@ pior que campo vazio porque parece proteção.
 Isso resolve **(a)** sempre e **(b)** quando há um segundo canal — que é a
 maioria dos casos, e é por isso que pedir vale a pena.
 
+> **Estreitado pela ADR-036 (30/08/2026).** O canal de cadastro é sempre o
+> **telefone**, que por esta seção nasce verificado. O e-mail permanece como o
+> segundo canal — pedido, não exigido — e continua recuperando quando verificado.
+> A regra desta seção não muda; o que deixa de existir é a escolha de *qual*
+> canal cria a conta.
+
 ### 2. A regra central: a recuperação opera sobre o vínculo, nunca sobre a credencial
 
 Esta é a decisão mais importante desta ADR, e a menos óbvia.
