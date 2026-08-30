@@ -65,7 +65,7 @@ preços), recebe linhas validadas e precificadas, e congela o resultado.
 ```
 OrderItem
 ├── productId, productNameSnapshot, unitBasePriceSnapshot
-├── stockControlledSnapshot: boolean      → consumido pela ADR-010
+├── estoqueControladoSnapshot: boolean      → consumido pela ADR-010
 ├── quantity
 ├── selectedOptions: [OrderItemOption]
 ├── unitTotal   = unitBasePriceSnapshot + Σ priceDeltaSnapshot
@@ -110,7 +110,7 @@ Nunca se cobra a diferença em silêncio.
   obrigatória.
 - A regra de produto vive num lugar só; o `order-service` não duplica
   `minSelect`/`maxSelect` nem envelhece uma cópia dela.
-- `stockControlledSnapshot` chega de graça na mesma resposta, e é o que permite
+- `estoqueControladoSnapshot` chega de graça na mesma resposta, e é o que permite
   a ADR-010 decidir o caminho da Saga sem outra chamada.
 
 **Negativas**

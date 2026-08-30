@@ -55,7 +55,7 @@ pequeno e não obriga a revisar documentação de serviço que não mudou.
 | `notification` | **Absorvido** pelo `conversation` | Não |
 
 **Adiado não é cancelado, e a diferença é registrada em código**, não só em
-prosa: `stockControlledSnapshot` continua congelado no item do pedido (ADR-018)
+prosa: `estoqueControladoSnapshot` continua congelado no item do pedido (ADR-018)
 e o estado `AGUARDANDO_ESTOQUE` continua na máquina de estados, inalcançável e
 com teste que prova a inalcançabilidade. Custa um boolean e um caso de teste, e
 evita migration de dados no marco 10.
@@ -121,7 +121,7 @@ liquidação, o `payment` é a fronteira com o PSP.
   `identity-service` é a prova de que o custo é real e já foi cobrado.
 - **Manter só o `inventory`, porque é barato e volta cedo.** Rejeitada: o marco
   10 é o penúltimo, e "volta cedo" é otimismo. O que precisava sobreviver —
-  `stockControlledSnapshot` e o estado dormente — sobreviveu.
+  `estoqueControladoSnapshot` e o estado dormente — sobreviveu.
 - **Renumerar todas as portas contiguamente.** Rejeitada: obrigaria a revisar
   Compose, Prometheus, gateway e documentação de serviços que não mudaram, em
   troca de estética.

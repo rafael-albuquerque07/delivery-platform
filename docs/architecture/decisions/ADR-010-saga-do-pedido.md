@@ -2,7 +2,7 @@
 
 **Status:** Aceita — 16/08/2026 · **reescrita em 21/08/2026** pela arquitetura v1.1
 **Substitui:** `ADR-010-saga-com-estoque-opcional.md` (mesmo número, título anterior)
-**Relacionada:** ADR-009 (valores e liquidação), ADR-018 (`stockControlledSnapshot`), ADR-022 (remuneração)
+**Relacionada:** ADR-009 (valores e liquidação), ADR-018 (`estoqueControladoSnapshot`), ADR-022 (remuneração)
 **Premissas do PRD que sustentam esta decisão:** P1, P2, P6
 
 > **Reescrita v1.1 — o que mudou e por quê.** A versão original orquestrava
@@ -93,11 +93,11 @@ MVP.
 
 O que **permanece** desde já:
 
-- `stockControlledSnapshot` continua congelado no item (ADR-018). Custa um
+- `estoqueControladoSnapshot` continua congelado no item (ADR-018). Custa um
   boolean e evita uma migration de dados quando o marco 10 chegar.
 - O estado `AGUARDANDO_ESTOQUE` existe na máquina de estados, **inalcançável no
   MVP**, com o teste que prova que nenhum pedido entra nele enquanto todos os
-  itens tiverem `stockControlledSnapshot == false`.
+  itens tiverem `estoqueControladoSnapshot == false`.
 
 A disponibilidade qualitativa não é perna de Saga: é uma verificação **síncrona**
 no fechamento do pedido, contra o catálogo. Item indisponível não gera pedido —

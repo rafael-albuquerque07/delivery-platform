@@ -240,7 +240,7 @@ agora". Reserva só existe no modo `QUANTITATIVO`, no marco 10.
 | `QUANTITATIVO` | Saldo, reserva ao entrar no pedido, baixa na conclusão | **10** |
 
 O campo existe desde o marco 2 e é congelado no item do pedido como
-`stockControlledSnapshot` (ADR-018) — um boolean hoje, para evitar migration de
+`estoqueControladoSnapshot` (ADR-018) — um boolean hoje, para evitar migration de
 dados quando o marco 10 chegar. Enquanto isso, `QUANTITATIVO` é valor **inválido
 na publicação**, com mensagem que diz o marco.
 

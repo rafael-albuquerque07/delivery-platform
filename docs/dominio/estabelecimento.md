@@ -295,7 +295,7 @@ Matriz pelo mesmo motivo dos métodos de pagamento: mínimo para entrega e nenhu
 para retirada é a configuração comum, e o valor único não a expressa. **Zero é
 valor válido e significa "sem mínimo"** — não é ausência de configuração.
 
-**O mínimo é sobre `itemsSubtotal`, nunca sobre o `total`** (ADR-028). Sobre o
+**O mínimo é sobre `subtotalDosItens`, nunca sobre o `total`** (ADR-028). Sobre o
 total, a taxa de entrega ajudaria a atingi-lo: um mínimo de R$ 25 com taxa de
 R$ 9 viraria um mínimo de R$ 16 de comida — e de R$ 13 num bairro mais caro. O
 critério passaria a depender de onde o cliente mora.
