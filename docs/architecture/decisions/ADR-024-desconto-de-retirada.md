@@ -205,3 +205,13 @@ modalidade. **`descontoDeRetirada` não está nessa lista**, e passa a fazer par
 dela.
 
 O PDF não se reescreve. A lista vigente é a de `docs/dominio/estabelecimento.md`.
+
+## Nota de 26/08/2026 — a tabela de exemplo e o I10 citado são anteriores à ADR-009 emendada
+
+Os nomes da tabela de exemplo (`itemsSubtotal`, `deliveryFee`) e o I10 citado no
+corpo são da versão anterior do modelo. **O I10 citado tinha um defeito**: ele
+prendia `deliveryFee` e `nomeAreaSnapshot` na retirada e deixava `taxaSnapshot`
+livre. A versão vigente está no `pedido.md`.
+
+Os valores concretos do exemplo continuam válidos — exemplo é exemplo, e a
+aritmética não mudou.

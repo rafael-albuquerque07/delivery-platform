@@ -110,3 +110,10 @@ entrega.
 - **Deixar a remuneração fora do sistema, calculada pelo comerciante.**
   Rejeitada: é exatamente o papel que o produto promete substituir. O acerto com
   o entregador é metade do fechamento de expediente.
+
+## Nota de 26/08/2026 — `deliveryFee` chama-se `taxaSnapshot`
+
+A política rejeitada aqui — `courierPayout = deliveryFee` — continua rejeitada
+pelas mesmas razões. O campo passou a se chamar `taxaSnapshot` e é o único do
+modelo (**ADR-009** emendada): não há mais um valor cobrado separado do valor
+congelado.

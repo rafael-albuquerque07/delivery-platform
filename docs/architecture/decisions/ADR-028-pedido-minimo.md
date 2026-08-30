@@ -39,12 +39,12 @@ justamente ela que o valor único não expressa.
 **Zero é valor válido e significa "sem mínimo"** — não é ausência de
 configuração. Mesma distinção que a ADR-020 fez para a taxa de área.
 
-### 2. O mínimo é sobre `itemsSubtotal`. Nunca sobre o `total`
+### 2. O mínimo é sobre `subtotalDosItens`. Nunca sobre o `total`
 
 É a decisão que importa desta ADR, e a que se erra por descuido.
 
 ```
-itemsSubtotal ≥ pedidoMinimoPorModalidade[modalidade]
+subtotalDosItens ≥ pedidoMinimoPorModalidade[modalidade]
 ```
 
 Se o mínimo fosse sobre o `total`, a **taxa de entrega ajudaria o cliente a
@@ -58,7 +58,7 @@ paga e não muda o que ele comprou. Mínimo é sobre a compra.
 ```
 Pedido de R$ 22 em itens, entrega no bairro de R$ 9, mínimo de R$ 25
 
-  sobre itemsSubtotal   22 < 25  →  RECUSADO           ✓ correto
+  sobre subtotalDosItens 22 < 25  →  RECUSADO           ✓ correto
   sobre total           31 ≥ 25  →  aceito             ✗ o frete pagou o mínimo
 ```
 
@@ -95,7 +95,7 @@ aparece depois em relatório sem explicação.
 
 - Fecha a consequência que a ADR-024 nomeou, e fecha pelo lado certo: o problema
   não era o desconto, era a ausência de mínimo.
-- A escolha do `itemsSubtotal` impede a distorção em que o bairro do cliente
+- A escolha do `subtotalDosItens` impede a distorção em que o bairro do cliente
   altera o mínimo efetivo.
 - É a regra que a loja já tem escrita no cardápio, então o comerciante não
   precisa aprender conceito nenhum — só digitar o número que ele já usa.
@@ -145,3 +145,9 @@ aparece depois em relatório sem explicação.
 O documento de arquitetura v2 (`docs/referencia/`), §18.1, lista **pedido
 mínimo** como decisão de produto sem dono e sem prazo. Passa a estar decidido
 aqui.
+
+## Emenda de 26/08/2026 — o campo mudou de nome
+
+A guarda do §2 passa a ler `subtotalDosItens`. É renome de idioma (ADR-035),
+decidido junto com a emenda da **ADR-009** — a semântica não muda, e o pedido
+mínimo continua medido sem a taxa de entrega.
