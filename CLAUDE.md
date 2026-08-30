@@ -219,14 +219,25 @@ contêineres junto. O Testcontainers fala com o daemon por `DOCKER_HOST` — se 
 VM estiver desligada na hora do `./gradlew test`, o teste falha por motivo que
 não tem nada a ver com o código.
 
-**Não há guardião da VM, e é decisão.** Três tentativas, três falhas
-diferentes:
+> **Revisto em 30/08/2026.** Há guardião: a tarefa `WSL Ubuntu keepalive`, no
+> logon. A decisão anterior — não ter guardião — valia enquanto o único
+> sintoma era contêiner parado, e as duas peças abaixo resolvem isso. O que
+> mudou é o Testcontainers: ele fala com `DOCKER_HOST=tcp://127.0.0.1:2375` e
+> **não sabe acordar a VM** — se ela estiver desligada, o teste falha por
+> motivo que não tem nada a ver com o código.
+>
+> **E ela é a peça descartável do trio.** Manter a VM viva custa o teto do
+> `.wslconfig` em commit o tempo todo, e commit é o recurso que faltou na
+> madrugada de 30/08. Se a pressão voltar, remova esta antes das outras duas.
+
+Três tentativas, três falhas diferentes:
 
 | Tentativa | Falhou como |
 |---|---|
 | Tarefa agendada no logon | `Register-ScheduledTask` → "Acesso negado" (conta de domínio) |
 | `.wslconfig` com `vmIdleTimeout` | chave inexistente na WSL 2.6.3 — ignorada com aviso |
 | `sleep infinity` na Inicialização | o processo sobreviveu seis horas e a VM caiu assim mesmo |
+| Tarefa agendada no logon, retomada em 30/08/2026 | **Funcionou.** `Ready` após `Register-ScheduledTask`, `Running` após `Start-ScheduledTask`, `wsl -l --running` confirmando o Ubuntu. Motivo da diferença com a tentativa original: a confirmar, pendente do `RunLevel` |
 
 Não é perda: `systemctl enable docker` mais `restart: unless-stopped` trazem os
 cinco contêineres de pé em **~13 segundos** a partir da VM desligada, medido em
@@ -285,7 +296,8 @@ Se o `./gradlew test` falhar por daemon indisponível, rode
 | Acabou de rodar `SetEnvironmentVariable(...,"User")` | A janela que executou o comando **não enxerga a própria escrita**. Grava no registro para processos futuros. Para testar na hora, `$env:NOME = "valor"` também |
 | Abriu aba nova do terminal e a variável não veio | Aba não é processo. A aba nova nasce filha do Windows Terminal que já estava aberto e herda o ambiente **daquele** processo. Feche o Terminal inteiro — e o VS Code — e abra de novo |
 | Vai colar um bloco de comandos no shell do WSL | Rode `sudo -v` antes. Se um `sudo` do meio do bloco pedir senha, as linhas seguintes viram tentativas de senha e o terminal as ecoa — parece que repetiu, e na verdade nada rodou |
-| Vai tentar manter a VM do WSL2 sempre viva | Não crie guardião. Três tentativas falharam — tarefa agendada (`Acesso negado` em conta de domínio), `vmIdleTimeout` no `.wslconfig` (chave inexistente na WSL 2.6.3), `sleep infinity` (a VM caiu de qualquer jeito). `restart: unless-stopped` + `systemctl enable docker` bastam: ~13 s do zero, e o primeiro `wsl`/`docker` do dia já dispara a volta |
+| Vai tentar manter a VM do WSL2 sempre viva | **Crie só a tarefa agendada no logon**, com os padrões — sem `-RunLevel Highest`, sem conta `SYSTEM`. Registrar não é executar: confirme com `Start-ScheduledTask` e depois `Get-ScheduledTask \| Select State`. `vmIdleTimeout` no `.wslconfig` (chave inexistente na WSL 2.6.3) e `sleep infinity` (sobrevive até a VM cair de qualquer jeito) continuam desaconselhados. `restart: unless-stopped` + `systemctl enable docker` fecham o ciclo depois que a VM acorda — ~13 s do zero |
+| Vai registrar tarefa agendada | `Register-ScheduledTask` deixa em `Ready`, não em `Running` — registrar não é executar. Falta o `Start-ScheduledTask`, e depois `Get-ScheduledTask \| Select State` para confirmar |
 | Vai rodar comando com `$`, `$(...)` ou aspas aninhadas via `wsl -d Ubuntu -- ...` | Não passe pelo PowerShell. Ele mastiga a passagem de argumento e a variável chega vazia — sem erro, o comando roda e mede outra coisa. Entre com `wsl`, rode lá dentro, `exit`. Diagnóstico: `echo "[$VAR]"` — se vier `[]` e você sabe que a variável existe, é isto |
 | Vai guardar coordenada, áudio ou número de cartão | Não guarde. Endereço textual e bairro no lugar da coordenada, transcrição no lugar do áudio, `txid` no lugar do cartão. A forma mais barata de cumprir a LGPD é não ter o dado — ADR-013 §4 |
 | Restaurou um banco a partir de backup | **Reaplique as exclusões de titular** com data posterior à do backup antes de o serviço voltar a atender. Backup restaurado ressuscita dado apagado — `docs/operacao/exclusao-de-titular.md` |
