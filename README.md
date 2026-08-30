@@ -110,7 +110,7 @@ Em revisão manual, a arquitetura erode em duas semanas.
 | Serviço | Porta | Persistência | Documento de domínio |
 |---|---:|---|---|
 | gateway | 8080 | — | — |
-| identity-service | 8081 | PostgreSQL | `Usuario` (ADR-035) — sem documento próprio |
+| identity-service | 8081 | PostgreSQL | [`usuario.md`](docs/dominio/usuario.md) |
 | merchant-service | 8082 | PostgreSQL + Redis | [`estabelecimento.md`](docs/dominio/estabelecimento.md) |
 | catalog-service | 8083 | MongoDB + Redis | [`catalogo.md`](docs/dominio/catalogo.md) |
 | settlement-service | 8084 | PostgreSQL | [`liquidacao.md`](docs/dominio/liquidacao.md) |
@@ -166,7 +166,7 @@ ADR-021.
 
 ---
 
-## Trinta e três ADRs e nenhuma classe de negócio
+## Trinta e quatro ADRs e nenhuma classe de negócio
 
 Isso é deliberado, e o objeto de estudo aqui é o raciocínio de projeto.
 
@@ -202,7 +202,7 @@ acharam defeitos reais, e **dez minutos lendo o `docker-compose.yml` acharam doi
 bancos sem senha publicados em `0.0.0.0`**. Documento só mente quando alguém lê;
 infraestrutura mente até alguém ligar.
 
-Trinta e três ADRs escritas, mais duas numeradas que ficaram sem objeto e têm
+Trinta e quatro ADRs escritas, mais duas numeradas que ficaram sem objeto e têm
 registro próprio dizendo por quê. Índice em
 [`docs/architecture/decisions/`](docs/architecture/decisions/README.md).
 

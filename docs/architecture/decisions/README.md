@@ -37,8 +37,9 @@
 | 033 | O estado da jornada é perguntado | ✅ aceita |
 | 034 | Resposta que vira snapshot nunca é cacheada | ✅ aceita |
 | 035 | Domínio em português, o resto em inglês | ✅ aceita |
+| 036 | O telefone é o identificador de login | ✅ aceita |
 
-**Trinta e três escritas, duas sem objeto — estas com registro próprio desde
+**Trinta e quatro escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

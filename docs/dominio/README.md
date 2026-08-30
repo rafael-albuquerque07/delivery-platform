@@ -5,6 +5,7 @@ do agregado, invariantes, tabela de transições, fórmulas de apuração.
 
 | Documento | Serviço | Cobre |
 |---|---|---|
+| [`usuario.md`](usuario.md) | `identity-service` | Conta de acesso, canais e verificação, credencial, e o que a conta deliberadamente não guarda |
 | [`pedido.md`](pedido.md) | `order-service` | Agregado Pedido, máquina de estados, congelamento, ajustes, liquidação registrada |
 | [`liquidacao.md`](liquidacao.md) | `settlement-service` | Jornada do entregador, conferência de caixa, extrato, fechamento imutável |
 | [`estabelecimento.md`](estabelecimento.md) | `merchant-service` | Agregados, autorização contextual, horário e pausa, áreas e taxas, política de troco, vínculos |
