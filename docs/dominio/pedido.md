@@ -27,9 +27,9 @@ Pedido  (raiz)
 ├── cliente              nome, telefone, referenciaExterna do canal
 ├── entrega              modalidade, enderecoTextual, nomeAreaSnapshot, taxaSnapshot
 ├── pagamento            momentoDeclarado: enum (ONLINE | NA_ENTREGA | NA_RETIRADA — ADR-009, não é carimbo de tempo), metodoDeclarado, trocoPara
-├── valores              itemsSubtotal, deliveryFee, tip, discount, total
+├── valores              subtotalDosItens, gorjeta, desconto, total
 ├── estado               estado, subestado, motivoCancelamento
-├── ItemDoPedido    [n]  congelado — nome, precoBase, opções, stockControlledSnapshot
+├── ItemDoPedido    [n]  congelado — nome, precoBase, opções, estoqueControladoSnapshot
 ├── Ajuste          [n]  somente-inserção
 ├── Liquidacao      [n]  somente-inserção
 └── Devolucao       [n]  somente-inserção — ADR-030
@@ -124,7 +124,7 @@ inválida** e lança `TransicaoInvalidaException` → HTTP 409.
 | T01 | — | `RECEBIDO` | Cliente confirma por botão | Itens vendáveis · área atendida · invariantes de valor · regra do troco · **pedido mínimo da modalidade** | Congela itens, taxa, área e desconto. `PedidoRecebidoV1` |
 | T02 | `RECEBIDO` | `CONFIRMADO` | Estabelecimento aceita | Loja aberta **ou** aceite manual explícito · `ALTERAR_STATUS` | Compromisso. `PedidoConfirmadoV1` |
 | T03 | `RECEBIDO` | `PAGO` | Webhook do PSP | Assinatura válida · `txid` correlacionado. **Marco 8** | Compromisso. `PedidoPagoV1` |
-| T04 | `RECEBIDO` | `AGUARDANDO_ESTOQUE` | Aceite com item controlado | `∃ item.stockControlledSnapshot` — **falso no MVP** | Solicita reserva |
+| T04 | `RECEBIDO` | `AGUARDANDO_ESTOQUE` | Aceite com item controlado | `∃ item.estoqueControladoSnapshot` — **falso no MVP** | Solicita reserva |
 | T05 | `AGUARDANDO_ESTOQUE` | `CONFIRMADO` | Reserva confirmada | — | Compromisso |
 | T06 | `AGUARDANDO_ESTOQUE` | `CANCELADO` | Reserva rejeitada | — | `ITEM_INDISPONIVEL` |
 | T07 | `RECEBIDO` | `CANCELADO` | Estabelecimento recusa | Motivo obrigatório | `ESTABELECIMENTO_RECUSOU` |
@@ -207,27 +207,31 @@ Verificadas na construção e em toda transição — não em teste de integraç
 
 | # | Invariante | Onde quebra se não existir |
 |---|---|---|
-| I1 | `total == itemsSubtotal + deliveryFee + tip − discount` | Cobrança diverge do extrato |
-| I2 | `itemsSubtotal == Σ item.subtotal` | Relatório de vendas não bate |
-| I3 | Todo componente ≥ 0 · `discount ≤ itemsSubtotal + deliveryFee` | Total negativo |
+| I1 | `total == subtotalDosItens + taxaSnapshot + gorjeta − desconto` | Cobrança diverge do extrato |
+| I2 | `subtotalDosItens == Σ item.subtotal` | Relatório de vendas não bate |
+| I3 | Todo componente ≥ 0 · `desconto ≤ subtotalDosItens + taxaSnapshot` | Total negativo |
 | I4 | `metodoDeclarado = DINHEIRO ∧ trocoPara ≠ null → trocoPara ≥ total` | Entregador na porta sem troco possível (H5.2) |
 | I5 | `total` imutável após `RECEBIDO`; correção só por `Ajuste` | Perde-se o valor que o cliente confirmou |
 | I6 | `ENTREGUE` ou `RETIRADO` → `∃ Liquidacao` | O produto inteiro perde a razão de existir |
 | I7 | Todos os itens do mesmo `estabelecimentoId` | Pedido multiloja, fora de escopo (ADR-004) |
 | I8 | `estado = EM_PREPARO ↔ subestado ≠ null` | Subestado órfão na tela |
 | I9 | `estado = CANCELADO → motivoCancelamento ≠ null` | "Cancelados" vira número sem diagnóstico |
-| I10 | `modalidade = RETIRADA → deliveryFee = zero ∧ nomeAreaSnapshot = null` | Cobra-se entrega de quem foi buscar |
+| I10 | `modalidade = RETIRADA → taxaSnapshot = zero ∧ nomeAreaSnapshot = null` | Cobra-se entrega de quem foi buscar |
 | I11 | Nenhum estado não-terminal sem transição de saída | Pedido preso para sempre (H4.4) |
-| I12 | `modalidade = RETIRADA → discount == descontoDeRetirada congelado` · `modalidade = ENTREGA → discount == zero` | Desconto prometido some no fechamento, ou entrega sai descontada sem motivo |
+| I12 | `modalidade = RETIRADA → desconto == descontoDeRetirada congelado` · `modalidade = ENTREGA → desconto == zero` | Desconto prometido some no fechamento, ou entrega sai descontada sem motivo |
 | I13 | `Σ Devolucao.valor ≤ Σ liquidações CONFIRMADAS` | Devolver mais do que entrou |
 | I14 | `formaDeDevolucao = ESTORNO_PSP → referenciaExterna ≠ null` quando `situacao = EXECUTADA` | "Estornei" sem prova de que estornou |
+
+**O bloco `valores` não tem mais `deliveryFee`.** O que se cobra pela entrega é
+`taxaSnapshot`, o mesmo campo que o §6 congela — não um segundo campo somado ao
+total. Ver **ADR-009**, emenda de 26/08/2026.
 
 A `Liquidacao` de I6 é o registro, dentro do `Pedido`, de que o dinheiro foi
 recebido. Não confundir com o `Lancamento` de tipo `LIQUIDACAO_DE_ENTREGA` do
 `settlement-service` (`liquidacao.md`), que é o reflexo dela na jornada do
 entregador — e que a retirada não produz.
 
-> `I12` vale enquanto `discount` tiver **origem única**. No dia em que existir
+> `I12` vale enquanto `desconto` tiver **origem única**. No dia em que existir
 > cupom, ela é a primeira a ser revisitada — junto com a decisão de decompor o
 > campo (ADR-024, consequências negativas).
 
@@ -253,10 +257,10 @@ No instante de `RECEBIDO`, o pedido copia — não referencia:
 |---|---|---|
 | `nome`, `precoBase` do item | catálogo | Reajuste de preço reescreveria pedidos antigos |
 | opções escolhidas: nome e acréscimo | catálogo | "Sem cebola" sumiria se a opção fosse removida |
-| `stockControlledSnapshot` | catálogo | Marco 10 exigiria migration |
+| `estoqueControladoSnapshot` | catálogo | Marco 10 exigiria migration |
 | `nomeAreaSnapshot`, `taxaSnapshot` | `merchant-service` | Reajuste da taxa do bairro mudaria o histórico |
 | `enderecoTextual` | cliente | Cliente edita o endereço, o pedido antigo muda de destino |
-| `discount` (parcela de retirada) | `merchant-service` | Reajuste do desconto da loja mudaria pedidos passados |
+| `desconto` (parcela de retirada) | `merchant-service` | Reajuste do desconto da loja mudaria pedidos passados |
 
 Depois disso o pedido **não consulta mais** catálogo nem estabelecimento para
 nada que afete valor. É o que torna a cobrança reconstruível meses depois.

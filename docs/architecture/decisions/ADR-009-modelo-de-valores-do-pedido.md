@@ -207,3 +207,64 @@ campo que não alimenta nenhuma regra e cria obrigação de LGPD é custo puro.
   a discussão de escala. Rejeitada por legibilidade e por mapear pior em JPA e
   em JSON; o risco de precisão fica controlado pelo value object, que força
   escala 2 e arredondamento explícito. É escolha, não descuido.
+
+## Emenda de 26/08/2026 — a taxa cobrada passa a ser a taxa congelada
+
+O modelo decidido aqui tem `deliveryFee` no bloco de valores. O `pedido.md` §6
+congela `taxaSnapshot`, vindo do `merchant-service`, com a justificativa de que
+"reajuste da taxa do bairro mudaria o histórico".
+
+**Eram dois campos para a mesma quantia, sem invariante nenhuma os
+relacionando** — o I1 somava o primeiro enquanto o §6 congelava o segundo.
+Congelava-se um campo e cobrava-se do outro.
+
+`deliveryFee` sai do modelo. O I1 soma `taxaSnapshot` diretamente. A
+"Decomposição do valor" logo no início desta decisão — a que nomeia
+`itemsSubtotal`, `deliveryFee`, `tip` e `discount` — descreve o modelo como foi
+tomado e não se reescreve; o que muda é o registrado abaixo.
+
+### Por que um campo e não dois com uma regra
+
+Com dois campos, `deliveryFee == taxaSnapshot` seria invariante a testar para
+sempre e a violar por descuido. Com um, a divergência não tem onde acontecer —
+mesmo movimento do I7 depois da ADR-006: a guarda deixou de precisar de código.
+
+**E hoje não existe caso em que os dois difiram.** Não há promoção no produto: o
+I12 põe `desconto == zero` na entrega, e o desconto tem origem única, que é a
+retirada. Dois campos guardavam uma divergência que nada produzia.
+
+Quando promoção existir, ela entra por **`desconto`**, e o I12 muda — que é
+exatamente o que a prosa depois dele já antecipa ao dizer que ele vale *enquanto
+o desconto tiver origem única*. O caminho está aberto e é o certo: promoção é
+desconto; a cotação congelada continua sendo o que a área custava.
+
+### O que o I10 ganha
+
+Antes, ele prendia `deliveryFee` e `nomeAreaSnapshot` na retirada e deixava
+`taxaSnapshot` livre — um pedido de retirada podia carregar área nula e taxa
+congelada de R$ 7,50, e nada proibia.
+
+Na retirada, `taxaSnapshot` é **zero, não nulo**: o I1 é aritmética e não ganha
+caso especial. A distinção continua no par — zero com `nomeAreaSnapshot = null`
+é *não houve área*; zero com área nomeada seria *a área é grátis*.
+
+### E o congelamento passa a proteger o que se cobra
+
+A justificativa do §6 era verdadeira sobre um campo que o total não usava. Agora
+é verdadeira sobre o campo que o cliente paga.
+
+### Idioma
+
+Pela ADR-035: `itemsSubtotal` → `subtotalDosItens`, `tip` → `gorjeta`,
+`discount` → `desconto`. `total` e `subtotal` ficam — mesma palavra nos dois
+idiomas. `taxaSnapshot` e `nomeAreaSnapshot` seguem a segunda camada.
+
+Os renomes entram agora, e não no marco 3 como a ADR-035 §5 adia os outros: a
+§5 adia renome que custa o mesmo depois, e estas linhas estão sendo editadas de
+qualquer jeito pelo colapso do campo.
+
+### Onde isto repercute
+
+`pedido.md` §1, I1, I2, I3, I10, I12, a prosa do I12 e a tabela do §6;
+**ADR-028**, cuja guarda de pedido mínimo é escrita sobre `itemsSubtotal`;
+ADR-022 e ADR-024, que citam o campo antigo e ganharam nota.
