@@ -256,8 +256,11 @@ A justificativa do §6 era verdadeira sobre um campo que o total não usava. Ago
 ### Idioma
 
 Pela ADR-035: `itemsSubtotal` → `subtotalDosItens`, `tip` → `gorjeta`,
-`discount` → `desconto`. `total` e `subtotal` ficam — mesma palavra nos dois
-idiomas. `taxaSnapshot` e `nomeAreaSnapshot` seguem a segunda camada.
+`discount` → `desconto`, `stockControlledSnapshot` → `estoqueControladoSnapshot`
+— o conceito fica, boolean deliberado e mais estreito que o `modoDeControle`
+(`catalogo.md:243`); só o idioma muda. `total` e `subtotal` ficam — mesma
+palavra nos dois idiomas. `taxaSnapshot` e `nomeAreaSnapshot` seguem a segunda
+camada.
 
 Os renomes entram agora, e não no marco 3 como a ADR-035 §5 adia os outros: a
 §5 adia renome que custa o mesmo depois, e estas linhas estão sendo editadas de
