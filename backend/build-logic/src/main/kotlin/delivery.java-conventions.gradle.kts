@@ -1,5 +1,7 @@
 // Convenções de Java aplicadas a todo módulo do backend.
 
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
     java
 }
@@ -21,6 +23,10 @@ tasks.withType<Test>().configureEach {
     testLogging {
         events("passed", "skipped", "failed")
         showStandardStreams = false
+        exceptionFormat = TestExceptionFormat.FULL
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
     }
 }
 

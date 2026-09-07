@@ -1,11 +1,11 @@
 CREATE TABLE usuario (
     id                     UUID PRIMARY KEY,
-    nome                   VARCHAR(255) NOT NULL,
-    telefone               VARCHAR(20) NOT NULL,
+    nome                   VARCHAR(120) NOT NULL,
+    telefone               VARCHAR(16) NOT NULL,
     telefone_verificado_em TIMESTAMPTZ NOT NULL,
-    email                  VARCHAR(255),
+    email                  VARCHAR(254),
     email_verificado_em    TIMESTAMPTZ,
-    hash_da_senha          VARCHAR(255) NOT NULL,
+    hash_da_senha          VARCHAR(120) NOT NULL,
 
     CONSTRAINT uq_usuario_telefone UNIQUE (telefone),
 

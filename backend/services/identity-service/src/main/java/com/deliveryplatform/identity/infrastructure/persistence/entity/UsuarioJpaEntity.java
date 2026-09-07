@@ -20,22 +20,22 @@ public class UsuarioJpaEntity {
     @Id
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 120)
     private String nome;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 16)
     private String telefone;
 
     @Column(name = "telefone_verificado_em", nullable = false)
     private Instant telefoneVerificadoEm;
 
-    @Column
+    @Column(length = 254)
     private String email;
 
     @Column(name = "email_verificado_em")
     private Instant emailVerificadoEm;
 
-    @Column(name = "hash_da_senha", nullable = false)
+    @Column(name = "hash_da_senha", nullable = false, length = 120)
     private String hashDaSenha;
 
     protected UsuarioJpaEntity() {
