@@ -29,8 +29,7 @@ class HexagonalArchitectureTest {
             .whereLayer("api").mayNotBeAccessedByAnyLayer()
             .whereLayer("infrastructure").mayNotBeAccessedByAnyLayer()
             .whereLayer("application").mayOnlyBeAccessedByLayers("api", "infrastructure")
-            .whereLayer("domain").mayOnlyBeAccessedByLayers("api", "application", "infrastructure")
-            .allowEmptyShould(true);
+            .whereLayer("domain").mayOnlyBeAccessedByLayers("api", "application", "infrastructure");
 
     @ArchTest
     static final ArchRule dominioNaoConheceSpring = noClasses()
@@ -40,13 +39,11 @@ class HexagonalArchitectureTest {
                     "jakarta.persistence..",
                     "org.hibernate..",
                     "com.fasterxml.jackson..")
-            .because("o domínio não deve importar framework, ORM nem serialização")
-            .allowEmptyShould(true);
+            .because("o domínio não deve importar framework, ORM nem serialização");
 
     @ArchTest
     static final ArchRule entidadesJpaForaDoDominio = noClasses()
             .that().resideInAPackage("..domain..")
             .should().beAnnotatedWith("jakarta.persistence.Entity")
-            .because("entidades JPA vivem em infrastructure/persistence/entity")
-            .allowEmptyShould(true);
+            .because("entidades JPA vivem em infrastructure/persistence/entity");
 }

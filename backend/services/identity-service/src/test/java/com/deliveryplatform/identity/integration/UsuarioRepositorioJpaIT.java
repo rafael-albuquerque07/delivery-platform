@@ -10,10 +10,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+
+import com.deliveryplatform.identity.support.GeradorDeChaveDeTeste;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -42,6 +46,11 @@ class UsuarioRepositorioJpaIT {
     @Container
     @ServiceConnection
     static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17-alpine");
+
+    @DynamicPropertySource
+    static void chaveDeAssinatura(DynamicPropertyRegistry registry) {
+        registry.add("delivery.jwt.private-key-path", GeradorDeChaveDeTeste::caminhoDaChaveUnica);
+    }
 
     @Autowired
     private UsuarioRepositorio repositorio;

@@ -26,11 +26,12 @@ spring:
     enabled: true
     locations: classpath:db/migration
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: ${JWT_JWKS_URI:http://localhost:8081/.well-known/jwks.json}
+delivery:
+  jwt:
+    issuer: ${JWT_ISSUER:http://localhost:8081}
+    audience: ${JWT_AUDIENCE:delivery-platform}
+    access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:PT30M}
+    private-key-path: ${JWT_PRIVATE_KEY_PATH:}
 
 management:
   endpoints:
