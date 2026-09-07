@@ -84,7 +84,7 @@ Não é esta ADR que a escreve, mas fica registrado que a ausência é a mesma.
 | Tamanho | RSA 2048 |
 | Formato | PKCS#8 PEM |
 | Origem em execução | caminho de arquivo vindo do ambiente — `delivery.jwt.private-key-path` |
-| Origem em teste | **par efêmero gerado em memória**, a cada execução |
+| Origem em teste | PEM gerado em diretório temporário, uma vez por JVM |
 | `kid` | *thumbprint* JWK do RFC 7638, derivado da própria chave pública |
 
 **Por que nunca sob `src/main/resources`.** O `.gitignore` casa `jwt-private*` em
@@ -92,10 +92,12 @@ qualquer diretório, então o arquivo lá dentro seria ignorado pelo git — e
 empacotado pelo Gradle. Ignorada no repositório, publicada no artefato. É o pior
 dos dois mundos e não tem aviso.
 
-**Por que par efêmero no teste.** Nenhum material de chave precisa existir no
-repositório para o teste rodar. O que se testa é que o token emitido é validado
-pela chave pública correspondente, e isso um par gerado na hora prova igual — sem
-criar um arquivo que alguém copia para produção dois anos depois.
+**Por que PEM gerado, e não par efêmero em memória.** Um par em memória provaria
+que o token é validado pela chave correspondente, mas deixaria o carregamento de
+PEM sem teste — e é esse o caminho que roda em produção e o que quebra na
+primeira implantação. Gerar o arquivo num diretório temporário custa três linhas
+e faz o caminho de produção ser o caminho de teste. Nenhum material de chave
+entra no repositório: o arquivo nasce temporário e morre com a JVM.
 
 **Por que o `kid` é derivado, e não escolhido.** Rotação vai existir, e id
 escolhido à mão descola da chave que nomeia. Thumbprint não descola: muda a chave,
@@ -231,10 +233,6 @@ webhook. Mesma ausência, escopo diferente.
   no fim derruba a validação em produção, e o erro não diz isso com clareza.
 - **O par de chaves passa a ser operação:** gerar, guardar, entregar ao contêiner
   e um dia rotacionar. O Authorization Server recusado pela ADR-015 faria isso.
-- O par efêmero em teste significa que **o carregamento de PEM em produção não é
-  exercitado pelo teste** — e é justamente o caminho que quebra na primeira
-  implantação. Precisa de um teste próprio contra um PEM gerado no `@TempDir`, e
-  não contra um arquivo versionado.
 
 ---
 
