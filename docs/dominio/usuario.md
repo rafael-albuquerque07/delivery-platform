@@ -55,6 +55,21 @@ O `verificadoEm` é carimbo de tempo, não booleano, e a diferença importa: qua
 a política de reverificação existir (§7), ela vai precisar saber *quando*, não
 apenas *se*.
 
+### O formato é E.164, e a unicidade depende disso
+
+O telefone é guardado **sempre** como `+5511987654321` — E.164, sem espaço, sem
+parêntese, sem hífen. A normalização acontece na borda do domínio, no
+`Telefone.de(...)`, e o construtor canônico recusa qualquer outra forma: não há
+caminho que crie um `Telefone` fora do padrão.
+
+Sem isso a **U1** seria ficção. `11 98765-4321`, `(11) 98765-4321` e
+`+5511987654321` são o mesmo número e três chaves diferentes, e um índice único
+sobre a grafia não protege nada.
+
+Entrada sem `+` com 10 ou 11 dígitos é lida como brasileira e ganha `+55`. A
+presunção vem da **P2** — o produto atende comércio de bairro brasileiro — e
+está num lugar só, testada, em vez de espalhada pela borda.
+
 ---
 
 ## 3. Credencial
@@ -141,18 +156,13 @@ verificar o que o `order` guarda.
 
 ## 7. O que este documento deliberadamente **não** decide
 
-Oito itens, e o primeiro é o que mais me incomoda.
+Sete itens, e o primeiro é o que mais me incomoda.
 
 **Número reciclado.** Operadora recicla telefone. Um número devolvido e
 redistribuído pode entregar a outra pessoa a chave de uma conta abandonada — e a
 prova de posse dela será legítima. Nenhuma política existe. Candidatos: exigir
 senha *além* da posse do número, expirar conta sem uso, reverificar
 periodicamente. **Decidir antes do marco 5**, quando houver dinheiro na conta.
-
-**Formato de armazenamento do telefone.** `11 98765-4321` e `+5511987654321` são
-o mesmo número e duas chaves. Sem normalização canônica na escrita, a unicidade
-de U1 é ficção. Recomendação: E.164, normalizado na borda, guardado só assim —
-mas é decisão a tomar, não regra vigente.
 
 **Troca de telefone de uma conta existente.** Muda o identificador de login.
 Exige o quê — senha, verificação do número novo, verificação do antigo? E as
