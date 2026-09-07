@@ -88,6 +88,10 @@ application-local.properties
 # Testcontainers: preferência de máquina, não do projeto
 .testcontainers.properties
 
+# Pacote de aplicação é transitório: extraído, aplicado, descartado.
+# Nunca deveria ser commitado — já aconteceu quatro vezes.
+/APLICAR-*.md
+
 
 # =============================================================================
 # Claude Code
