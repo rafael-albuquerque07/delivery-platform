@@ -76,6 +76,11 @@ token, seis meses depois, sem ninguém decidir isso.
 **Nada além disso.** Permissão, papel e lista de estabelecimentos ficam fora e
 são resolvidos por requisição.
 
+> **Detalhado pela ADR-037 (07/09/2026).** `iss` e `aud` não são validados pela
+> configuração padrão do Resource Server: `jwk-set-uri` sozinho valida apenas
+> tempo. Cada serviço compõe validador explícito para os dois. O `aud` vale
+> `delivery-platform`, um público para os nove processos.
+
 A justificativa original desta ADR — formato OAuth para que a migração futura
 troque apenas o emissor — **continua valendo**: os seis claims acima são todos
 padrão OAuth 2.1/OIDC. O que muda é que dois da lista original descreviam

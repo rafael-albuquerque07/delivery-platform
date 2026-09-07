@@ -166,7 +166,7 @@ ADR-021.
 
 ---
 
-## Trinta e quatro ADRs e nenhuma classe de negócio
+## Trinta e cinco ADRs e nenhuma classe de negócio
 
 Isso é deliberado, e o objeto de estudo aqui é o raciocínio de projeto.
 
@@ -202,7 +202,7 @@ acharam defeitos reais, e **dez minutos lendo o `docker-compose.yml` acharam doi
 bancos sem senha publicados em `0.0.0.0`**. Documento só mente quando alguém lê;
 infraestrutura mente até alguém ligar.
 
-Trinta e quatro ADRs escritas, mais duas numeradas que ficaram sem objeto e têm
+Trinta e cinco ADRs escritas, mais duas numeradas que ficaram sem objeto e têm
 registro próprio dizendo por quê. Índice em
 [`docs/architecture/decisions/`](docs/architecture/decisions/README.md).
 
