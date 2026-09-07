@@ -166,9 +166,16 @@ ADR-021.
 
 ---
 
-## Trinta e cinco ADRs e nenhuma classe de negócio
+## As ADRs vieram antes da primeira classe de negócio
 
 Isso é deliberado, e o objeto de estudo aqui é o raciocínio de projeto.
+
+Em 07/09/2026 a primeira classe de negócio passou a existir: o agregado
+`Usuario`, no `identity-service`, com migration, teste de integração contra
+Postgres de verdade e três regras de `ArchUnit` vigiando as camadas. Ela
+nasceu **depois** das decisões que a cercam — o `usuario.md` foi escrito para
+fechar uma lacuna que cinco documentos já citavam sem definir, e a ADR-036
+decidiu o identificador de login que a primeira migration precisava indexar.
 
 Três práticas sustentam o resto:
 
