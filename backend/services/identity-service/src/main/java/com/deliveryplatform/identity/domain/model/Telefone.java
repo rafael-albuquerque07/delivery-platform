@@ -30,7 +30,12 @@ public record Telefone(String numero) {
     /**
      * Normaliza para E.164 antes de validar. Entrada sem {@code +} com 10 ou
      * 11 dígitos é lida como brasileira e ganha {@code +55} — presunção da
-     * P2 (comércio de bairro brasileiro), testada aqui e em lugar nenhum mais.
+     * P2 (comércio de bairro brasileiro), testada aqui e em lugar nenhum
+     * mais. Com 12 ou 13 dígitos começando em {@code 55}, o DDI já está
+     * escrito e falta só o sinal. A ordem importa: {@code 55987654321} tem
+     * onze dígitos e é celular do DDD 55, não DDI 55 — por isso o
+     * comprimento decide antes do prefixo, e este ramo vem depois do de
+     * 10/11.
      */
     public static Telefone de(String bruto) {
         if (bruto == null) {
@@ -46,6 +51,10 @@ public record Telefone(String numero) {
         String digitos = NAO_DIGITO.matcher(semFormatacao).replaceAll("");
         if (digitos.length() == 10 || digitos.length() == 11) {
             return new Telefone("+55" + digitos);
+        }
+
+        if ((digitos.length() == 12 || digitos.length() == 13) && digitos.startsWith("55")) {
+            return new Telefone("+" + digitos);
         }
 
         return new Telefone(semFormatacao);

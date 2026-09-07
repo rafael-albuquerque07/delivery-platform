@@ -69,8 +69,12 @@ Sem isso a **U1** seria ficção. `11 98765-4321`, `(11) 98765-4321` e
 `+5511987654321` são o mesmo número e três chaves diferentes, e um índice único
 sobre a grafia não protege nada.
 
-Entrada sem `+` com 10 ou 11 dígitos é lida como brasileira e ganha `+55`. A
-presunção vem da **P2** — o produto atende comércio de bairro brasileiro — e
+Entrada sem `+` com 10 ou 11 dígitos é lida como brasileira e ganha `+55`. Com 12
+ou 13 dígitos começando em `55`, o DDI já está escrito e falta só o sinal: ganha o
+`+` e nada mais. A ordem importa — `55987654321` tem onze dígitos e é celular do
+DDD 55, não número com DDI —, e por isso o comprimento decide antes do prefixo.
+
+A presunção vem da **P2** — o produto atende comércio de bairro brasileiro — e
 está num lugar só, testada, em vez de espalhada pela borda.
 
 ---
