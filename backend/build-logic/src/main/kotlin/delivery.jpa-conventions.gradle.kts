@@ -7,7 +7,9 @@ plugins {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.flywaydb:flyway-core")
+    // spring-boot-starter-flyway traz spring-boot-flyway (FlywayAutoConfiguration)
+    // e, por baixo, flyway-core -- não declare o motor à parte.
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
     runtimeOnly("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
 
