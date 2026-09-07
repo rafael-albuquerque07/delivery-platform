@@ -28,6 +28,9 @@ Usuario  (raiz)
 └── credencial           hashDaSenha
 ```
 
+`nome` é obrigatório e não vazio. É dado pessoal retido (ADR-013 §1); por quanto
+tempo continua na §7.
+
 O `id` é o que atravessa a fronteira: é o `sub` do token (ADR-015 emendada) e é o
 identificador de titular que os outros serviços referenciam quando guardam dado
 pessoal (ADR-013). **Telefone não referencia nada** — ele identifica na porta de
@@ -156,7 +159,7 @@ verificar o que o `order` guarda.
 
 ## 7. O que este documento deliberadamente **não** decide
 
-Sete itens, e o primeiro é o que mais me incomoda.
+Seis itens, e o primeiro é o que mais me incomoda.
 
 **Número reciclado.** Operadora recicla telefone. Um número devolvido e
 redistribuído pode entregar a outra pessoa a chave de uma conta abandonada — e a
@@ -183,6 +186,3 @@ decidido.
 
 **Exclusão da conta.** A ADR-013 dá a regra de anonimização; ninguém desenhou o
 gatilho, nem o que acontece com os vínculos e o histórico de quem sai.
-
-**O `nome`.** Obrigatório? Serve para quê além de aparecer no painel? É dado
-pessoal retido (ADR-013 §1) e ninguém disse por quanto tempo nem para quê.
