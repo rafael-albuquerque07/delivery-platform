@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -84,10 +83,17 @@ class UsuarioRepositorioJpaIT {
         repositorio.salvar(Usuario.novo("Primeiro", telefone, Instant.now(), "hash-a"));
         entityManager.flush();
 
+        // uq_usuario_telefone está no V1__cria_usuario.sql e é nosso; o
+        // invólucro da exceção é do framework e muda de versão. Em produção
+        // esse erro chega como DataIntegrityViolationException, traduzido no
+        // commit da transação — aqui não, porque o flush() é chamado direto
+        // no EntityManager, fora do proxy do @Repository.
         assertThatThrownBy(() -> {
             repositorio.salvar(Usuario.novo("Segundo", telefone, Instant.now(), "hash-b"));
             entityManager.flush();
-        }).isInstanceOf(DataIntegrityViolationException.class);
+        })
+                .as("a unicidade tem de vir da constraint que a migration criou, não de checagem em Java")
+                .hasStackTraceContaining("uq_usuario_telefone");
     }
 
     @Test
