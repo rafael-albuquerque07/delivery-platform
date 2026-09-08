@@ -136,13 +136,12 @@ class ContratoOpenApiIT {
         ObjectNode raiz = (ObjectNode) mapeador.readTree(json);
         raiz.remove("servers");
 
-        // O separador de linha dos OBJETOS é fixado em \n em vez de
-        // System.lineSeparator(). Sem isso o arquivo nasce com CRLF no
-        // Windows e LF no Linux, e a comparação byte a byte só passa porque
-        // a normalização do git desfaz a diferença -- que é configuração de
-        // máquina, não do repositório. Os arrays não precisam do mesmo
-        // ajuste: o indentador padrão do Jackson para array (FixedSpaceIndenter)
-        // já usa um espaço fixo, nunca uma quebra de linha dependente de SO.
+        // Só os objetos precisam. O DefaultPrettyPrinter indenta objeto com
+        // DefaultIndenter.SYSTEM_LINEFEED_INSTANCE, que chama
+        // System.lineSeparator() -- CRLF no Windows, LF no Linux, e é daí que
+        // vinha a dependência de plataforma. Array já usa FixedSpaceIndenter,
+        // que emite um espaço e nenhuma quebra de linha. Trocar o indentador de
+        // array não conserta nada e reformata o arquivo inteiro.
         DefaultPrettyPrinter impressora = new DefaultPrettyPrinter();
         impressora.indentObjectsWith(new DefaultIndenter("  ", "\n"));
 
