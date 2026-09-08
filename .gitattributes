@@ -14,3 +14,7 @@ gradlew.bat  text eol=crlf
 *.pdf binary
 *.png binary
 *.jar binary
+
+# O contrato é comparado byte a byte por teste. LF sempre, em qualquer
+# máquina, independentemente de core.autocrlf.
+contracts/openapi/*.json text eol=lf

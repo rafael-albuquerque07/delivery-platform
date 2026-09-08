@@ -21,6 +21,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import com.deliveryplatform.identity.application.port.out.EmissorDeToken;
 import com.deliveryplatform.identity.support.GeradorDeChaveDeTeste;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -134,7 +136,17 @@ class ContratoOpenApiIT {
         ObjectNode raiz = (ObjectNode) mapeador.readTree(json);
         raiz.remove("servers");
 
-        return mapeador.writerWithDefaultPrettyPrinter().writeValueAsString(raiz) + "\n";
+        // O separador de linha dos OBJETOS é fixado em \n em vez de
+        // System.lineSeparator(). Sem isso o arquivo nasce com CRLF no
+        // Windows e LF no Linux, e a comparação byte a byte só passa porque
+        // a normalização do git desfaz a diferença -- que é configuração de
+        // máquina, não do repositório. Os arrays não precisam do mesmo
+        // ajuste: o indentador padrão do Jackson para array (FixedSpaceIndenter)
+        // já usa um espaço fixo, nunca uma quebra de linha dependente de SO.
+        DefaultPrettyPrinter impressora = new DefaultPrettyPrinter();
+        impressora.indentObjectsWith(new DefaultIndenter("  ", "\n"));
+
+        return mapeador.writer(impressora).writeValueAsString(raiz) + "\n";
     }
 
     /**

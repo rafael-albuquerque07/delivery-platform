@@ -1,5 +1,6 @@
 package com.deliveryplatform.identity.api.controller;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +23,7 @@ public class AutenticacaoController {
         this.autenticar = autenticar;
     }
 
-    @PostMapping("/login")
+    @PostMapping(path = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
     public LoginResponse login(@Valid @RequestBody LoginRequest requisicao) {
         TokenEmitido token = autenticar.autenticar(requisicao.telefone(), requisicao.senha());
 

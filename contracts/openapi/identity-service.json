@@ -23,7 +23,7 @@
           "200" : {
             "description" : "OK",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/LoginResponse"
                 }
@@ -82,7 +82,8 @@
             "type" : "integer",
             "format" : "int64"
           }
-        }
+        },
+        "required" : [ "accessToken", "expiresIn", "tokenType" ]
       }
     }
   }
