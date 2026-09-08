@@ -26,6 +26,11 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    // Gradle não repassa -D da linha de comando para a JVM forkada do teste
+    // sozinho -- só configura o processo do próprio Gradle. openapi.atualizar
+    // (ADR-039) regrava o contrato commitado em vez de compará-lo, e precisa
+    // deste repasse explícito para chegar ao teste.
+    System.getProperty("openapi.atualizar")?.let { systemProperty("openapi.atualizar", it) }
     testLogging {
         events("passed", "skipped", "failed")
         showStandardStreams = false

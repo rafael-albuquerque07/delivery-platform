@@ -1,0 +1,89 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "OpenAPI definition",
+    "version" : "v0"
+  },
+  "paths" : {
+    "/api/v1/auth/login" : {
+      "post" : {
+        "tags" : [ "autenticacao-controller" ],
+        "operationId" : "login",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/jwks.json" : {
+      "get" : {
+        "tags" : [ "jwks-controller" ],
+        "operationId" : "jwks",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : { }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "LoginRequest" : {
+        "type" : "object",
+        "properties" : {
+          "telefone" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "senha" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "senha", "telefone" ]
+      },
+      "LoginResponse" : {
+        "type" : "object",
+        "properties" : {
+          "accessToken" : {
+            "type" : "string"
+          },
+          "tokenType" : {
+            "type" : "string"
+          },
+          "expiresIn" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      }
+    }
+  }
+}
