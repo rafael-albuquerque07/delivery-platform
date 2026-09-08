@@ -39,8 +39,10 @@
 | 035 | Domínio em português, o resto em inglês | ✅ aceita |
 | 036 | O telefone é o identificador de login | ✅ aceita |
 | 037 | A emissão do access token: a chave, o tempo, e o que fica público | ✅ aceita |
+| 038 | O `sub` vira `UUID` na borda, e o caso de uso não conhece o token | ✅ aceita |
+| 039 | O contrato OpenAPI é gerado do código e congelado | ✅ aceita |
 
-**Trinta e cinco escritas, duas sem objeto — estas com registro próprio desde
+**Trinta e sete escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê
