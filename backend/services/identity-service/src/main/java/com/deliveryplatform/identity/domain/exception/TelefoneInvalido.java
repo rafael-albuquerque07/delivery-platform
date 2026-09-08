@@ -7,6 +7,8 @@ package com.deliveryplatform.identity.domain.exception;
  */
 public class TelefoneInvalido extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     public TelefoneInvalido(String valorRecebido) {
         super("Telefone inválido: " + valorRecebido);
     }

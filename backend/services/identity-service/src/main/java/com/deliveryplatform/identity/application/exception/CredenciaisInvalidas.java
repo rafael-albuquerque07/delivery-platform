@@ -11,6 +11,8 @@ package com.deliveryplatform.identity.application.exception;
  */
 public class CredenciaisInvalidas extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     public CredenciaisInvalidas() {
         super("telefone ou senha inválidos");
     }

@@ -9,6 +9,8 @@ package com.deliveryplatform.identity.infrastructure.security;
  */
 public class ChaveDeAssinaturaIndisponivel extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     public ChaveDeAssinaturaIndisponivel(String mensagem, Throwable causa) {
         super(mensagem, causa);
     }

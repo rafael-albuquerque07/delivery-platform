@@ -15,7 +15,13 @@ java {
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
-    options.compilerArgs.addAll(listOf("-Xlint:all", "-parameters"))
+    // -processing avisa que nenhum processador reclamou as anotações.
+    // Num projeto Spring isso é permanente e não acionável: as anotações
+    // são de runtime, e o único processador declarado -- o do MapStruct --
+    // só reclama as dele. Advertência que nunca pode ser resolvida treina
+    // todo mundo a ignorar advertências, e a próxima, que importa, some
+    // no meio.
+    options.compilerArgs.addAll(listOf("-Xlint:all", "-parameters", "-Xlint:-processing"))
 }
 
 tasks.withType<Test>().configureEach {
