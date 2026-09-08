@@ -104,8 +104,15 @@ class RotasPublicasIT {
                 .isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
+    /**
+     * Até a rodada B, este teste esperava 404: o endpoint não existia, e o 404
+     * é que provava o permitAll. Com o {@code AutenticacaoController} no ar, a
+     * mesma requisição chega à validação de verdade e falha nela — o 400 é
+     * quem prova agora que o permitAll casou (401 fecharia a rota) e que o
+     * dispatch de erro não é refiltrado (senão viraria 401 de novo).
+     */
     @Test
-    void o_login_ja_esta_liberado_antes_de_existir() {
+    void login_liberado_por_permitall_chega_a_validacao_e_nao_a_seguranca() {
         var resultado = http.post().uri("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .body("{}")
@@ -114,10 +121,9 @@ class RotasPublicasIT {
                 .returnResult();
 
         assertThat(resultado.getStatus())
-                .as("404 prova duas coisas: o permitAll casou -- 401 aqui significaria "
-                        + "que o endpoint da rodada B nasceria exigindo o token que ele "
-                        + "existe para emitir -- e o dispatch de erro não é refiltrado, "
-                        + "senão todo 400 em rota pública chegaria ao cliente como 401")
-                .isEqualTo(HttpStatus.NOT_FOUND);
+                .as("400 prova que o permitAll casou -- 401 aqui significaria a rota fechada -- "
+                        + "e que o corpo vazio chegou ao AutenticacaoController e falhou no @Valid, "
+                        + "não na cadeia de segurança")
+                .isEqualTo(HttpStatus.BAD_REQUEST);
     }
 }
