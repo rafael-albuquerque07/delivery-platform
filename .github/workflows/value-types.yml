@@ -1,0 +1,42 @@
+# O módulo é compartilhado pelos nove serviços (ADR-040) e não é serviço,
+# mas o _service-ci.yml reutilizável nunca assumiu bootJar, banco nem
+# Dockerfile -- é só compileJava + test por módulo Gradle. Por isso este
+# caller reusa o mesmo reutilizável dos nove, só trocando o module e o
+# filtro de caminho.
+#
+# Precisa de CI própria pelo motivo oposto ao dos serviços -- defeito
+# aqui não fica contido, espalha para quem depende.
+#
+# backend/value-types/** entra também nos filtros dos nove no dia em
+# que o primeiro deles declarar o módulo como dependência. Hoje nenhum
+# declara, e uma mudança aqui não muda o resultado do build deles.
+
+name: value-types
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'backend/value-types/**'
+      - 'backend/build-logic/**'
+      - 'backend/gradle/libs.versions.toml'
+      - 'backend/gradlew'
+      - 'backend/gradle/wrapper/**'
+      - 'backend/settings.gradle.kts'
+      - '.github/workflows/_service-ci.yml'
+      - '.github/workflows/value-types.yml'
+  pull_request:
+    paths:
+      - 'backend/value-types/**'
+      - 'backend/build-logic/**'
+      - 'backend/gradle/libs.versions.toml'
+      - 'backend/gradlew'
+      - 'backend/gradle/wrapper/**'
+      - 'backend/settings.gradle.kts'
+      - '.github/workflows/_service-ci.yml'
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_service-ci.yml
+    with:
+      module: ':value-types'
