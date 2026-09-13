@@ -1,6 +1,6 @@
 # ADR-041 — Observabilidade sai do repositório até o marco 11
 
-**Status:** Aceita — 13/09/2026
+**Status:** Aceita — 13/09/2026 · **emendada em 13/09/2026**
 **Relacionada:** ADR-001 (monorepo), ADR-012 (gateway), ADR-037 (cadeia de
 filtros), ADR-031 (`correlationId` em evento)
 **Origem:** a primeira vez que um serviço deste repositório subiu numa porta
@@ -275,3 +275,55 @@ e não devem custar duas:
 1. `infra/observability/grafana/dashboards/`, `loki/` e `tempo/` continham só
    `.gitkeep`. Não havia dashboard, nem configuração de Loki, nem de Tempo.
 2. O Tempo subia sem arquivo de configuração e sem receptor OTLP declarado.
+
+---
+
+## Emenda — 13/09/2026, no mesmo dia
+
+**A justificativa desta decisão partiu de um roadmap que não é o deste
+repositório.**
+
+O corpo acima diz que observabilidade volta *"no marco 11"*. Veio de uma cópia
+desatualizada do `README.md`, em que a tabela de etapas era técnica — marco 1
+`PostgreSQL, Flyway, Testcontainers`, marco 11 `Observabilidade`. O roadmap real
+descreve cada marco pelo que o comerciante passa a conseguir fazer, e o 11 é
+**"Rastreamento e telemetria — mostrar a entrega no mapa"**: telemetria de GPS do
+entregador, que compartilha a palavra com observabilidade de aplicação e nada
+mais.
+
+**Não existe marco de observabilidade neste roadmap.** A decisão de remover
+continua valendo inteira — o stack não recebia nada, e isso não dependia de
+marco nenhum. O que não vale é a frase que prometia a volta numa data.
+
+### A volta é por condição
+
+> Observabilidade volta quando houver **um comerciante real usando o sistema** —
+> não um teste de integração, não uma demonstração. Até lá não há carga, não há
+> padrão de uso, e não há pergunta que o log não responda.
+
+É o mesmo critério que a ADR-025 usa para a hora de corte configurável — *"vira
+campo no dia em que houver um comerciante real pedindo"* — e que a ADR-037 usa
+para o validador compartilhado — *"decidir quando o segundo consumidor existir"*.
+Condição verificável vale mais que um número que ninguém marcou na agenda.
+
+Quem reescrever tem o apêndice acima, com o que foi removido, e tem esta
+condição. O que **não** tem é um marco para onde olhar, e isso é deliberado.
+
+### Por que emenda e não correção no corpo
+
+O erro tem menos de um dia e o commit já foi empurrado. Seria barato reescrever
+três frases e apagar o rastro.
+
+Fica registrado porque **a causa não foi esta ADR**. A mesma cópia velha do
+repositório produziu, na mesma rodada: um apêndice que não preservava o que foi
+de fato removido — alvos de `prometheus.yml` com nomes de serviço que nunca
+existiram, e um bloco de compose sem `restart: unless-stopped` nem o prefixo
+`127.0.0.1:`; uma contagem de *"dez `application.yml`"* onde há nove; a afirmação
+de que o gateway não tinha o padrão de log morto, quando tinha; e uma pendência
+inventada sobre `workflow_dispatch` faltando nos nove workflows, que **todos os
+nove já tinham**.
+
+Cinco erros, uma causa. Apagar o quinto esconderia o padrão, e é o padrão que
+tem valor: *confirme no arquivo do repositório, não na cópia dele* — a mesma
+regra que este projeto já aprendeu para biblioteca, em *"confirme a assinatura no
+jar resolvido, não na memória"*.
