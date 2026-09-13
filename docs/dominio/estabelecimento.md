@@ -1,6 +1,6 @@
 # Domínio — Estabelecimento, equipe e áreas
 
-**Serviço:** `merchant-service` · **Status:** vigente (v1.1, 21/08/2026)
+**Serviço:** `merchant-service` · **Status:** vigente (v1.2, 13/09/2026)
 **Fontes:** PRD §5 (P2, P3, P5), PRD §6 E1, E2 e E6.1, ADR-004, ADR-011, ADR-012, ADR-020, ADR-022
 **Invariantes do `CLAUDE.md` que este documento detalha:** 2, 8, 9
 
@@ -18,8 +18,8 @@ que é lido em que frequência.
 
 ```
 Estabelecimento  (raiz)
-├── identificacao       id, nome, documento, telefone, endereco, fusoHorario
-├── operacao            tipoDeOperacao, modalidadesAceitas, metodosPorModalidade,
+├── identificacao       id, nome, documento, telefone, enderecoTextual, bairro, fusoHorario
+├── operacao            tipoDeOperacao, metodosPorModalidade,
 │                       descontoDeRetirada, pedidoMinimoPorModalidade
 ├── politicaDeTroco     fundoMaximoDeTroco, aceitaPedidoSemTrocoDisponivel
 ├── disponibilidade     horarioDeFuncionamento, pausa
@@ -37,6 +37,14 @@ VinculoEntregador  (raiz)
 ├── modeloDeRemuneracao, valorDiaria, comissaoPorEntrega, taxaFixaPorEntrega
 └── ativo
 ```
+
+**O endereço da loja é texto, não estrutura.** `enderecoTextual` e `bairro`, e
+nada mais — é a representação que a ADR-013 escolheu para o sistema inteiro,
+"endereço textual e nome de bairro" no lugar de coordenada. Nenhuma regra deste
+serviço lê pedaço de endereço: as faixas de CEP da ADR-020 casam com o endereço
+do **cliente**, e vivem na `AreaDeEntrega`. O bairro fica separado porque é a
+unidade do modelo de entrega, e o da própria loja é o ponto de partida natural
+do cadastro das áreas.
 
 **Por que `AreaDeEntrega` fica dentro do `Estabelecimento`.** São dezenas de
 linhas, editadas juntas na mesma tela, e a invariante de não-sobreposição de CEP
@@ -279,8 +287,16 @@ No fechamento do pedido, `metodoDeclarado` tem que pertencer ao conjunto da
 matriz descreve o que a loja aceita hoje, e um pedido antigo já registrou o que
 foi de fato declarado e liquidado.
 
-`modalidadesAceitas` vazio é inválido — uma loja que não entrega nem deixa
-retirar não opera.
+**Não existe campo `modalidadesAceitas`.** A loja aceita a modalidade se há
+entrada para ela no mapa: `modalidadesAceitas` é `metodosPorModalidade.keySet()`,
+derivado. Os dois campos existiam lado a lado, e as chaves de um eram os
+elementos do outro — dois campos que precisam ser iguais são uma invariante a
+testar para sempre e a violar por descuido, que é o mesmo argumento com que a
+emenda de 26/08 colapsou `deliveryFee` em `taxaSnapshot`.
+
+Mapa vazio é inválido: uma loja que não entrega nem deixa retirar não opera. E
+modalidade com conjunto de métodos vazio também é — aceitar entrega sem aceitar
+forma nenhuma de pagar é pedido que entra e não fecha.
 
 ### Pedido mínimo
 
@@ -294,6 +310,12 @@ RETIRADA → R$ 0,00        zero = sem mínimo
 Matriz pelo mesmo motivo dos métodos de pagamento: mínimo para entrega e nenhum
 para retirada é a configuração comum, e o valor único não a expressa. **Zero é
 valor válido e significa "sem mínimo"** — não é ausência de configuração.
+
+E **a ausência não é permitida**: toda modalidade aceita tem entrada, e nenhuma
+modalidade não aceita tem. Sem a primeira metade, ausência e zero se confundem —
+o erro que M11 nomeia do outro lado, em "ausência de área ≠ taxa zero". Sem a
+segunda, sobra configuração morta que vira ativa sozinha no dia em que alguém
+aceitar a modalidade.
 
 **O mínimo é sobre `subtotalDosItens`, nunca sobre o `total`** (ADR-028). Sobre o
 total, a taxa de entrega ajudaria a atingi-lo: um mínimo de R$ 25 com taxa de
@@ -497,12 +519,12 @@ mesmo tendo invalidação por evento.
 | M9 | `identificadorNormalizado` único por loja | Áreas duplicadas com taxas divergentes |
 | M10 | Faixas de CEP não se sobrepõem | O mesmo endereço com duas taxas |
 | M11 | Ausência de área ≠ taxa zero | Entrega grátis onde não se entrega |
-| M12 | `modalidadesAceitas` não vazio | Loja que não opera |
+| M12 | `metodosPorModalidade` não vazio, e nenhum conjunto de métodos vazio | Loja que não opera; ou modalidade que aceita pedido e nenhuma forma de pagar |
 | M13 | Um vínculo de entregador por par entregador × loja | Remuneração ambígua na jornada |
 | M14 | Pausa e fechamento não afetam pedido em andamento | Sábado à noite com pedidos cancelados em massa |
 | M15 | `descontoDeRetirada ≥ 0` | Desconto negativo vira acréscimo silencioso |
 | M16 | `fusoHorario` é identificador IANA válido do conjunto brasileiro, nunca nulo | Horário de funcionamento, expediente e fechamento erram juntos e em silêncio |
-| M17 | `pedidoMinimoPorModalidade[m] ≥ 0` para toda modalidade aceita | Mínimo negativo, que não significa nada |
+| M17 | `pedidoMinimoPorModalidade` tem entrada para **toda** modalidade aceita e para nenhuma outra, e toda entrada é `≥ 0` | Mínimo negativo não significa nada; ausência se confunde com zero (o erro que M11 nomeia do outro lado); mínimo de modalidade não aceita é configuração morta |
 | M18 | Recuperação de estabelecimento cria ou promove `Membro` — nunca altera credencial de `Usuario` | Recuperar uma loja daria acesso às outras lojas do mesmo usuário |
 
 ---
