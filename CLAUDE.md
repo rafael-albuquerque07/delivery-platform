@@ -46,7 +46,7 @@ api ─────────────────┐
 infrastructure ──> application ──> domain
 ```
 
-- `domain/` — regra pura, sem framework. Interfaces de repositório ficam aqui.
+- `domain/` — regra pura, sem framework. **Porta de repositório não fica aqui**: mora em `application/port/out`, como o `README.md` descreve e como o `identity-service` e o `merchant-service` fazem. Os diretórios `domain/repository/` vazios foram removidos (13/09/2026).
 - `application/` — casos de uso e orquestração; depende de portas (`port/out`).
 - `infrastructure/` — persistência, mensageria, clientes HTTP, segurança.
 - `api/` — traduz HTTP em comando.
