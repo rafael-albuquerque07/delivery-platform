@@ -26,8 +26,8 @@ cd backend
 ./gradlew printModules                       # listar módulos
 ```
 
-Perfis do Compose: `core` (bancos e brokers) · `services` (aplicações) ·
-`observability` · `full`. **Não suba `full` para trabalhar** — são muitos
+Perfis do Compose: `core` (bancos e brokers) · `services` (aplicações) · `full`.
+**Não suba `full` para trabalhar** — são muitos
 containers e você quase nunca precisa deles.
 
 ---
@@ -210,7 +210,8 @@ de rede.
 Copy-Item .env.example .env
 ```
 
-Sem `.env`, as oito variáveis interpolam para string vazia e o compose só avisa.
+Sem `.env`, as variáveis do `.env.example` interpolam para string vazia e o
+compose só avisa.
 O Postgres recusa subir sem senha — falha alta, e é o comportamento desejado. O
 MinIO sobe com credencial em branco, que é pior porque parece funcionar.
 
@@ -356,7 +357,8 @@ Se o `./gradlew test` falhar por daemon indisponível, rode
 | Vai cachear cotação em qualquer serviço | Não, nos dois lugares onde ela existe. No `order` a resposta vira `taxaSnapshot`; no `conversation` ela vira o total que o cliente confirma e que T01 vai contradizer. ADR-034 §1 |
 | Vai publicar porta nova no compose | `127.0.0.1:` na frente, sempre. Sem o prefixo, o Docker liga em `0.0.0.0` e o serviço fica alcançável da rede local — e dois dos bancos deste compose sobem sem senha |
 | Vai preencher o `.env` achando que autenticou o Mongo | Não autenticou. O `MONGO_URI` dos serviços não tem credencial e o container não lê `MONGO_USER`. É decisão registrada no `docker-compose.yml`, e o que protege é o bind em `127.0.0.1` |
-| Vai escrever peça de infraestrutura — workflow, política de reinício, guardião, varredura | **Force uma execução no mesmo dia.** Quatro peças deste projeto tinham garantia escrita e nunca haviam rodado: o guardião da VM, as políticas de reinício, o gitleaks (dentro de um pipeline que nunca disparava) e os nove pipelines (quebrados desde o commit inicial por falta do bit de execução no `gradlew`). Nenhuma foi descuido de escrita — todas foram ausência de execução. Peça que nunca rodou não é peça, é intenção |
+| Vai escrever peça de infraestrutura — workflow, política de reinício, guardião, varredura | **Force uma execução no mesmo dia.** Oito peças deste projeto tinham garantia escrita e nunca haviam rodado: o guardião da VM — a tarefa `WSL Ubuntu keepalive`, escrita como decisão de *não* ter guardião e criada só em 30/08; as políticas de reinício (`restart: unless-stopped` e `systemctl enable docker`); o gitleaks, dentro de um pipeline que nunca disparava; os nove pipelines, quebrados desde o commit inicial por falta do bit de execução no `gradlew`; `flyway-core` sem o `spring-boot-starter-flyway` — cinco serviços relacionais sem migration nenhuma até 07/09; `contracts/openapi/`, que prometia "um arquivo por serviço, validado no CI" e tinha um `.gitkeep`; `:value-types`, treze testes que workflow nenhum rodava; e o stack de observabilidade inteiro — quatro contêineres, dez linhas de exposição e um `prometheus.yml` raspando um endpoint que nunca existiu (ADR-041). Nenhuma foi descuido de escrita — todas foram ausência de execução. Peça que nunca rodou não é peça, é intenção |
+| Vai escrever peça de infraestrutura para um marco distante | Não escreva ainda. A regra acima manda forçar uma execução no mesmo dia, e peça de marco distante **não tem como** ser executada hoje — então ela nasce exatamente como as oito. O stack de observabilidade inteiro foi escrito no marco 0 para o marco 11: Prometheus, Grafana, Loki e Tempo, quatro contêineres, nenhuma entrada, e um `prometheus.yml` raspando `/actuator/prometheus` nos nove serviços, que nunca existiu em nenhum. Saiu no marco 1 — ADR-041 |
 | Vai criar workflow com filtro de caminho | O filtro precisa cobrir tudo que muda o resultado do build, não só o código do módulo: `gradlew`, `gradle/wrapper/**`, `settings.gradle.kts`, o catálogo de versões e o workflow reutilizável. E declare `workflow_dispatch`, senão não há como disparar sob demanda. Em 30/08 o commit que consertou o `gradlew` não disparou nenhum dos nove workflows que ele desbloqueava |
 | Vai editar uma migration | **Só se ela nunca rodou contra um banco que sobrevive.** No Testcontainers vale à vontade — o banco morre no fim do teste. Contra dev, outra máquina ou homologação, o Flyway grava o checksum em `flyway_schema_history` e recusa subir a aplicação se o arquivo mudar depois disso. Não é disciplina, é o que a ferramenta faz sozinha. Migration é editável até rodar em banco que sobrevive; depois é história, e correção vira `V2` |
 | Uma funcionalidade parece obviamente necessária | **É sinal de conferir contra o PRD, não de começar a escrever.** "App de delivery" significa iFood para quase todo mundo — carrinho, catálogo navegável, avaliação de entregador, rastreio no mapa, app do consumidor. P1, P3, P4 e P6, mais a ADR-004 (um estabelecimento por pedido) e a ADR-006 (sem carrinho, `Conversa.rascunhoDePedido`), descartam a maior parte disso. O óbvio chega com desenho pronto, sem ter passado por decisão nenhuma — foi essa leitura que segurou metade do rascunho do front-end |

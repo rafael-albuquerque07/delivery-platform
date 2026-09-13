@@ -140,7 +140,7 @@ management:
       exposure:
         # `gateway` exposto de propósito: é como se confere, no marco 1, que
         # as rotas acima foram de fato lidas.
-        include: health,info,prometheus,gateway
+        include: health,info,gateway
   endpoint:
     health:
       probes:
@@ -152,4 +152,4 @@ logging:
     root: INFO
     com.deliveryplatform: INFO
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"

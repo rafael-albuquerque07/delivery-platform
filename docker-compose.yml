@@ -1,7 +1,6 @@
 # Perfis:
 #   core           infraestrutura (bancos, brokers, storage)
 #   services       gateway e microsserviços
-#   observability  Prometheus, Grafana, Loki, Tempo
 #   full           tudo
 #
 # No dia a dia você não sobe os nove aplicativos. Sobe `core` e roda pelo IDE
@@ -351,45 +350,9 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # ──────────────────────────────────────────── observabilidade
-  prometheus:
-    restart: unless-stopped
-    profiles: ["observability", "full"]
-    image: prom/prometheus:latest
-    ports:
-      - "127.0.0.1:9091:9090"
-    volumes:
-      - ./infra/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-
-  grafana:
-    restart: unless-stopped
-    profiles: ["observability", "full"]
-    image: grafana/grafana:latest
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
-    ports:
-      - "127.0.0.1:3000:3000"
-    volumes:
-      - grafana-data:/var/lib/grafana
-
-  loki:
-    restart: unless-stopped
-    profiles: ["observability", "full"]
-    image: grafana/loki:latest
-    ports:
-      - "127.0.0.1:3100:3100"
-
-  tempo:
-    restart: unless-stopped
-    profiles: ["observability", "full"]
-    image: grafana/tempo:latest
-    ports:
-      - "127.0.0.1:3200:3200"
-
 volumes:
   postgres-data:
   mongo-data:
   redis-data:
   rabbitmq-data:
   minio-data:
-  grafana-data:

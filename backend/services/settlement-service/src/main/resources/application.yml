@@ -50,7 +50,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        include: health,info
   endpoint:
     health:
       probes:
@@ -66,5 +66,4 @@ logging:
     root: INFO
     com.deliveryplatform: INFO
   pattern:
-    # correlationId entra desde o início: retrofit em payload de evento é caro.
-    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
