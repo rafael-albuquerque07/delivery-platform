@@ -55,6 +55,16 @@ Serviço só depende de `build-logic` e de bibliotecas externas.
 Precisa de uma verificação no build que falhe se um `:services:*` depender de
 outro — requisito do marco 1, listado como pendência abaixo.
 
+> **Emendado pela ADR-040 (08/09/2026).** Existe **um** módulo compartilhado que
+> não é serviço: `:value-types`, com tipos de valor sem framework, sem estado e
+> sem regra de negócio de serviço nenhum. Serviço passa a depender de
+> `build-logic`, de `:value-types` e de bibliotecas externas — e de nada mais. A
+> regra de entrada do módulo está na ADR-040, e a metade dela que uma máquina
+> confere é verificada por ArchUnit dentro dele.
+>
+> A pendência abaixo fica **mais** urgente, não menos: a verificação passa a
+> precisar distinguir a dependência permitida da proibida.
+
 ### Contrato mora junto
 
 `contracts/` fica no mesmo repositório porque o esquema de um evento muda com o
