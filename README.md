@@ -49,7 +49,6 @@ docker compose --profile core up -d           # bancos, brokers, storage
 |---|---|
 | `core` | PostgreSQL, MongoDB, Redis, RabbitMQ, MinIO |
 | `services` | gateway e os oito microsserviços |
-| `observability` | Prometheus, Grafana, Loki, Tempo |
 | `full` | tudo |
 
 Comandos úteis:
@@ -77,7 +76,7 @@ delivery-platform/
 │   ├── dominio/                as REGRAS vigentes — leia antes de codificar
 │   ├── architecture/decisions/ ADRs
 │   └── referencia/             PDFs publicados
-├── infra/                      configuração de Postgres, Mongo e observabilidade
+├── infra/                      configuração de Postgres e Mongo
 ├── frontend/                   entra no marco 3 (ADR-016)
 └── .github/workflows/          um pipeline por serviço + workflow reutilizável
 ```
@@ -209,7 +208,7 @@ acharam defeitos reais, e **dez minutos lendo o `docker-compose.yml` acharam doi
 bancos sem senha publicados em `0.0.0.0`**. Documento só mente quando alguém lê;
 infraestrutura mente até alguém ligar.
 
-Trinta e oito ADRs escritas, mais duas numeradas que ficaram sem objeto e têm
+Trinta e nove ADRs escritas, mais duas numeradas que ficaram sem objeto e têm
 registro próprio dizendo por quê. Índice em
 [`docs/architecture/decisions/`](docs/architecture/decisions/README.md).
 

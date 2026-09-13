@@ -42,8 +42,9 @@
 | 038 | O `sub` vira `UUID` na borda, e o caso de uso não conhece o token | ✅ aceita |
 | 039 | O contrato OpenAPI é gerado do código e congelado | ✅ aceita |
 | 040 | Um módulo de tipos de valor, e a regra que impede ele de crescer | ✅ aceita |
+| 041 | Observabilidade sai do repositório até o marco 11 | ✅ aceita |
 
-**Trinta e oito escritas, duas sem objeto — estas com registro próprio desde
+**Trinta e nove escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê
