@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'backend/services/merchant-service/**'
+      - 'backend/value-types/**'
       - 'backend/build-logic/**'
       - 'backend/gradle/libs.versions.toml'
       - 'backend/gradlew'
@@ -15,6 +16,7 @@ on:
   pull_request:
     paths:
       - 'backend/services/merchant-service/**'
+      - 'backend/value-types/**'
       - 'backend/build-logic/**'
       - 'backend/gradle/libs.versions.toml'
       - 'backend/gradlew'

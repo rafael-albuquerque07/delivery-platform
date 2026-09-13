@@ -112,8 +112,10 @@ Estas não são preferências de estilo. Quebrar qualquer uma é defeito.
 - **`record` para DTOs.** Não usamos Lombok.
 - **Enum, nunca `String` livre**, para status, método, modalidade e papel.
   Persistir com `@Enumerated(EnumType.STRING)`.
-- **`Money`** (value object com `BigDecimal` escala 2 e `RoundingMode.HALF_UP`)
-  para todo valor. `double` e `float` são proibidos na cadeia de dinheiro.
+- **`Money`** — escala 2, `RoundingMode.HALF_UP` **e código de moeda** — para
+  todo valor. Mora em `:value-types` (ADR-040); não escreva outro. A moeda não
+  prepara multimoeda: faz somar reais com outra coisa estourar em vez de somar.
+  `double` e `float` são proibidos na cadeia de dinheiro.
 - **Entidade JPA nunca é `@RequestBody`.** DTO de request próprio, com Bean
   Validation.
 - **Máquina de estados como tabela de transições válidas**, testada; transição
@@ -308,7 +310,7 @@ Se o `./gradlew test` falhar por daemon indisponível, rode
 | Vai acrescentar rota no gateway | Por **recurso**, não por serviço, e `merchantId` sempre na mesma posição do caminho. Ordem de predicado importa: o primeiro que casa vence. Nunca acrescente um `/merchants/**` genérico acima dos específicos. ADR-012 |
 | Tentado a autorizar no gateway | Não. O gateway autentica; quem autoriza é o serviço, porque só ele sabe qual permissão cada endpoint exige. ADR-011 e ADR-012 |
 | Vai configurar segurança no gateway | `/api/v1/webhooks/**` é PÚBLICO, sem JWT — o PSP e o provedor do canal não têm token nosso, e autenticam por assinatura no corpo, dentro do serviço. O `SecurityFilterChain` precisa liberar exatamente esse prefixo e exigir autenticação no resto. **Ainda não escrito** — requisito do marco 1. ADR-012 |
-| Vai fazer um serviço usar código de outro | Não. Integração é por API ou evento. Nenhum módulo `:services:*` declara outro como dependência — ADR-001. **A verificação no build ainda não existe**; até existir, isto depende de ninguém errar |
+| Vai fazer um serviço usar código de outro | Não. Integração é por API ou evento. Nenhum módulo `:services:*` declara outro como dependência — ADR-001. **A única exceção é `:value-types`**, e ela é da ADR-040: tipo de valor sem framework, sem estado e sem regra de negócio de serviço nenhum, com regra de entrada escrita. Um segundo `project(...)` num build de serviço é violação da ADR-001. **A verificação no build ainda não existe**, e agora ela precisa distinguir a dependência permitida da proibida |
 | Vai acrescentar `modalidade` na cotação | Não. Preço não varia por modalidade e `cotar` não a recebe. A diferença é a taxa (ADR-020) mais o `descontoDeRetirada` (ADR-024). Se a modalidade virar parâmetro do preço, ela vira pergunta de abertura da conversa |
 | Vai somar alguma coisa em `desconto` | Hoje `desconto` tem origem única — o desconto de retirada. Antes de acrescentar cupom, decomponha o campo: senão o comerciante deixa de separar o que deu para incentivar retirada do que queimou em promoção. ADR-024 |
 | Vai perguntar "que dia é hoje" | Não existe sem a loja. É `diaOperacional(instante, fusoHorario)`, com corte às 04:00 — a venda à 01:30 de domingo é do dia operacional de sábado. ADR-025 |
