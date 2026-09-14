@@ -263,6 +263,16 @@ wsl -d Ubuntu -- systemctl is-active docker
 docker info --format "{{.ServerVersion}}"
 ```
 
+> **As três primeiras linhas rodam de dentro da distro, e podem dar falso
+> positivo.** Em 13/09/2026 a distro estava de pé, `systemctl is-active docker`
+> respondia e um `curl 127.0.0.1:2375` **de dentro do Ubuntu** devolvia 200 — e o
+> Testcontainers falhava com `Could not find a valid Docker environment`, três
+> vezes seguidas. Quem fala com o daemon é a ponte do **Windows**, e de lá
+> `Test-NetConnection -Port 2375` recusava a conexão: o `networkingMode=mirrored`
+> tinha caído sozinho, **com a VM viva**. Conserto: `wsl --shutdown`, depois
+> `wsl -d Ubuntu -- true`. A quarta linha do bloco — `docker info` — é a única
+> que roda do lado do Windows, e é a única que mede o que o teste mede.
+
 `Exited (255)` no Postgres depois de a VM cair é normal: os outros atendem o
 SIGTERM e saem com 0; ele demora mais que o tempo limite e leva SIGKILL.
 
