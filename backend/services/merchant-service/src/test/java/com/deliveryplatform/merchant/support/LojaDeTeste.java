@@ -1,9 +1,11 @@
 package com.deliveryplatform.merchant.support;
 
+import com.deliveryplatform.merchant.domain.model.AreaDeEntrega;
 import com.deliveryplatform.merchant.domain.model.Disponibilidade;
 import com.deliveryplatform.merchant.domain.model.Documento;
 import com.deliveryplatform.merchant.domain.model.Estabelecimento;
 import com.deliveryplatform.merchant.domain.model.Faixa;
+import com.deliveryplatform.merchant.domain.model.FaixaDeCep;
 import com.deliveryplatform.merchant.domain.model.FusoHorario;
 import com.deliveryplatform.merchant.domain.model.Identificacao;
 import com.deliveryplatform.merchant.domain.model.MetodoPagamento;
@@ -39,7 +41,7 @@ public final class LojaDeTeste {
 
     public static Estabelecimento pizzaria() {
         return Estabelecimento.novo(
-                identificacao(FusoHorario.PADRAO), operacao(), troco(), disponibilidade());
+                identificacao(FusoHorario.PADRAO), operacao(), troco(), disponibilidade(), areas());
     }
 
     public static Identificacao identificacao(FusoHorario fuso) {
@@ -90,6 +92,26 @@ public final class LojaDeTeste {
                 DayOfWeek.SATURDAY,
                 List.of(Faixa.de("11:00", "14:00"), Faixa.de("18:00", "23:00")));
         return new Disponibilidade(horario, Pausa.nenhuma());
+    }
+
+    /**
+     * Três áreas que cobrem os três casos que importam: ativa com faixa de CEP,
+     * ativa sem faixa nenhuma — alcançável só pelo nome, que é o caminho normal
+     * da ADR-020 — e desativada com faixa, para provar que M10 e as consultas
+     * ignoram quem não está ativa.
+     */
+    public static List<AreaDeEntrega> areas() {
+        return List.of(
+                AreaDeEntrega.de(
+                        "Boa Viagem",
+                        Money.de("7.00"),
+                        List.of(FaixaDeCep.de("51000-000", "51999-999"))),
+                AreaDeEntrega.de("Centro", Money.ZERO),
+                AreaDeEntrega.de(
+                                "Pina",
+                                Money.de("9.00"),
+                                List.of(FaixaDeCep.de("50000-000", "50999-999")))
+                        .desativada());
     }
 
     /** Um instante a partir da hora civil de São Paulo — o fuso padrão da loja. */

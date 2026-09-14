@@ -1,6 +1,6 @@
 # Domínio — Estabelecimento, equipe e áreas
 
-**Serviço:** `merchant-service` · **Status:** vigente (v1.3, 13/09/2026)
+**Serviço:** `merchant-service` · **Status:** vigente (v1.4, 14/09/2026)
 **Fontes:** PRD §5 (P2, P3, P5), PRD §6 E1, E2 e E6.1, ADR-004, ADR-011, ADR-012, ADR-020, ADR-022
 **Invariantes do `CLAUDE.md` que este documento detalha:** 2, 8, 9
 
@@ -461,6 +461,13 @@ AreaDeEntrega
 | E3 | `taxa ≥ 0` | — |
 | E4 | Ausência de área ≠ `taxa = 0` | Entregar de graça onde não se entrega |
 
+**M9 e M10 não têm o mesmo escopo, e a diferença é o modo de falha de cada uma.**
+M9 vale entre **todas** as áreas, ativas ou não: o que ela impede é a mesma área
+ser cadastrada duas vezes sem ninguém perceber, e desativar uma das duas não
+desfaz a confusão. M10 vale **só entre as ativas**: o que ela impede é o mesmo
+endereço resolver para duas taxas, e área desativada não cota nada. Reativar uma
+área é reconstruir o agregado, e a construção confere M10 de novo.
+
 **A normalização é regra de domínio, não detalhe de banco.** Maiúsculas, sem
 acento, sem espaço duplo, aparado. "Boa Viagem", "boa viagem" e "BOA  VIAGEM"
 são a mesma área — e se não forem, a Marli cadastra a mesma sem perceber e
@@ -472,6 +479,13 @@ mais nada.
 
 **Área desativada com pedido em rota é caso normal.** O entregador termina a
 entrega; a área simplesmente não aceita pedido novo.
+
+**Procurar área devolve `Optional`, nunca uma taxa.** Não existe
+`taxaPara(cep)` que responda zero quando não acha — é M11 na forma da
+assinatura, e não numa checagem que alguém pode esquecer. São duas consultas: por
+**nome de bairro**, que é o caminho da ADR-020 e o que o cliente diz na conversa,
+e por **CEP**, que é o refinamento de quem quer resolver o endereço sem
+perguntar. Área sem faixa de CEP é normal — ela só não é alcançável pela segunda.
 
 ---
 

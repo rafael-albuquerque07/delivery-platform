@@ -38,11 +38,17 @@ import java.util.UUID;
  * A volta passa por {@code Money.de(BigDecimal)}, que assume BRL — se um dia
  * houver segunda moeda, é migration por coluna.
  *
- * <p><b>As três coleções são {@code EAGER}, de propósito.</b> O agregado é
- * carregado inteiro por definição, e as três são limitadas: duas modalidades,
- * três métodos, e no máximo alguns turnos por dia da semana. {@code LAZY} faria
- * o mapper depender de uma sessão aberta — e o mapper roda onde o repositório
- * for chamado, com {@code open-in-view: false}.
+ * <p><b>As cinco coleções são {@code EAGER}, de propósito.</b> O agregado é
+ * carregado inteiro por definição, e {@code LAZY} faria o mapper depender de uma
+ * sessão aberta — o mapper roda onde o repositório for chamado, com
+ * {@code open-in-view: false}.
+ *
+ * <p>É a quantidade que passa a incomodar: com cinco coleções ansiosas, se o
+ * Hibernate as juntar numa consulta só o resultado é o produto de todas. As
+ * contagens são pequenas — duas modalidades, três métodos, alguns turnos por
+ * dia, algumas áreas —, e {@code Set} e {@code Map} desduplicam, então o
+ * agregado volta correto de qualquer jeito. O que pode crescer é o número de
+ * linhas trafegadas, e é a primeira coisa a medir se a recuperação ficar lenta.
  */
 @Entity
 @Table(name = "estabelecimento")
@@ -106,6 +112,18 @@ public class EstabelecimentoJpaEntity {
             joinColumns = @JoinColumn(name = "estabelecimento_id"))
     private Set<HorarioJpa> horarios = new LinkedHashSet<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "estabelecimento_area_entrega",
+            joinColumns = @JoinColumn(name = "estabelecimento_id"))
+    private Set<AreaDeEntregaJpa> areas = new LinkedHashSet<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "estabelecimento_area_faixa_cep",
+            joinColumns = @JoinColumn(name = "estabelecimento_id"))
+    private Set<FaixaDeCepJpa> faixasDeCep = new LinkedHashSet<>();
+
     protected EstabelecimentoJpaEntity() {
         // exigido pelo JPA — acesso por campo, não por este construtor
     }
@@ -125,7 +143,9 @@ public class EstabelecimentoJpaEntity {
             PausaJpa pausa,
             Set<MetodoAceitoJpa> metodosAceitos,
             Map<Modalidade, BigDecimal> pedidoMinimo,
-            Set<HorarioJpa> horarios) {
+            Set<HorarioJpa> horarios,
+            Set<AreaDeEntregaJpa> areas,
+            Set<FaixaDeCepJpa> faixasDeCep) {
         this.id = id;
         this.nome = nome;
         this.documento = documento;
@@ -141,6 +161,8 @@ public class EstabelecimentoJpaEntity {
         this.metodosAceitos = new LinkedHashSet<>(metodosAceitos);
         this.pedidoMinimo = new LinkedHashMap<>(pedidoMinimo);
         this.horarios = new LinkedHashSet<>(horarios);
+        this.areas = new LinkedHashSet<>(areas);
+        this.faixasDeCep = new LinkedHashSet<>(faixasDeCep);
     }
 
     public UUID getId() {
@@ -193,6 +215,14 @@ public class EstabelecimentoJpaEntity {
 
     public Set<HorarioJpa> getHorarios() {
         return horarios;
+    }
+
+    public Set<AreaDeEntregaJpa> getAreas() {
+        return areas;
+    }
+
+    public Set<FaixaDeCepJpa> getFaixasDeCep() {
+        return faixasDeCep;
     }
 
     public Set<MetodoAceitoJpa> getMetodosAceitos() {

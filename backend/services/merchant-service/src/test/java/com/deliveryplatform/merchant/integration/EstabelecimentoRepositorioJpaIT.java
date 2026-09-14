@@ -1,10 +1,12 @@
 package com.deliveryplatform.merchant.integration;
 
 import com.deliveryplatform.merchant.application.port.out.EstabelecimentoRepositorio;
+import com.deliveryplatform.merchant.domain.model.AreaDeEntrega;
 import com.deliveryplatform.merchant.domain.model.Disponibilidade;
 import com.deliveryplatform.merchant.domain.model.Documento;
 import com.deliveryplatform.merchant.domain.model.Estabelecimento;
 import com.deliveryplatform.merchant.domain.model.Faixa;
+import com.deliveryplatform.merchant.domain.model.FaixaDeCep;
 import com.deliveryplatform.merchant.domain.model.FusoHorario;
 import com.deliveryplatform.merchant.domain.model.Identificacao;
 import com.deliveryplatform.merchant.domain.model.MetodoPagamento;
@@ -27,6 +29,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.DayOfWeek;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import static com.deliveryplatform.merchant.support.LojaDeTeste.emSaoPaulo;
@@ -157,7 +160,8 @@ class EstabelecimentoRepositorioJpaIT {
                 LojaDeTeste.identificacao(FusoHorario.PADRAO),
                 LojaDeTeste.operacao(),
                 LojaDeTeste.troco(),
-                LojaDeTeste.disponibilidade().com(Pausa.ate(ate, "cozinha atolou")));
+                LojaDeTeste.disponibilidade().com(Pausa.ate(ate, "cozinha atolou")),
+                LojaDeTeste.areas());
 
         Estabelecimento salvo = repositorio.salvar(pausada);
         entityManager.flush();
@@ -191,7 +195,8 @@ class EstabelecimentoRepositorioJpaIT {
                         FusoHorario.PADRAO),
                 LojaDeTeste.operacao(),
                 LojaDeTeste.troco(),
-                Disponibilidade.semHorario()));
+                Disponibilidade.semHorario(),
+                List.of()));
         entityManager.flush();
     }
 
@@ -225,5 +230,61 @@ class EstabelecimentoRepositorioJpaIT {
         })
                 .as("pausa sem motivo é a que ninguém consegue explicar no dia seguinte")
                 .hasStackTraceContaining("ck_estabelecimento_pausa_ativa_exige_motivo");
+    }
+    @Test
+    void as_areas_voltam_com_a_faixa_de_cep_na_area_certa() {
+        Estabelecimento salvo = repositorio.salvar(LojaDeTeste.pizzaria());
+        entityManager.flush();
+        entityManager.clear();
+
+        Estabelecimento recuperado = repositorio.buscarPorId(salvo.getId()).orElseThrow();
+
+        assertThat(recuperado.getAreasDeEntrega())
+                .extracting(AreaDeEntrega::nome)
+                .containsExactlyInAnyOrder("Boa Viagem", "Centro", "Pina");
+        assertThat(recuperado.areaPorNome("Boa Viagem").orElseThrow().faixasDeCep())
+                .as("as faixas moram numa tabela separada e voltam para a área certa "
+                        + "pelo identificador normalizado")
+                .containsExactly(FaixaDeCep.de("51000000", "51999999"));
+        assertThat(recuperado.areaPorNome("Centro").orElseThrow().faixasDeCep())
+                .as("área sem faixa nenhuma é normal")
+                .isEmpty();
+    }
+
+    @Test
+    void o_cep_e_o_desativado_continuam_valendo_depois_do_banco() {
+        Estabelecimento salvo = repositorio.salvar(LojaDeTeste.pizzaria());
+        entityManager.flush();
+        entityManager.clear();
+
+        Estabelecimento recuperado = repositorio.buscarPorId(salvo.getId()).orElseThrow();
+
+        assertThat(recuperado.areaPara("51500-000").orElseThrow().taxa())
+                .isEqualTo(Money.de("7.00"));
+        assertThat(recuperado.areaPara("50500-000"))
+                .as("o Pina foi salvo desativado e continua fora das consultas")
+                .isEmpty();
+        assertThat(recuperado.areaPorNome("Centro").orElseThrow().taxa()).isEqualTo(Money.ZERO);
+    }
+
+    @Test
+    void a_chave_primaria_faz_m9_valer_no_banco_tambem() {
+        repositorio.salvar(LojaDeTeste.pizzaria());
+        entityManager.flush();
+
+        // Sem parâmetro: há uma loja só na transação, e o SELECT pega o id dela.
+        // O agregado recusaria antes, então a única forma de provar que a chave
+        // primária existe é escrever por baixo dele.
+        assertThatThrownBy(() -> {
+            entityManager.createNativeQuery(
+                            "INSERT INTO estabelecimento_area_entrega "
+                                    + "(estabelecimento_id, identificador_normalizado, nome, taxa, ativa) "
+                                    + "SELECT id, 'BOA VIAGEM', 'Boa viagem de novo', 5.00, TRUE "
+                                    + "FROM estabelecimento")
+                    .executeUpdate();
+            entityManager.flush();
+        })
+                .as("E1: a mesma área duas vezes com taxas divergentes")
+                .hasStackTraceContaining("estabelecimento_area_entrega");
     }
 }
