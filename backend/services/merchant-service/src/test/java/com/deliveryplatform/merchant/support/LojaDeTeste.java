@@ -1,31 +1,36 @@
 package com.deliveryplatform.merchant.support;
 
+import com.deliveryplatform.merchant.domain.model.Disponibilidade;
 import com.deliveryplatform.merchant.domain.model.Documento;
 import com.deliveryplatform.merchant.domain.model.Estabelecimento;
+import com.deliveryplatform.merchant.domain.model.Faixa;
 import com.deliveryplatform.merchant.domain.model.FusoHorario;
 import com.deliveryplatform.merchant.domain.model.Identificacao;
 import com.deliveryplatform.merchant.domain.model.MetodoPagamento;
 import com.deliveryplatform.merchant.domain.model.Modalidade;
 import com.deliveryplatform.merchant.domain.model.Operacao;
+import com.deliveryplatform.merchant.domain.model.Pausa;
 import com.deliveryplatform.merchant.domain.model.PoliticaDeTroco;
 import com.deliveryplatform.merchant.domain.model.Telefone;
 import com.deliveryplatform.merchant.domain.model.TipoDeOperacao;
 import com.deliveryplatform.valuetypes.Money;
 
+import java.time.DayOfWeek;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * A pizzaria da Marli, montada uma vez e usada pelo teste de unidade e pelo de
- * integração. Fica em {@code support} pelo mesmo motivo do
- * {@code GeradorDeChaveDeTeste} do {@code identity-service}: fixture
- * compartilhada entre pacotes de teste não é teste, e um teste importando outro
- * amarra a ordem de leitura de quem vier depois.
+ * A pizzaria da Marli, montada uma vez e usada pelos testes de unidade e de
+ * integração.
  *
  * <p>Os números são os do {@code estabelecimento.md} §4 — mínimo de R$ 25,00 na
- * entrega, zero na retirada, fundo de troco de R$ 50,00 — para que uma falha
- * aponte para a linha do documento.
+ * entrega, zero na retirada, fundo de troco de R$ 50,00 — e o horário é o
+ * exemplo que o próprio documento usa para a faixa que cruza a meia-noite:
+ * <b>terça 18:00–02:00</b>. Uma falha aponta para a linha do documento.
  */
 public final class LojaDeTeste {
 
@@ -33,7 +38,8 @@ public final class LojaDeTeste {
     }
 
     public static Estabelecimento pizzaria() {
-        return Estabelecimento.novo(identificacao(FusoHorario.PADRAO), operacao(), troco());
+        return Estabelecimento.novo(
+                identificacao(FusoHorario.PADRAO), operacao(), troco(), disponibilidade());
     }
 
     public static Identificacao identificacao(FusoHorario fuso) {
@@ -70,5 +76,26 @@ public final class LojaDeTeste {
 
     public static PoliticaDeTroco troco() {
         return new PoliticaDeTroco(Money.de("50.00"), false);
+    }
+
+    /**
+     * Terça 18:00–02:00 — a faixa que cruza a meia-noite — e sábado com almoço e
+     * jantar. Três turnos ao todo, que é o bastante para o teste de integração
+     * conferir o reagrupamento sem virar uma tabela de vinte linhas.
+     */
+    public static Disponibilidade disponibilidade() {
+        Map<DayOfWeek, List<Faixa>> horario = new EnumMap<>(DayOfWeek.class);
+        horario.put(DayOfWeek.TUESDAY, List.of(Faixa.de("18:00", "02:00")));
+        horario.put(
+                DayOfWeek.SATURDAY,
+                List.of(Faixa.de("11:00", "14:00"), Faixa.de("18:00", "23:00")));
+        return new Disponibilidade(horario, Pausa.nenhuma());
+    }
+
+    /** Um instante a partir da hora civil de São Paulo — o fuso padrão da loja. */
+    public static Instant emSaoPaulo(String dataHoraLocal) {
+        return LocalDateTime.parse(dataHoraLocal)
+                .atZone(FusoHorario.PADRAO.zona())
+                .toInstant();
     }
 }

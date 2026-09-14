@@ -1,12 +1,15 @@
 package com.deliveryplatform.merchant.integration;
 
 import com.deliveryplatform.merchant.application.port.out.EstabelecimentoRepositorio;
+import com.deliveryplatform.merchant.domain.model.Disponibilidade;
 import com.deliveryplatform.merchant.domain.model.Documento;
 import com.deliveryplatform.merchant.domain.model.Estabelecimento;
+import com.deliveryplatform.merchant.domain.model.Faixa;
 import com.deliveryplatform.merchant.domain.model.FusoHorario;
 import com.deliveryplatform.merchant.domain.model.Identificacao;
 import com.deliveryplatform.merchant.domain.model.MetodoPagamento;
 import com.deliveryplatform.merchant.domain.model.Modalidade;
+import com.deliveryplatform.merchant.domain.model.Pausa;
 import com.deliveryplatform.merchant.domain.model.Telefone;
 import com.deliveryplatform.merchant.support.LojaDeTeste;
 import com.deliveryplatform.valuetypes.Money;
@@ -22,33 +25,29 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
+import java.time.DayOfWeek;
+import java.time.Instant;
 import java.util.Optional;
 
+import static com.deliveryplatform.merchant.support.LojaDeTeste.emSaoPaulo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Primeiro Testcontainers do {@code merchant-service}. Sem H2 (ADR-014):
- * {@code NUMERIC(19,2)}, {@code CHECK} e chave composta em tabela de coleção são
- * comportamento do PostgreSQL.
+ * {@code NUMERIC(19,2)}, {@code TIME}, {@code CHECK} e chave composta em tabela
+ * de coleção são comportamento do PostgreSQL.
  *
  * <p>{@code @SpringBootTest(webEnvironment = NONE)} e não {@code @DataJpaTest}:
  * o slice de JPA saiu do {@code spring-boot-test-autoconfigure} no Boot 4.1.1 —
  * a mesma nota que o {@code UsuarioRepositorioJpaIT} carrega.
  *
- * <p>Diferente do {@code identity}, aqui não há {@code @DynamicPropertySource}
- * para chave de assinatura: o {@code merchant-service} valida token, não emite,
- * e a validação é de contexto web — que este teste não sobe.
- *
  * <p><b>As duas propriedades de RabbitMQ não são decoração.</b> O
- * {@code merchant-service} aplica {@code delivery.messaging-conventions}, e o
  * {@code application.yml} traz {@code spring.rabbitmq.username:
- * ${RABBITMQ_USERNAME}} <i>sem valor padrão</i>. O {@code RabbitProperties}
- * liga no início do contexto, e um placeholder sem resolução derruba a subida
- * antes de qualquer teste rodar — nada a ver com o banco. Valor qualquer
- * resolve: este teste não fala com broker nenhum, e não há {@code @RabbitListener}
- * que force conexão. Quando o primeiro listener existir, isto vira um contêiner
- * de verdade.
+ * ${RABBITMQ_USERNAME}} sem valor padrão, e placeholder sem resolução derruba a
+ * subida do contexto antes de qualquer teste rodar. Este teste não fala com
+ * broker nenhum; quando o primeiro {@code @RabbitListener} existir, isto vira um
+ * contêiner de verdade.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @TestPropertySource(properties = {
@@ -120,6 +119,61 @@ class EstabelecimentoRepositorioJpaIT {
     }
 
     @Test
+    void o_horario_volta_agrupado_por_dia_e_ordenado_por_inicio() {
+        Estabelecimento salvo = repositorio.salvar(LojaDeTeste.pizzaria());
+        entityManager.flush();
+        entityManager.clear();
+
+        Disponibilidade recuperada =
+                repositorio.buscarPorId(salvo.getId()).orElseThrow().getDisponibilidade();
+
+        assertThat(recuperada.faixasDe(DayOfWeek.TUESDAY))
+                .as("a tabela guarda trios planos (dia, início, fim)")
+                .containsExactly(Faixa.de("18:00", "02:00"));
+        assertThat(recuperada.faixasDe(DayOfWeek.SATURDAY))
+                .as("a ordem por início é reposta na construção, não vem do banco")
+                .containsExactly(Faixa.de("11:00", "14:00"), Faixa.de("18:00", "23:00"));
+        assertThat(recuperada.faixasDe(DayOfWeek.MONDAY)).isEmpty();
+    }
+
+    @Test
+    void a_loja_continua_aberta_a_uma_da_manha_depois_de_ir_e_voltar_do_banco() {
+        Estabelecimento salvo = repositorio.salvar(LojaDeTeste.pizzaria());
+        entityManager.flush();
+        entityManager.clear();
+
+        Estabelecimento recuperado = repositorio.buscarPorId(salvo.getId()).orElseThrow();
+
+        assertThat(recuperado.estaAberta(emSaoPaulo("2026-09-16T01:00")))
+                .as("a faixa que cruza a meia-noite sobrevive ao TIME do PostgreSQL")
+                .isTrue();
+        assertThat(recuperado.estaAberta(emSaoPaulo("2026-09-16T02:00"))).isFalse();
+    }
+
+    @Test
+    void a_pausa_com_prazo_sobrevive_a_ida_e_volta() {
+        Instant ate = emSaoPaulo("2026-09-15T21:00");
+        Estabelecimento pausada = Estabelecimento.novo(
+                LojaDeTeste.identificacao(FusoHorario.PADRAO),
+                LojaDeTeste.operacao(),
+                LojaDeTeste.troco(),
+                LojaDeTeste.disponibilidade().com(Pausa.ate(ate, "cozinha atolou")));
+
+        Estabelecimento salvo = repositorio.salvar(pausada);
+        entityManager.flush();
+        entityManager.clear();
+
+        Pausa recuperada =
+                repositorio.buscarPorId(salvo.getId()).orElseThrow().getDisponibilidade().pausa();
+
+        assertThat(recuperada.ativa()).isTrue();
+        assertThat(recuperada.motivo()).isEqualTo("cozinha atolou");
+        assertThat(recuperada.pausadoAte()).isEqualTo(ate);
+        assertThat(recuperada.ativaEm(emSaoPaulo("2026-09-15T20:00"))).isTrue();
+        assertThat(recuperada.ativaEm(emSaoPaulo("2026-09-15T21:30"))).isFalse();
+    }
+
+    @Test
     void duas_lojas_do_mesmo_dono_repetem_o_documento_e_isso_e_permitido() {
         repositorio.salvar(LojaDeTeste.pizzaria());
         entityManager.flush();
@@ -136,7 +190,8 @@ class EstabelecimentoRepositorioJpaIT {
                         "Centro",
                         FusoHorario.PADRAO),
                 LojaDeTeste.operacao(),
-                LojaDeTeste.troco()));
+                LojaDeTeste.troco(),
+                Disponibilidade.semHorario()));
         entityManager.flush();
     }
 
@@ -155,5 +210,20 @@ class EstabelecimentoRepositorioJpaIT {
             entityManager.flush();
         })
                 .hasStackTraceContaining("ck_estabelecimento_desconto_de_retirada_nao_negativo");
+    }
+
+    @Test
+    void o_check_da_pausa_sem_motivo_esta_na_migration() {
+        repositorio.salvar(LojaDeTeste.pizzaria());
+        entityManager.flush();
+
+        assertThatThrownBy(() -> {
+            entityManager
+                    .createNativeQuery("UPDATE estabelecimento SET pausa_ativa = TRUE")
+                    .executeUpdate();
+            entityManager.flush();
+        })
+                .as("pausa sem motivo é a que ninguém consegue explicar no dia seguinte")
+                .hasStackTraceContaining("ck_estabelecimento_pausa_ativa_exige_motivo");
     }
 }

@@ -5,6 +5,7 @@ import com.deliveryplatform.merchant.domain.model.TipoDeOperacao;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -37,11 +38,11 @@ import java.util.UUID;
  * A volta passa por {@code Money.de(BigDecimal)}, que assume BRL — se um dia
  * houver segunda moeda, é migration por coluna.
  *
- * <p><b>As duas coleções são {@code EAGER}, de propósito.</b> O agregado é
- * carregado inteiro por definição, e as duas são limitadas pelo número de
- * modalidades, que é dois. {@code LAZY} faria o mapper depender de uma sessão
- * aberta — e o mapper roda onde o repositório for chamado, com
- * {@code open-in-view: false}.
+ * <p><b>As três coleções são {@code EAGER}, de propósito.</b> O agregado é
+ * carregado inteiro por definição, e as três são limitadas: duas modalidades,
+ * três métodos, e no máximo alguns turnos por dia da semana. {@code LAZY} faria
+ * o mapper depender de uma sessão aberta — e o mapper roda onde o repositório
+ * for chamado, com {@code open-in-view: false}.
  */
 @Entity
 @Table(name = "estabelecimento")
@@ -81,6 +82,9 @@ public class EstabelecimentoJpaEntity {
     @Column(name = "aceita_pedido_sem_troco_disponivel", nullable = false)
     private boolean aceitaPedidoSemTrocoDisponivel;
 
+    @Embedded
+    private PausaJpa pausa;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "estabelecimento_metodo_aceito",
@@ -95,6 +99,12 @@ public class EstabelecimentoJpaEntity {
     @MapKeyColumn(name = "modalidade", length = 16)
     @Column(name = "valor", nullable = false, precision = 19, scale = 2)
     private Map<Modalidade, BigDecimal> pedidoMinimo = new LinkedHashMap<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "estabelecimento_horario",
+            joinColumns = @JoinColumn(name = "estabelecimento_id"))
+    private Set<HorarioJpa> horarios = new LinkedHashSet<>();
 
     protected EstabelecimentoJpaEntity() {
         // exigido pelo JPA — acesso por campo, não por este construtor
@@ -112,8 +122,10 @@ public class EstabelecimentoJpaEntity {
             BigDecimal descontoDeRetirada,
             BigDecimal fundoMaximoDeTroco,
             boolean aceitaPedidoSemTrocoDisponivel,
+            PausaJpa pausa,
             Set<MetodoAceitoJpa> metodosAceitos,
-            Map<Modalidade, BigDecimal> pedidoMinimo) {
+            Map<Modalidade, BigDecimal> pedidoMinimo,
+            Set<HorarioJpa> horarios) {
         this.id = id;
         this.nome = nome;
         this.documento = documento;
@@ -125,8 +137,10 @@ public class EstabelecimentoJpaEntity {
         this.descontoDeRetirada = descontoDeRetirada;
         this.fundoMaximoDeTroco = fundoMaximoDeTroco;
         this.aceitaPedidoSemTrocoDisponivel = aceitaPedidoSemTrocoDisponivel;
+        this.pausa = pausa;
         this.metodosAceitos = new LinkedHashSet<>(metodosAceitos);
         this.pedidoMinimo = new LinkedHashMap<>(pedidoMinimo);
+        this.horarios = new LinkedHashSet<>(horarios);
     }
 
     public UUID getId() {
@@ -171,6 +185,14 @@ public class EstabelecimentoJpaEntity {
 
     public boolean isAceitaPedidoSemTrocoDisponivel() {
         return aceitaPedidoSemTrocoDisponivel;
+    }
+
+    public PausaJpa getPausa() {
+        return pausa;
+    }
+
+    public Set<HorarioJpa> getHorarios() {
+        return horarios;
     }
 
     public Set<MetodoAceitoJpa> getMetodosAceitos() {

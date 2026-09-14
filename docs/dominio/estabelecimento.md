@@ -1,6 +1,6 @@
 # Domínio — Estabelecimento, equipe e áreas
 
-**Serviço:** `merchant-service` · **Status:** vigente (v1.2, 13/09/2026)
+**Serviço:** `merchant-service` · **Status:** vigente (v1.3, 13/09/2026)
 **Fontes:** PRD §5 (P2, P3, P5), PRD §6 E1, E2 e E6.1, ADR-004, ADR-011, ADR-012, ADR-020, ADR-022
 **Invariantes do `CLAUDE.md` que este documento detalha:** 2, 8, 9
 
@@ -379,6 +379,20 @@ estende ao dia seguinte. Terça 18:00–02:00 significa "de terça às 18h até
 quarta às 2h" — e às 00:30 de quarta a loja está aberta **pela faixa de terça**.
 Testar isto com um pedido à 01:00 é obrigatório.
 
+Quatro detalhes que a implementação precisou fixar e este documento não dizia:
+
+- **Início inclusivo, fim exclusivo.** Às 18:00 em ponto abriu; às 02:00 em
+  ponto já fechou. Sem isso, 18:00–02:00 e 02:00–06:00 se sobreporiam num
+  minuto, e o pedido daquele minuto passaria por duas regras.
+- **Faixa com `inicio == fim` é recusada** — não há como saber se é turno vazio
+  ou vinte e quatro horas.
+- **Horário vazio é válido** e significa "nunca abre por horário". É o estado de
+  uma loja recém-cadastrada; o aceite manual de T02 continua sendo o caminho
+  para atender assim mesmo.
+- **Faixas que se sobrepõem são permitidas** — "aberta" é um OU sobre as faixas,
+  então sobrepor é redundância, não contradição. Faixa **idêntica** repetida no
+  mesmo dia é recusada, porque não significa nada.
+
 ### O dia operacional
 
 ```
@@ -414,6 +428,12 @@ instante.
 Pausar não cancela nada. A cozinha atolou, param de entrar pedidos novos, e os
 trinta que já estão na fila seguem seu curso. Um sistema que cancelasse ao
 pausar seria abandonado no primeiro sábado.
+
+**Motivo é obrigatório quando a pausa está ativa**, e **pausa vencida não precisa
+de faxina**: uma pausa com `pausadoAte` no passado continua registrada como o
+comerciante a deixou, e a pergunta "está pausada agora?" devolve não. O registro
+diz o que foi feito; o cálculo diz o que vale agora — nenhuma rotina passa
+limpando, e nenhum campo fica mentindo.
 
 **Aceite manual fora do horário.** T02 em `pedido.md` permite aceitar com a loja
 fechada, desde que seja ato explícito de alguém com `ALTERAR_STATUS`. O cliente
