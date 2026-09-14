@@ -120,6 +120,10 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         // exigir token para emitir token não fecha
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        // exigir token para criar a conta que emite o primeiro token não
+                        // fecha, pelo mesmo motivo do login (ADR-042 §1, §5)
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/verification-code").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/signup").permitAll()
                         // é a chave pública; protegê-la trava a partida do sistema inteiro
                         .requestMatchers(HttpMethod.GET, "/.well-known/jwks.json").permitAll()
                         // probe de contêiner não carrega credencial
