@@ -43,8 +43,9 @@
 | 039 | O contrato OpenAPI é gerado do código e congelado | ✅ aceita |
 | 040 | Um módulo de tipos de valor, e a regra que impede ele de crescer | ✅ aceita |
 | 041 | Observabilidade sai do repositório, e a volta é por condição | ✅ aceita |
+| 042 | O código de verificação do cadastro, e quem o entrega | ✅ aceita |
 
-**Trinta e nove escritas, duas sem objeto — estas com registro próprio desde
+**Quarenta escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

@@ -54,6 +54,11 @@ O telefone **nasce verificado**: a ADR-029 §1 diz que o canal usado para criar 
 conta nasce verificado, e a ADR-036 fixa que esse canal é sempre o telefone. É o
 que garante que não existe conta sem meio de entrar.
 
+E **nasce verificado por quê**, concretamente: um código de seis dígitos, válido
+por dez minutos e com cinco tentativas, foi conferido. O `verificadoEm` é o
+instante da conferência, não o do cadastro. Enquanto não houver canal de saída,
+quem entrega o código é a pessoa do onboarding — ADR-042.
+
 O `verificadoEm` é carimbo de tempo, não booleano, e a diferença importa: quando
 a política de reverificação existir (§7), ela vai precisar saber *quando*, não
 apenas *se*.
