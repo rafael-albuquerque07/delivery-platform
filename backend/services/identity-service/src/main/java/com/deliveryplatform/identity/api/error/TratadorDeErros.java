@@ -35,7 +35,8 @@ public class TratadorDeErros {
      */
     @ExceptionHandler(CadastroRecusado.class)
     public ProblemDetail cadastroRecusado(CadastroRecusado excecao) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "cadastro recusado");
+        return ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, "código de verificação inválido ou expirado");
     }
 
     /**
