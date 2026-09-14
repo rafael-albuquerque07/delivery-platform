@@ -30,7 +30,7 @@ Membro  (raiz)          vínculo usuário ↔ estabelecimento
 ├── usuarioId, estabelecimentoId
 ├── papel               ADMINISTRADOR | COLABORADOR
 ├── permissoes    [n]   concedidas item a item
-└── estado              CONVIDADO | ATIVO | SUSPENSO | REMOVIDO
+└── estado              ATIVO | SUSPENSO | REMOVIDO
 
 VinculoEntregador  (raiz)
 ├── entregadorId, estabelecimentoId
@@ -60,6 +60,16 @@ sem que o estabelecimento mude.
 **Por que `VinculoEntregador` é raiz própria.** Mesmo motivo do `Membro`, mais
 um: a jornada congela um `vinculoSnapshot` na abertura (ADR-022), e congelar
 exige uma coisa com identidade própria e histórico próprio.
+
+**Não há `CONVIDADO`, e a ausência é decisão.** A pendência do convite mora no
+`Convite`, que é raiz própria e sabe expirar — e o aceite cria o `Membro` já
+`ATIVO`. Um estado `CONVIDADO` aqui seria um segundo lugar dizendo a mesma
+coisa, que teria de concordar com `Convite.PENDENTE` para sempre. `REMOVIDO`
+não apaga a linha: o vínculo é registro de quem teve acesso à loja e quando, e
+o `UNIQUE (usuario_id, estabelecimento_id)` faz a recontratação reusar o mesmo
+vínculo. Quem **sai** e quem **é removido** terminam no mesmo `REMOVIDO`: a
+diferença entre as duas coisas pertence ao `motivo` do `VinculoAlteradoV1`, não
+a um quarto estado que todo filtro do sistema teria de tratar para sempre.
 
 ---
 
@@ -130,7 +140,31 @@ As três regras de H2.2, como invariantes verificáveis:
 |---|---|---|
 | A1 | Quem tem `GERENCIAR_EQUIPE` administra `COLABORADOR`, nunca `ADMINISTRADOR` | Convite, alteração, suspensão, remoção |
 | A2 | Ninguém concede permissão que não possui — `concedidas ⊆ próprias` | Convite **e** aceite |
-| A3 | Um estabelecimento sempre mantém ≥ 1 `ADMINISTRADOR` `ATIVO` | Remoção, suspensão, rebaixamento |
+| A3 | Um estabelecimento sempre mantém ≥ 1 `ADMINISTRADOR` `ATIVO` | Saída da própria loja — nas demais, decorre de A1 |
+
+**A1, lida por inteiro.** "Nunca alcança `ADMINISTRADOR`" é sobre a
+**permissão**, não sobre quem a tem: `GERENCIAR_EQUIPE` sozinha não alcança um
+administrador, e `GERENCIAR_EQUIPE` mais o papel de administrador, sim. Ao pé
+da letra, a frase tornaria todo administrador impossível de remover por quem
+quer que fosse — e "o administrador saiu da empresa" é o caso (c) da ADR-029,
+que existe porque isso acontece. O gerente que só tem a permissão continua
+barrado, que é a escalada que H2.2 nomeia.
+
+**A3 tem dois regimes.** Nas seis operações administrativas ela *decorre* de
+A1: mexer num administrador exige ser um administrador ativo, ninguém administra
+o próprio vínculo, logo todo alvo administrador tem pelo menos um par e a
+contagem nunca chega a zero. A demonstração está em
+`Equipe.administradoresAtivos()`.
+
+Em **sair da própria loja** ela é *verificada*, e é o único lugar do sistema que
+a verifica — porque é a única operação sem autor separado do alvo, e portanto a
+única onde a premissa "ninguém se administra" não vale. Quem é o último
+administrador ativo promove alguém antes de sair.
+
+Nos dois regimes, a garantia depende, sob concorrência, do **cadeado na linha do
+estabelecimento** que `MembroRepositorio.equipeParaAlteracao` toma antes de
+contar: sem ele, duas saídas simultâneas passam pela checagem — as duas — e a
+loja fica órfã.
 
 A2 é verificada **duas vezes**, e a segunda é a que se esquece: entre o convite e
 o aceite podem passar dias, e o convidante pode ter perdido a permissão que
