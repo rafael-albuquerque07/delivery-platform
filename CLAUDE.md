@@ -165,7 +165,7 @@ WSL2 e a CLI do Windows fala com ele por TCP na loopback.
 
 | Item | Valor |
 |---|---|
-| CLI no Windows | `winget install Docker.DockerCLI` — binários estáticos, **sem plugins** |
+| CLI no Windows | **Não é necessária.** O Testcontainers lê `DOCKER_HOST` e fala a API direto; `docker compose` roda pelo WSL (a instalação por winget vem sem plugins); e o diagnóstico usa `Invoke-WebRequest`. Se instalar por conveniência, saiba que ela **some sozinha**: em 14/09/2026 o `winget list` dizia Docker CLI 29.7.2 instalada, e não havia `docker.exe` em lugar nenhum — a árvore do winget em `%LOCALAPPDATA%` tinha sido limpa, provavelmente por política da máquina gerenciada, deixando a matrícula e a entrada de PATH para trás |
 | Motor | Docker Engine 29.7.2 dentro do WSL2 Ubuntu, via `get.docker.com` |
 | systemd no WSL | `/etc/wsl.conf` com `[boot]` e `systemd=true` — **dentro** da distro |
 | Socket TCP | drop-in em `/etc/systemd/system/docker.service.d/tcp.conf` |
@@ -260,7 +260,7 @@ Diagnóstico rápido quando algo não responde:
 wsl -l --running                → a distro está de pé?
 wsl -d Ubuntu -- uptime -s      → desde quando? (se for recente, ela caiu)
 wsl -d Ubuntu -- systemctl is-active docker
-docker info --format "{{.ServerVersion}}"
+(Invoke-WebRequest "http://127.0.0.1:2375/version" -TimeoutSec 5).Content
 ```
 
 > **As três primeiras linhas rodam de dentro da distro, e podem dar falso
@@ -308,7 +308,7 @@ Se o `./gradlew test` falhar por daemon indisponível, rode
 | Vai desabilitar `redhat.java` | O pacote Salesforce Apex o declara como dependência dura e o mantém ligado. Desabilite o Salesforce no workspace junto |
 | Tentado a atualizar o Gradle | **A 9.7.1 falha** em `compilePluginsBlocks` neste build-logic. O wrapper fixa 8.14.3, que é a única versão com build verde. Bump é tarefa própria, verificada com `--rerun-tasks --no-build-cache`. **Reavalie depois do `memory=` no `.wslconfig`** — a falha que motivou o pin pode ter sido o mesmo estouro de limite de commit, não incompatibilidade real com a 9.7.1 |
 | `GRADLE_USER_HOME` apontando para dentro de `C:\Users\` | Não. Ver a configuração de ambiente acima |
-| Uma ferramenta "não existe" na sessão do agente | Confira você mesmo com `Get-Command`. Instalação por usuário fica em `%LOCALAPPDATA%`, e a sessão do agente não herda o PATH do seu perfil. Já aconteceu com o Gradle e com o Docker — nas duas vezes a ferramenta estava instalada |
+| Uma ferramenta "não existe" na sessão do agente | Confira você mesmo com `Get-Command` ou `where.exe`. Instalação por usuário fica em `%LOCALAPPDATA%`, e a sessão do agente não herda o PATH do seu perfil. Aconteceu duas vezes com a ferramenta **instalada** — Gradle e Docker — e uma terceira em que ela **não estava**: o `winget list` afirmava Docker CLI 29.7.2, o `where.exe` não achava nada, e o diretório de atalhos que estava no PATH **nem existia**. **Gerenciador de pacotes não é evidência de que o arquivo existe; `where.exe` é.** É a mesma regra que este repositório já tem para biblioteca, aplicada a executável |
 | Acabou de rodar `SetEnvironmentVariable(...,"User")` | A janela que executou o comando **não enxerga a própria escrita**. Grava no registro para processos futuros. Para testar na hora, `$env:NOME = "valor"` também |
 | Abriu aba nova do terminal e a variável não veio | Aba não é processo. A aba nova nasce filha do Windows Terminal que já estava aberto e herda o ambiente **daquele** processo. Feche o Terminal inteiro — e o VS Code — e abra de novo |
 | Vai colar um bloco de comandos no shell do WSL | Rode `sudo -v` antes. Se um `sudo` do meio do bloco pedir senha, as linhas seguintes viram tentativas de senha e o terminal as ecoa — parece que repetiu, e na verdade nada rodou |
