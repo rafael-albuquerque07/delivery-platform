@@ -15,6 +15,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.MapKeyEnumerated;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
@@ -49,6 +51,35 @@ import java.util.UUID;
  * dia, algumas áreas —, e {@code Set} e {@code Map} desduplicam, então o
  * agregado volta correto de qualquer jeito. O que pode crescer é o número de
  * linhas trafegadas, e é a primeira coisa a medir se a recuperação ficar lenta.
+ *
+ * <p><b>As cinco coleções são {@code SUBSELECT} desde a C-A, e este parágrafo é
+ * a correção de uma recomendação minha que estava errada.</b>
+ *
+ * <p>A A2b mediu: com cinco {@code @ElementCollection} {@code EAGER}, o
+ * {@code buscarPorId} emitia <b>um</b> {@code select} com cinco
+ * {@code left join}, e o número de linhas trafegadas era o produto das cinco
+ * coleções em vez da soma. O agregado voltava correto — {@code Set} e
+ * {@code Map} desduplicam —, e o que crescia era o tráfego: vinte bairros,
+ * oitenta faixas de CEP e catorze faixas de horário não trazem 114 linhas,
+ * trazem dezenas de milhares.
+ *
+ * <p>Eu recomendei {@code @BatchSize}, e {@code @BatchSize} não resolve isto.
+ * Ele agrupa o carregamento de <b>várias</b> entidades-donas; o problema aqui é
+ * uma dona só com cinco coleções na mesma consulta. O que desfaz o produto é
+ * mudar a <b>estratégia</b> de junção para consulta separada:
+ * {@code FetchMode.SUBSELECT} emite um {@code select} por coleção, com uma
+ * subconsulta que repete o filtro do dono. Seis consultas pequenas no lugar de
+ * uma grande, e nada se multiplica.
+ *
+ * <p>{@code SUBSELECT} e não {@code SELECT}: com {@code SELECT} o custo de
+ * carregar uma lista de N lojas seria 1 + 5N consultas; com {@code SUBSELECT} é
+ * sempre 1 + 5, porque a subconsulta carrega a coleção de todas as donas da
+ * consulta original de uma vez. Hoje só se lê uma loja por vez e os dois
+ * empatam; no dia em que houver listagem, um deles vira problema e o outro não.
+ *
+ * <p>O {@code LeituraDoAgregadoIT} conta as consultas pela estatística do
+ * Hibernate. Se alguém trouxer o {@code join} de volta, a contagem cai para um
+ * e o teste falha — que é a diferença entre uma correção e uma anotação.
  */
 @Entity
 @Table(name = "estabelecimento")
@@ -92,12 +123,14 @@ public class EstabelecimentoJpaEntity {
     private PausaJpa pausa;
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(
             name = "estabelecimento_metodo_aceito",
             joinColumns = @JoinColumn(name = "estabelecimento_id"))
     private Set<MetodoAceitoJpa> metodosAceitos = new LinkedHashSet<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(
             name = "estabelecimento_pedido_minimo",
             joinColumns = @JoinColumn(name = "estabelecimento_id"))
@@ -107,18 +140,21 @@ public class EstabelecimentoJpaEntity {
     private Map<Modalidade, BigDecimal> pedidoMinimo = new LinkedHashMap<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(
             name = "estabelecimento_horario",
             joinColumns = @JoinColumn(name = "estabelecimento_id"))
     private Set<HorarioJpa> horarios = new LinkedHashSet<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(
             name = "estabelecimento_area_entrega",
             joinColumns = @JoinColumn(name = "estabelecimento_id"))
     private Set<AreaDeEntregaJpa> areas = new LinkedHashSet<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(
             name = "estabelecimento_area_faixa_cep",
             joinColumns = @JoinColumn(name = "estabelecimento_id"))
