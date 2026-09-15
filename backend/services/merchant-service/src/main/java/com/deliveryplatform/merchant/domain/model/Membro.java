@@ -186,18 +186,32 @@ public final class Membro {
         if (id.equals(alvo.id)) {
             throw new SemAutoridadeSobreMembro("ninguém administra o próprio vínculo");
         }
-        if (!estabelecimentoId.equals(alvo.estabelecimentoId)) {
-            throw new SemAutoridadeSobreMembro("autor e alvo são de estabelecimentos diferentes");
+        exigirPodeGerenciarEquipeDe(alvo.estabelecimentoId);
+
+        if (alvo.ehAdministrador() && !ehAdministrador()) {
+            throw new SemAutoridadeSobreMembro(
+                    "GERENCIAR_EQUIPE não alcança ADMINISTRADOR sem o papel (M3)");
+        }
+    }
+
+    /**
+     * As duas primeiras condições de A1, sem alvo — porque há operações de
+     * equipe que não têm alvo nenhum: <b>convidar</b> alguém que ainda não tem
+     * vínculo, e <b>cancelar</b> um convite.
+     *
+     * <p>Extraído na B2 em vez de duplicado. Duas cópias da mesma checagem de
+     * autorização é como uma delas envelhece sozinha — e a que envelhece é
+     * sempre a que ninguém está olhando.
+     */
+    public void exigirPodeGerenciarEquipeDe(UUID loja) {
+        if (!estabelecimentoId.equals(loja)) {
+            throw new SemAutoridadeSobreMembro("o vínculo do autor é de outro estabelecimento");
         }
         if (!ativo()) {
             throw new SemAutoridadeSobreMembro("autor não tem vínculo ativo");
         }
         if (!permissoes.contains(Permissao.GERENCIAR_EQUIPE)) {
             throw new SemAutoridadeSobreMembro("autor não tem GERENCIAR_EQUIPE");
-        }
-        if (alvo.ehAdministrador() && !ehAdministrador()) {
-            throw new SemAutoridadeSobreMembro(
-                    "GERENCIAR_EQUIPE não alcança ADMINISTRADOR sem o papel (M3)");
         }
     }
 

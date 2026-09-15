@@ -1,5 +1,7 @@
 package com.deliveryplatform.merchant.domain.model;
 
+import com.deliveryplatform.merchant.domain.exception.ConviteInvalido;
+import com.deliveryplatform.merchant.domain.exception.JaPertenceAEquipe;
 import com.deliveryplatform.merchant.domain.exception.LojaFicariaSemAdministrador;
 import com.deliveryplatform.merchant.domain.exception.SemAutoridadeSobreMembro;
 
@@ -22,7 +24,7 @@ import java.util.UUID;
  * {@code Estabelecimento} e não dentro da {@code AreaDeEntrega}: só quem
  * enxerga todas de uma vez consegue verificar.
  *
- * <p>E A3 tem <b>dois regimes</b>, que foi a descoberta desta rodada. Nas seis
+ * <p>E A3 tem <b>dois regimes</b>. Nas seis
  * operações administrativas ela não precisa ser verificada: decorre de A1. Em
  * {@link #sair}, precisa — e é a única que a verifica. A demonstração e o
  * limite dela estão em {@link #administradoresAtivos()}.
@@ -180,6 +182,99 @@ public final class Equipe {
         alvo.definirPermissoes(novas, agora);
     }
 
+    // ── convite: o outro jeito de um vínculo nascer ─────────────────────────
+
+    /**
+     * Emite um convite. <b>É aqui que A2 é verificada pela primeira vez.</b>
+     *
+     * <p><b>O que esta operação não consegue checar</b>: se a pessoa daquele
+     * telefone já tem vínculo nesta loja. O convite endereça um telefone, o
+     * vínculo é de um {@code usuarioId}, e traduzir um no outro é dado do
+     * {@code identity-service} — que a ADR-001 proíbe importar. A colisão é
+     * detectada no aceite, que é onde o {@code usuarioId} finalmente aparece.
+     * Não é falha de desenho: é a fronteira entre os dois serviços aparecendo
+     * onde ela realmente está.
+     */
+    public Convite convidar(
+            Membro autor, Telefone telefone, Set<Permissao> permissoesOferecidas, Instant agora) {
+        exigirDaEquipe(autor, "autor");
+        autor.exigirPodeGerenciarEquipeDe(estabelecimentoId);
+        autor.exigirQuePossui(permissoesOferecidas);
+
+        return Convite.novo(
+                estabelecimentoId, telefone, permissoesOferecidas, autor.getId(), agora);
+    }
+
+    /** Só convite pendente se cancela — cancelar o que já foi aceito é remover. */
+    public void cancelarConvite(Membro autor, Convite convite) {
+        exigirDaEquipe(autor, "autor");
+        exigirDaLoja(convite);
+        autor.exigirPodeGerenciarEquipeDe(estabelecimentoId);
+
+        if (convite.getEstado() != EstadoDoConvite.PENDENTE) {
+            throw new ConviteInvalido();
+        }
+        convite.cancelar();
+    }
+
+    /**
+     * O aceite. <b>É aqui que A2 é verificada pela segunda vez — e é a segunda
+     * que se esquece.</b>
+     *
+     * <p>Entre o convite e o aceite podem passar dias. O convidante pode ter
+     * perdido a permissão que estava concedendo, ter sido suspenso, ou ter
+     * saído da loja. Validar só na emissão deixa um convite virar um privilégio
+     * que ninguém mais tem autoridade para dar — e ele continuaria de pé,
+     * assinado por um vínculo que já não existe.
+     *
+     * <p><b>Quem volta, volta {@code COLABORADOR}.</b> Se a pessoa já teve
+     * vínculo e o perdeu, o aceite reativa o mesmo vínculo — o
+     * {@code UNIQUE (usuario_id, estabelecimento_id)} não deixaria criar outro —
+     * e o rebaixa. Sem isso haveria um caminho para restaurar um
+     * {@code ADMINISTRADOR} removido sem nenhum administrador na jogada: bastaria
+     * um gerente convidá-lo de volta. Manter o papel antigo pareceria gentileza
+     * e seria escalada.
+     *
+     * <p>Devolve o vínculo, já dentro desta equipe. Quem chamou persiste os
+     * dois: o vínculo e o convite, que acabou de virar {@code ACEITO}.
+     */
+    public Membro aceitar(Convite convite, String token, UUID usuarioId, Instant agora) {
+        Objects.requireNonNull(usuarioId, "usuarioId");
+        exigirDaLoja(convite);
+        convite.exigirUtilizavel(token, agora);
+
+        Membro quemConvidou = porId(convite.getConvidadoPor())
+                .orElseThrow(ConviteInvalido::new);
+        quemConvidou.exigirPodeGerenciarEquipeDe(estabelecimentoId);
+        quemConvidou.exigirQuePossui(convite.getPermissoesOferecidas());
+
+        Membro existente = doUsuario(usuarioId).orElse(null);
+        if (existente != null && existente.ativo()) {
+            throw new JaPertenceAEquipe();
+        }
+
+        convite.marcarAceito(agora);
+
+        if (existente != null) {
+            existente.reativar(agora);
+            existente.rebaixar(agora);
+            existente.definirPermissoes(convite.getPermissoesOferecidas(), agora);
+            return existente;
+        }
+
+        Membro novo = Membro.colaborador(
+                usuarioId, estabelecimentoId, convite.getPermissoesOferecidas(), agora);
+        membros.add(novo);
+        return novo;
+    }
+
+    private void exigirDaLoja(Convite convite) {
+        Objects.requireNonNull(convite, "convite");
+        if (!convite.getEstabelecimentoId().equals(estabelecimentoId)) {
+            throw new IllegalArgumentException("convite de outro estabelecimento");
+        }
+    }
+
     // ── A3: teorema nas seis, checagem na saída ─────────────────────────────
 
     /**
@@ -265,6 +360,12 @@ public final class Equipe {
 
     public List<Membro> getMembros() {
         return List.copyOf(membros);
+    }
+
+    public Optional<Membro> porId(UUID membroId) {
+        return membros.stream()
+                .filter(membro -> membro.getId().equals(membroId))
+                .findFirst();
     }
 
     public Optional<Membro> doUsuario(UUID usuarioId) {
