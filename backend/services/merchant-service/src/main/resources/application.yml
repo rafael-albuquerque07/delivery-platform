@@ -50,6 +50,15 @@ spring:
         jwt:
           jwk-set-uri: ${JWT_JWKS_URI:http://localhost:8081/.well-known/jwks.json}
 
+# O que este serviço EXIGE de um token. Não há chave privada aqui: o merchant
+# valida, quem emite é o identity (ADR-037). Os dois valores precisam bater com
+# os do emissor -- e o decoder passa a recusar o token que não bater, em vez de
+# aceitar qualquer um assinado pela chave certa.
+delivery:
+  jwt:
+    issuer: ${JWT_ISSUER:http://localhost:8081}
+    audience: ${JWT_AUDIENCE:delivery-platform}
+
 management:
   endpoints:
     web:
@@ -60,6 +69,16 @@ management:
       probes:
         enabled: true
       show-details: never
+  health:
+    # O RabbitMQ e o Redis estão configurados para o dia em que o outbox e o
+    # VinculoAlteradoV1 existirem (C-B) -- nenhum dos dois é usado hoje. A
+    # ADR-011 já proíbe cache de autorização no Redis. Sem estas duas linhas,
+    # o probe do actuator tenta abrir conexão de verdade com os dois em cada
+    # checagem e devolve 503 por uma dependência que o serviço ainda não tem.
+    rabbit:
+      enabled: false
+    redis:
+      enabled: false
 
 springdoc:
   swagger-ui:

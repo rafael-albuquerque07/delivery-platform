@@ -28,6 +28,17 @@ public interface MembroRepositorio {
     Optional<Membro> buscarPorUsuarioELoja(UUID usuarioId, UUID estabelecimentoId);
 
     /**
+     * A equipe <b>para ler</b> — sem cadeado.
+     *
+     * <p>Nasceu na C-A, com a tela de equipe. Usar
+     * {@link #equipeParaAlteracao} para exibir uma lista faria toda consulta de
+     * leitura enfileirar-se atrás de qualquer alteração em curso na mesma loja:
+     * um cadeado de escrita tomado para não escrever nada. Os nomes dizem para
+     * que servem justamente para que essa troca não aconteça por descuido.
+     */
+    Equipe equipeDe(UUID estabelecimentoId);
+
+    /**
      * Toma o cadeado na linha do estabelecimento e devolve a equipe inteira.
      *
      * <p><b>Precisa estar dentro de uma transação</b>, e a do chamador é a que

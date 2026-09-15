@@ -37,6 +37,11 @@ public class MembroRepositorioJpa implements MembroRepositorio {
                 .map(mapper::paraDominio);
     }
 
+    @Override
+    public Equipe equipeDe(UUID estabelecimentoId) {
+        return montar(estabelecimentoId);
+    }
+
     /**
      * Cadeado primeiro, leitura depois — e nunca o contrário.
      *
@@ -54,7 +59,10 @@ public class MembroRepositorioJpa implements MembroRepositorio {
     @Transactional(propagation = Propagation.MANDATORY)
     public Equipe equipeParaAlteracao(UUID estabelecimentoId) {
         springDataRepository.travarEstabelecimento(estabelecimentoId);
+        return montar(estabelecimentoId);
+    }
 
+    private Equipe montar(UUID estabelecimentoId) {
         List<Membro> membros = springDataRepository
                 .findByEstabelecimentoId(estabelecimentoId)
                 .stream()
