@@ -195,12 +195,32 @@ Convite
 ├── permissoesOferecidas  [n]
 ├── convidadoPor          usuário
 ├── expiraEm              Instant
-└── estado                PENDENTE | ACEITO | EXPIRADO | CANCELADO
+└── estado                PENDENTE | ACEITO | CANCELADO
 ```
 
 O aceite cria o `Membro` com `estado = ATIVO`. Convite expirado não aceita.
 Convite nunca concede `papel = ADMINISTRADOR` — promoção é ato separado, feito
 por um administrador existente, sobre um membro que já aceitou.
+
+**Não há `EXPIRADO`, e é a mesma decisão que tirou o `CONVIDADO` do `Membro`.**
+Expirar não é ato de ninguém: é o relógio passando de `expiraEm`. Guardá-lo como
+estado exigiria uma rotina varrendo a tabela, e essa rotina seria ou inexistente
+— peça que nunca roda — ou um segundo lugar que precisa concordar com `expiraEm`
+para sempre. O domínio deriva: pendente é `estado = PENDENTE` **e** `agora <
+expiraEm`. `CANCELADO` fica, porque cancelar é ato de alguém, num instante que
+se registra.
+
+**O token autoriza; o telefone endereça.** Quem aceita é quem apresenta o token
+— 32 bytes, uso único, sete dias. Conferir que ele é o dono daquele telefone
+exigiria perguntar ao `identity-service` qual é o telefone de um `usuarioId`, e
+essa porta não existe (ADR-001). Por isso "convidar quem já é da equipe" só é
+detectado no aceite, que é onde o `usuarioId` aparece. O telefone fica guardado
+como endereço de entrega e registro de para quem o convite foi mandado.
+
+**Quem volta pelo convite volta `COLABORADOR`.** O aceite de quem já teve
+vínculo reativa o mesmo registro e o rebaixa — senão um gerente restauraria um
+`ADMINISTRADOR` removido sem nenhum administrador na operação, que é escalada
+com aparência de gentileza.
 
 ---
 
