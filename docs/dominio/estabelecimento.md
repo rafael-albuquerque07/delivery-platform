@@ -308,6 +308,19 @@ estabelecimentos.
 Nenhuma consulta filtra por `estabelecimentoId` vindo do corpo da requisição. O
 filtro usa o identificador **já validado** contra o vínculo.
 
+**Como isso ficou no código (C-A).** O `estabelecimentoId` da URL entra no caso
+de uso junto com o `sub` do token, e a primeira coisa que acontece é a busca do
+vínculo pelo **par** (usuário, loja). Quem não tem vínculo e quem pediu uma loja
+inexistente caem na mesma consulta vazia, e recebem o mesmo 403 com o mesmo
+corpo — há um teste que compara os dois corpos.
+
+**A porta pela qual os outros serviços perguntam ainda não existe**, e é
+deliberado: nenhum dos seis tem código, e uma porta sem consumidor é uma peça que
+nunca roda com cara de pronta. Dentro do `merchant`, autorização é consulta ao
+próprio repositório. O cache de 60 s da ADR-011 acompanha a porta — e, antes
+dela, o `VinculoAlteradoV1` que o invalida: cache sem invalidação é permissão
+revogada continuando a valer, em silêncio.
+
 ---
 
 ## 4. Configuração de operação

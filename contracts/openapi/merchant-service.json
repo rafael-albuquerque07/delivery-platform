@@ -1,0 +1,104 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "merchant-service",
+    "description" : "Estabelecimento, equipe e áreas de entrega. Toda rota exige token emitido pelo identity-service, e a autorização é resolvida pelo vínculo do usuário com a loja da URL.",
+    "version" : "v1"
+  },
+  "security" : [ {
+    "bearerAuth" : [ ]
+  } ],
+  "paths" : {
+    "/api/v1/merchants/{estabelecimentoId}/team" : {
+      "get" : {
+        "tags" : [ "equipe-controller" ],
+        "summary" : "Lista a equipe do estabelecimento",
+        "description" : "Exige vínculo ativo com GERENCIAR_EQUIPE. Sem vínculo, sem permissão e loja inexistente devolvem a mesma recusa.",
+        "operationId" : "listar",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EquipeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "EquipeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "estabelecimentoId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "membros" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MembroResponse"
+            }
+          }
+        },
+        "required" : [ "estabelecimentoId", "membros" ]
+      },
+      "MembroResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "usuarioId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "papel" : {
+            "type" : "string",
+            "enum" : [ "ADMINISTRADOR", "COLABORADOR" ]
+          },
+          "estado" : {
+            "type" : "string",
+            "enum" : [ "ATIVO", "SUSPENSO", "REMOVIDO" ]
+          },
+          "permissoes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA" ]
+            },
+            "uniqueItems" : true
+          },
+          "desde" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "desde", "estado", "id", "papel", "permissoes", "usuarioId" ]
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "description" : "Token do identity-service. Seis claims, sem papel nem permissão.",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      }
+    }
+  }
+}
