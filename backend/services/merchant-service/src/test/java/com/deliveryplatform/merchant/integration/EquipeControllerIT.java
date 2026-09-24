@@ -9,6 +9,7 @@ import com.deliveryplatform.merchant.domain.model.Papel;
 import com.deliveryplatform.merchant.domain.model.Permissao;
 import com.deliveryplatform.merchant.support.EquipeDeTeste;
 import com.deliveryplatform.merchant.support.IdentityDeMentira;
+import com.deliveryplatform.merchant.support.Infraestrutura;
 import com.deliveryplatform.merchant.support.LojaDeTeste;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,15 +17,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.ProblemDetail;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.client.RestTestClient;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -43,18 +40,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * peças tinha sido percorrida por uma requisição de verdade neste serviço.</b>
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestPropertySource(properties = {
-        "spring.rabbitmq.username=teste",
-        "spring.rabbitmq.password=teste"
-})
-@Testcontainers
-class EquipeControllerIT {
+@TestPropertySource(properties = "delivery.outbox.habilitado=false")
+class EquipeControllerIT extends Infraestrutura {
 
     private static final IdentityDeMentira IDENTITY = IdentityDeMentira.subir();
-
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17-alpine");
 
     @DynamicPropertySource
     static void apontarParaOIdentityDeMentira(DynamicPropertyRegistry registry) {

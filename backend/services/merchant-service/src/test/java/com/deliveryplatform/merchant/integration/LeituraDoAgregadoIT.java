@@ -2,6 +2,7 @@ package com.deliveryplatform.merchant.integration;
 
 import com.deliveryplatform.merchant.application.port.out.EstabelecimentoRepositorio;
 import com.deliveryplatform.merchant.domain.model.Estabelecimento;
+import com.deliveryplatform.merchant.support.Infraestrutura;
 import com.deliveryplatform.merchant.support.LojaDeTeste;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -11,12 +12,8 @@ import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.util.UUID;
 
@@ -37,20 +34,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @TestPropertySource(properties = {
-        "spring.rabbitmq.username=teste",
-        "spring.rabbitmq.password=teste",
+        "delivery.outbox.habilitado=false",
         "spring.jpa.properties.hibernate.generate_statistics=true"
 })
-@Testcontainers
 @Transactional
-class LeituraDoAgregadoIT {
+class LeituraDoAgregadoIT extends Infraestrutura {
 
     /** Uma para a loja, uma para cada uma das cinco coleções. */
     private static final long CONSULTAS_ESPERADAS = 6;
-
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17-alpine");
 
     @Autowired
     private EstabelecimentoRepositorio lojas;

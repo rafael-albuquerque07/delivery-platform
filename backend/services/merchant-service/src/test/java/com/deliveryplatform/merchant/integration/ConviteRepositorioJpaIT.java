@@ -9,6 +9,7 @@ import com.deliveryplatform.merchant.domain.model.Membro;
 import com.deliveryplatform.merchant.domain.model.Permissao;
 import com.deliveryplatform.merchant.domain.model.Telefone;
 import com.deliveryplatform.merchant.support.EquipeDeTeste;
+import com.deliveryplatform.merchant.support.Infraestrutura;
 import com.deliveryplatform.merchant.support.LojaDeTeste;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -16,12 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -33,8 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * O convite contra PostgreSQL de verdade — mesmas razões e mesmas duas
- * propriedades de RabbitMQ do {@code EstabelecimentoRepositorioJpaIT}.
+ * O convite contra PostgreSQL de verdade — mesmas razões e mesmos contêineres do
+ * {@code EstabelecimentoRepositorioJpaIT}, vindos da {@link Infraestrutura}.
  *
  * <p>As asserções de constraint usam {@code hasStackTraceContaining} e não
  * {@code DataIntegrityViolationException}: um {@code entityManager.flush()}
@@ -42,19 +39,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * beans {@code @Repository}. É a lição que a B1 pagou.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@TestPropertySource(properties = {
-        "spring.rabbitmq.username=teste",
-        "spring.rabbitmq.password=teste"
-})
-@Testcontainers
+@TestPropertySource(properties = "delivery.outbox.habilitado=false")
 @Transactional
-class ConviteRepositorioJpaIT {
+class ConviteRepositorioJpaIT extends Infraestrutura {
 
     private static final Telefone RODRIGO = Telefone.de("11955554444");
-
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17-alpine");
 
     @Autowired
     private ConviteRepositorio convites;

@@ -5,18 +5,15 @@ import com.deliveryplatform.merchant.application.port.out.MembroRepositorio;
 import com.deliveryplatform.merchant.domain.exception.LojaFicariaSemAdministrador;
 import com.deliveryplatform.merchant.domain.model.Equipe;
 import com.deliveryplatform.merchant.domain.model.Membro;
+import com.deliveryplatform.merchant.support.Infraestrutura;
 import com.deliveryplatform.merchant.support.LojaDeTeste;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -47,16 +44,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * <p><b>Cada caso limpa o que criou</b>, porque nada aqui é desfeito sozinho.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@TestPropertySource(properties = {
-        "spring.rabbitmq.username=teste",
-        "spring.rabbitmq.password=teste"
-})
-@Testcontainers
-class SaidaConcorrenteIT {
-
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17-alpine");
+@TestPropertySource(properties = "delivery.outbox.habilitado=false")
+class SaidaConcorrenteIT extends Infraestrutura {
 
     @Autowired
     private MembroRepositorio membros;

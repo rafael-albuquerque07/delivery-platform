@@ -13,6 +13,7 @@ import com.deliveryplatform.merchant.domain.model.MetodoPagamento;
 import com.deliveryplatform.merchant.domain.model.Modalidade;
 import com.deliveryplatform.merchant.domain.model.Pausa;
 import com.deliveryplatform.merchant.domain.model.Telefone;
+import com.deliveryplatform.merchant.support.Infraestrutura;
 import com.deliveryplatform.merchant.support.LojaDeTeste;
 import com.deliveryplatform.valuetypes.Money;
 import jakarta.persistence.EntityManager;
@@ -20,12 +21,8 @@ import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.DayOfWeek;
 import java.time.Instant;
@@ -45,25 +42,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * o slice de JPA saiu do {@code spring-boot-test-autoconfigure} no Boot 4.1.1 —
  * a mesma nota que o {@code UsuarioRepositorioJpaIT} carrega.
  *
- * <p><b>As duas propriedades de RabbitMQ não são decoração.</b> O
- * {@code application.yml} traz {@code spring.rabbitmq.username:
- * ${RABBITMQ_USERNAME}} sem valor padrão, e placeholder sem resolução derruba a
- * subida do contexto antes de qualquer teste rodar. Este teste não fala com
- * broker nenhum; quando o primeiro {@code @RabbitListener} existir, isto vira um
- * contêiner de verdade.
+ * <p>Até a C-B este teste carregava duas propriedades de RabbitMQ falsas, só
+ * para o placeholder {@code ${RABBITMQ_USERNAME}} do {@code application.yml}
+ * resolver. Desde o outbox o broker é contêiner de verdade, e vem da
+ * {@link Infraestrutura}. O relay fica desligado: este teste não publica nada.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@TestPropertySource(properties = {
-        "spring.rabbitmq.username=teste",
-        "spring.rabbitmq.password=teste"
-})
-@Testcontainers
+@TestPropertySource(properties = "delivery.outbox.habilitado=false")
 @Transactional
-class EstabelecimentoRepositorioJpaIT {
-
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17-alpine");
+class EstabelecimentoRepositorioJpaIT extends Infraestrutura {
 
     @Autowired
     private EstabelecimentoRepositorio repositorio;

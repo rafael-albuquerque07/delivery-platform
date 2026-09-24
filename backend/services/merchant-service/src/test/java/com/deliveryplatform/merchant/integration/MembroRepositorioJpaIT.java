@@ -8,6 +8,7 @@ import com.deliveryplatform.merchant.domain.model.Membro;
 import com.deliveryplatform.merchant.domain.model.Papel;
 import com.deliveryplatform.merchant.domain.model.Permissao;
 import com.deliveryplatform.merchant.support.EquipeDeTeste;
+import com.deliveryplatform.merchant.support.Infraestrutura;
 import com.deliveryplatform.merchant.support.LojaDeTeste;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -15,12 +16,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -32,21 +29,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * O vínculo contra PostgreSQL de verdade — mesmas razões do
- * {@code EstabelecimentoRepositorioJpaIT}, inclusive as duas propriedades de
- * RabbitMQ sem as quais o contexto não sobe.
+ * {@code EstabelecimentoRepositorioJpaIT}, e os mesmos contêineres, que vêm da
+ * {@link Infraestrutura}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@TestPropertySource(properties = {
-        "spring.rabbitmq.username=teste",
-        "spring.rabbitmq.password=teste"
-})
-@Testcontainers
+@TestPropertySource(properties = "delivery.outbox.habilitado=false")
 @Transactional
-class MembroRepositorioJpaIT {
-
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:17-alpine");
+class MembroRepositorioJpaIT extends Infraestrutura {
 
     @Autowired
     private MembroRepositorio membros;

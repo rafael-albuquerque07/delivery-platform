@@ -58,6 +58,14 @@ delivery:
   jwt:
     issuer: ${JWT_ISSUER:http://localhost:8081}
     audience: ${JWT_AUDIENCE:delivery-platform}
+  # O relay do outbox (ADR-043). Nada aqui é credencial: a do broker mora em
+  # spring.rabbitmq.* e vem do ambiente.
+  outbox:
+    exchange: delivery.eventos
+    tamanho-do-lote: 100
+    intervalo-ms: 1000
+    atraso-inicial-ms: 5000
+    habilitado: true
 
 management:
   endpoints:
@@ -70,13 +78,15 @@ management:
         enabled: true
       show-details: never
   health:
-    # O RabbitMQ e o Redis estão configurados para o dia em que o outbox e o
-    # VinculoAlteradoV1 existirem (C-B) -- nenhum dos dois é usado hoje. A
-    # ADR-011 já proíbe cache de autorização no Redis. Sem estas duas linhas,
-    # o probe do actuator tenta abrir conexão de verdade com os dois em cada
-    # checagem e devolve 503 por uma dependência que o serviço ainda não tem.
-    rabbit:
-      enabled: false
+    # O RabbitMQ NÃO está aqui de propósito: desde a C-B o outbox depende dele,
+    # e um merchant sem broker deve se declarar fora de serviço em vez de
+    # responder saudável enquanto acumula publicado_em is null (ADR-043 §6).
+    #
+    # O Redis continua desligado, e é pendência, não solução. Nada neste serviço
+    # usa Redis -- a ADR-011 proíbe cache de autorização lá --, mas o starter
+    # chega pelo delivery.redis-conventions e cria o indicador sozinho, com ou
+    # sem spring.data.redis. Tirar o starter é emendar a ADR-021, que lista o
+    # merchant como "PostgreSQL + Redis".
     redis:
       enabled: false
 
