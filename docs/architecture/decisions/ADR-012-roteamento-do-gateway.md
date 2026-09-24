@@ -85,7 +85,15 @@ gateway é forte e o erro é caro.
 | Rejeitar requisição sem token onde token é exigido | **sim** | — |
 | Saber qual permissão o endpoint exige | **não** | **sim** |
 | Confrontar `merchantId` com o vínculo do usuário | **não** | **sim** (ADR-011) |
-| CORS, limite de taxa, `correlationId` | **sim** | — |
+| CORS, limite de taxa¹, `correlationId`¹ | **sim** | — |
+
+¹ **Emenda — 24/09/2026 (ADR-044 §6).** Só o CORS existe hoje. O **limite de
+taxa não é marco 1**: exige decidir por IP ou por token, quanto por minuto e o
+que responder no estouro, e o Redis que o gateway declarava "para rate limit"
+saiu, porque nada o usava. O **`correlationId` também não existe** no gateway —
+o outbox do `merchant` faz de cada evento a raiz da própria cadeia justamente
+por isso (ADR-043 §7). **Gatilho escrito, para os dois:** o primeiro ambiente
+exposto à internet.
 
 O gateway **não pode** autorizar porque não sabe que `POST .../orders` exige
 `ALTERAR_STATUS` e `GET .../orders` exige `VER_PEDIDO`. Colocar esse mapa no

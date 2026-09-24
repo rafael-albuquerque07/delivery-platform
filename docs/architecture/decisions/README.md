@@ -13,7 +13,7 @@
 | 009 | Modelo de valores do pedido | ✅ aceita · **emendada pela v1.1** |
 | 010 | Saga do pedido: pivô em `PRONTO`, pagamento fora da transação | ✅ aceita · **reescrita pela v1.1** |
 | 011 | Autorização comercial: cache em processo, invalidação por evento, fail-closed | ✅ aceita |
-| 012 | Roteamento do gateway por recurso, não por serviço | ✅ aceita |
+| 012 | Roteamento do gateway por recurso, não por serviço | ✅ aceita · **emendada** (24/09/2026: limite de taxa e `correlationId` fora do marco 1) |
 | 013 | Retenção, anonimização e exclusão de dados pessoais | ✅ aceita |
 | 014 | Não adotar H2; Testcontainers como fonte de verdade | ✅ aceita · **emendada pela v1.1** |
 | 015 | Emitir JWT com `NimbusJwtEncoder` | ✅ aceita |
@@ -38,15 +38,16 @@
 | 034 | Resposta que vira snapshot nunca é cacheada | ✅ aceita |
 | 035 | Domínio em português, o resto em inglês | ✅ aceita |
 | 036 | O telefone é o identificador de login | ✅ aceita |
-| 037 | A emissão do access token: a chave, o tempo, e o que fica público | ✅ aceita |
+| 037 | A emissão do access token: a chave, o tempo, e o que fica público | ✅ aceita · **emendada** (24/09/2026: cinco rotas públicas, lista viva na 044) |
 | 038 | O `sub` vira `UUID` na borda, e o caso de uso não conhece o token | ✅ aceita |
 | 039 | O contrato OpenAPI é gerado do código e congelado | ✅ aceita |
 | 040 | Um módulo de tipos de valor, e a regra que impede ele de crescer | ✅ aceita |
 | 041 | Observabilidade sai do repositório, e a volta é por condição | ✅ aceita |
 | 042 | O código de verificação do cadastro, e quem o entrega | ✅ aceita |
 | 043 | O outbox e o relay | ✅ aceita · **emenda a 011** |
+| 044 | A cadeia de filtros do gateway, e o que passa sem token | ✅ aceita · **emenda a 012 e 037** |
 
-**Quarenta e uma escritas, duas sem objeto — estas com registro próprio desde
+**Quarenta e duas escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

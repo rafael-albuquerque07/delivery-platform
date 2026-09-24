@@ -73,6 +73,16 @@ públicas, o resto autenticado:
 **Nada além disso.** Sem `SecurityFilterChain` explícita não existe rota pública,
 e sem rota pública não existe primeiro token.
 
+> **Emenda — 24/09/2026.** A frase "Nada além disso" deixou de ser verdadeira em
+> 14/09, quando a **ADR-042** acrescentou `POST /api/v1/auth/signup` e
+> `POST /api/v1/auth/verification-code` ao mesmo serviço sem voltar aqui. São
+> **cinco** rotas públicas no `identity-service`, e a lista viva é a da ADR-044.
+>
+> O defeito não é a lista: é a forma. Uma frase que fecha um conjunto precisa
+> dizer onde o conjunto é mantido, ou envelhece em silêncio — do mesmo jeito que
+> a coluna "PostgreSQL + Redis" da ADR-021 sobreviveu um mês à decisão que a
+> invalidou.
+
 Os outros oito serviços têm cadeia própria a escrever, e a deles tem uma entrada
 a mais — `/api/v1/webhooks/**`, público e autenticado por assinatura no corpo.
 Não é esta ADR que a escreve, mas fica registrado que a ausência é a mesma.
