@@ -22,7 +22,7 @@
 | 018 | Snapshot de opções no item e cotação pelo catálogo | ✅ aceita |
 | 019 | `DeliveryQuotePort`: cotação por distância geodésica | ⛔ **revogada** — ver 020 |
 | 020 | Taxa de entrega por área nomeada (bairro / faixa de CEP) | ✅ aceita |
-| 021 | Catálogo de serviços do MVP — oito serviços | ✅ aceita |
+| 021 | Catálogo de serviços do MVP — oito serviços | ✅ aceita · **emendada** (24/09/2026: `merchant` sem Redis) |
 | 022 | A remuneração do entregador pertence ao vínculo | ✅ aceita |
 | 023 | Fronteira `order` × `payment`: pedido é dono do registro | ✅ aceita |
 | 024 | Desconto de retirada, não preço por modalidade | ✅ aceita |

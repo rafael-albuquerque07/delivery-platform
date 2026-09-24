@@ -40,10 +40,6 @@ spring:
           initial-interval: 2s
           max-attempts: 5
 
-  data:
-    redis:
-      url: ${REDIS_URL:redis://localhost:6379}
-
   security:
     oauth2:
       resourceserver:
@@ -77,18 +73,6 @@ management:
       probes:
         enabled: true
       show-details: never
-  health:
-    # O RabbitMQ NÃO está aqui de propósito: desde a C-B o outbox depende dele,
-    # e um merchant sem broker deve se declarar fora de serviço em vez de
-    # responder saudável enquanto acumula publicado_em is null (ADR-043 §6).
-    #
-    # O Redis continua desligado, e é pendência, não solução. Nada neste serviço
-    # usa Redis -- a ADR-011 proíbe cache de autorização lá --, mas o starter
-    # chega pelo delivery.redis-conventions e cria o indicador sozinho, com ou
-    # sem spring.data.redis. Tirar o starter é emendar a ADR-021, que lista o
-    # merchant como "PostgreSQL + Redis".
-    redis:
-      enabled: false
 
 springdoc:
   swagger-ui:
