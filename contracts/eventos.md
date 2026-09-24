@@ -55,6 +55,75 @@ consumidor mantém projeção de jornada: a verdade continua no `settlement` e �
 consultada por porta síncrona; o evento é o caminho rápido e o TTL é a rede de
 segurança (ADR-033). É a mesma forma do `VinculoAlteradoV1` na ADR-011.
 
+### `VinculoAlteradoV1` — o contrato
+
+**Implementado na rodada C-B (ADR-043).** Origem `merchant-service` · exchange
+`delivery.eventos` (topic, durável) · chave de rota `merchant.vinculo.alterado.v1`.
+
+O vínculo de uma pessoa com um estabelecimento mudou: papel, estado ou
+permissões. É o evento que faz revogação de acesso valer em segundos em vez de
+esperar o prazo de um cache.
+
+**Quando é emitido.** Em toda escrita de equipe, uma linha de outbox por
+operação, na mesma transação do fato:
+
+| Operação | O que muda |
+|---|---|
+| `promover` | papel |
+| `rebaixar` | papel |
+| `suspender` | estado → `SUSPENSO` |
+| `reativar` | estado → `ATIVO` |
+| `remover` | estado → `REMOVIDO` |
+| `sair` | estado → `REMOVIDO` |
+| `alterarPermissoes` | permissões |
+| aceite de convite | o vínculo nasce (ou volta) `ATIVO`, `COLABORADOR` |
+
+**Formato.** O envelope comum de `events/_envelope-v1.json`; o `eventType` não
+carrega a versão, que vive em `eventVersion`:
+
+```json
+{
+  "eventId": "4f1b0a1e-7d4c-4a2e-9f0b-2c6d8e3a1b55",
+  "eventType": "VinculoAlterado",
+  "eventVersion": 1,
+  "occurredAt": "2026-09-24T14:03:11.482913Z",
+  "correlationId": "4f1b0a1e-7d4c-4a2e-9f0b-2c6d8e3a1b55",
+  "payload": {
+    "estabelecimentoId": "1c9c1f2e-3b44-4a71-9f2a-6b0d5e8c4a10",
+    "usuarioId": "8d2a5f31-90c7-4b6e-a1d3-77f2e0b9c481",
+    "membroId": "b0a4c7e2-51d8-42f9-8c33-1e6a9d0f5b27",
+    "papel": "COLABORADOR",
+    "estado": "SUSPENSO",
+    "permissoes": ["ALTERAR_STATUS", "VER_PEDIDO"]
+  }
+}
+```
+
+**As quatro cláusulas.**
+
+1. **O payload é estado, não delta.** `papel`, `estado` e `permissoes` descrevem
+   o vínculo **depois** da mudança, inteiro. Aplicar duas vezes chega ao mesmo
+   lugar, e quem perdeu um evento se conserta sozinho no próximo.
+2. **`permissoes` é a lista completa, e ausência é negação.** Quem aplica
+   **substitui** a lista que tinha; não faz união. Tratar a lista como
+   incremento transforma revogação em concessão permanente.
+3. **O consumidor é idempotente por `eventId`.** A entrega é pelo menos uma vez
+   (ADR-043 §3); o `eventId` é a chave primária da linha de outbox e nunca se
+   repete.
+4. **O consumidor descarta evento velho por `occurredAt`.** A ordem de publicação
+   não é garantida (ADR-043 §4). Para cada par `(estabelecimentoId, usuarioId)`,
+   guarda-se o `occurredAt` do último evento aplicado e ignora-se qualquer
+   anterior — senão uma suspensão pode ser desfeita por um evento mais velho que
+   chegou depois.
+
+**O que não carrega.** Nome e telefone: são dado do `identity-service` (ADR-001),
+e o `usuarioId` basta para dizer *o que a pessoa pode fazer*. A tabela `outbox` é
+cópia durável do evento, e a regra do `CLAUDE.md` sobre log vale para ela.
+
+**Quem consome.** Ninguém ainda. O cache de autorização da ADR-011 mora em cada
+serviço que pergunta (emenda na ADR-043), e o primeiro serviço com rota protegida
+é o gatilho escrito.
+
 ---
 
 ## 2. Eventos consumidos pelo painel

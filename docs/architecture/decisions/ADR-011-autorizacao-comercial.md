@@ -1,6 +1,8 @@
 # ADR-011 — Autorização comercial: cache em processo, invalidação por evento e fail-closed
 
-**Status:** Aceita — 23/08/2026
+**Status:** Aceita — 23/08/2026 · **emendada pela ADR-043** (24/09/2026): o cache
+"em processo" mora em cada serviço que pergunta, não no `merchant`, e nasce junto
+com o primeiro consumidor do `VinculoAlteradoV1`
 **Relacionada:** ADR-012 (roteamento do gateway), ADR-015 (JWT com `NimbusJwtEncoder`)
 **Detalha:** `docs/dominio/estabelecimento.md` §2 e §3
 **Invariantes do `CLAUDE.md`:** 8 (nenhum serviço lê o banco de outro), 9 (identificador da URL não é confiável)
