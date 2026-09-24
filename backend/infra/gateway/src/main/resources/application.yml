@@ -1,23 +1,14 @@
 server:
   port: ${SERVER_PORT:8080}
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ATENÇÃO — o prefixo das rotas NUNCA foi verificado com o gateway no ar.
+# O prefixo abaixo é o da variante WebMVC do Spring Cloud Gateway
+# (spring-cloud-starter-gateway-server-webmvc, ver build.gradle.kts). A variante
+# reativa usa outro namespace para a mesma configuração, e configuração ignorada
+# é silenciosa: o serviço sobe e simplesmente não roteia.
 #
-# A variante reativa e a variante WebMVC do Spring Cloud Gateway usam
-# NAMESPACES DIFERENTES para a mesma configuração. Este projeto usa a WebMVC
-# (spring-cloud-starter-gateway-server-webmvc, ver infra/gateway/build.gradle.kts),
-# e o prefixo abaixo é o que se espera dela na linha 2025.1.x.
-#
-# O build ficar verde NÃO prova nada aqui: nada sobe o gateway nos testes, e
-# configuração ignorada é silenciosa — o serviço sobe e simplesmente não roteia.
-#
-# No marco 1, ao subir o gateway pela primeira vez, CONFIRME que as rotas
-# existem de fato:
-#     curl localhost:8080/actuator/gateway/routes
-# Se vier vazio, o prefixo está errado. As duas formas conhecidas são
-# `spring.cloud.gateway.routes` (reativa) e a usada abaixo.
-# ─────────────────────────────────────────────────────────────────────────────
+# Isto deixou de depender de conferência manual: RoteamentoIT sobe o gateway
+# contra oito upstreams de mentira e confere as quinze rotas, uma a uma. Se o
+# namespace estiver errado, nenhuma casa e a suíte inteira fica vermelha.
 
 spring:
   application:
@@ -117,17 +108,23 @@ spring:
               predicates:
                 - Path=/api/v1/webhooks/channel/**
 
-  data:
-    redis:
-      url: ${REDIS_URL}
-
-  # O gateway AUTENTICA (assinatura e validade do token). Quem AUTORIZA é o
-  # serviço — só ele sabe qual permissão cada endpoint exige. ADR-012.
+  # O gateway AUTENTICA (assinatura, validade, emissor e audiência do token).
+  # Quem AUTORIZA é o serviço — só ele sabe qual permissão cada endpoint exige.
+  # ADR-012.
   security:
     oauth2:
       resourceserver:
         jwt:
           jwk-set-uri: ${JWT_JWKS_URI}
+
+# Emissor e audiência esperados. Sem estes dois, o decoder do Resource Server
+# confere assinatura e tempo e mais nada — e um token de homologação, assinado
+# pela chave certa, passaria em produção (ADR-044 §3). Sem valor padrão de
+# propósito: o serviço recusa subir sem eles.
+delivery:
+  jwt:
+    issuer: ${JWT_ISSUER}
+    audience: ${JWT_AUDIENCE}
 
 # CORS mora aqui, uma vez — nunca em cada serviço.
 # Restringir às origens reais antes de qualquer ambiente exposto.
@@ -138,8 +135,9 @@ management:
   endpoints:
     web:
       exposure:
-        # `gateway` exposto de propósito: é como se confere, no marco 1, que
-        # as rotas acima foram de fato lidas.
+        # `gateway` exposto de propósito: é o diagnóstico de primeira pergunta
+        # quando uma rota deixa de casar. Exige autenticação (ADR-044 §1) e sai
+        # desta lista antes de qualquer ambiente exposto.
         include: health,info,gateway
   endpoint:
     health:

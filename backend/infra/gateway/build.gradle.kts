@@ -12,6 +12,15 @@ dependencies {
     // (…-gateway-server-webmvc, …-gateway-server-webflux).
     implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webmvc")
 
-    // Redis não reativo, coerente com o modelo servlet — usado para rate limit.
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    // Sem spring-boot-starter-data-redis (ADR-044 §6).
+    //
+    // Ele estava aqui com o comentário "usado para rate limit", e não existe
+    // RequestRateLimiter em lugar nenhum do repositório. O starter sozinho
+    // registra um indicador de saúde, e um gateway sem Redis passaria a se
+    // declarar fora de serviço por uma peça que ele não usa — exatamente o que
+    // a emenda à ADR-021 acabou de remover do merchant-service.
+    //
+    // O limite de taxa que a ADR-012 atribui ao gateway volta quando houver
+    // ambiente exposto, e com decisão própria: por IP ou por token, quanto por
+    // minuto, e o que responder no estouro.
 }
