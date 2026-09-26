@@ -2,6 +2,7 @@ package com.deliveryplatform.merchant.domain.model;
 
 import java.time.DayOfWeek;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.TreeSet;
 
 /**
@@ -76,20 +78,59 @@ public record Disponibilidade(Map<DayOfWeek, List<Faixa>> horarioDeFuncionamento
      * ADR-025 §6 registra.
      */
     public boolean dentroDoHorario(Instant agora, FusoHorario fuso) {
+        return inicioDaFaixaLocal(agora, fuso).isPresent();
+    }
+
+    /**
+     * O instante em que começou a faixa que contém {@code agora}; vazio fora do
+     * horário.
+     *
+     * <p>É daqui que sai o expediente (ADR-046, emendada): o dia operacional do
+     * <b>início</b> da faixa, e não do instante. Uma loja 22:00–06:00 às 04:30
+     * está no expediente que abriu às 22h da véspera — o dia operacional do
+     * instante já virou às 04:00, e usá-lo abriria um segundo expediente no meio
+     * do turno.
+     *
+     * <p>Faixas podem se sobrepor (§4 permite). Quando mais de uma contém o
+     * instante, vale a de <b>início mais antigo</b>: é a que já estava aberta, e
+     * a resposta não depende da ordem em que as faixas foram cadastradas.
+     */
+    public Optional<Instant> inicioDaFaixaEm(Instant agora, FusoHorario fuso) {
+        return inicioDaFaixaLocal(agora, fuso)
+                .map(inicio -> inicio.atZone(fuso.zona()).toInstant());
+    }
+
+    /**
+     * O percurso único das faixas, de que {@link #dentroDoHorario} e
+     * {@link #inicioDaFaixaEm} saem. Faixa do dia anterior que cobre o dia
+     * seguinte começou ontem, e portanto sempre antes de qualquer faixa de hoje
+     * — mas a comparação é feita assim mesmo, em vez de confiar na ordem dos
+     * laços.
+     */
+    private Optional<LocalDateTime> inicioDaFaixaLocal(Instant agora, FusoHorario fuso) {
+        Objects.requireNonNull(agora, "agora");
+        Objects.requireNonNull(fuso, "fuso");
         LocalDateTime local = LocalDateTime.ofInstant(agora, fuso.zona());
+        LocalDate hoje = local.toLocalDate();
         LocalTime hora = local.toLocalTime();
 
-        for (Faixa faixa : faixasDe(local.getDayOfWeek())) {
+        LocalDateTime maisAntigo = null;
+        for (Faixa faixa : faixasDe(hoje.getDayOfWeek())) {
             if (faixa.cobreNoDiaDeInicio(hora)) {
-                return true;
+                maisAntigo = oMaisAntigo(maisAntigo, hoje.atTime(faixa.inicio()));
             }
         }
-        for (Faixa faixa : faixasDe(local.getDayOfWeek().minus(1))) {
+        LocalDate ontem = hoje.minusDays(1);
+        for (Faixa faixa : faixasDe(ontem.getDayOfWeek())) {
             if (faixa.cobreNoDiaSeguinte(hora)) {
-                return true;
+                maisAntigo = oMaisAntigo(maisAntigo, ontem.atTime(faixa.inicio()));
             }
         }
-        return false;
+        return Optional.ofNullable(maisAntigo);
+    }
+
+    private static LocalDateTime oMaisAntigo(LocalDateTime atual, LocalDateTime candidato) {
+        return atual == null || candidato.isBefore(atual) ? candidato : atual;
     }
 
     /**

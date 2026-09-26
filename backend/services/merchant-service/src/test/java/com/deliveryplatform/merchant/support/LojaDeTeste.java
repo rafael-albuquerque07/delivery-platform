@@ -53,6 +53,25 @@ public final class LojaDeTeste {
                 identificacao(FusoHorario.PADRAO), operacao(), troco(), Disponibilidade.semHorario(), areas());
     }
 
+    /**
+     * A mesma loja, aberta todo dia das 22:00 às 06:00 — o turno que atravessa a
+     * hora de corte do dia operacional (04:00, ADR-025). É o caso da ADR-046
+     * emendada: o expediente é o dia operacional do <b>início</b> da faixa.
+     */
+    public static Estabelecimento lojaDas22As06() {
+        return Estabelecimento.novo(
+                identificacao(FusoHorario.PADRAO), operacao(), troco(), turnoDaMadrugada(), areas());
+    }
+
+    /** Todos os dias, 22:00–06:00. */
+    public static Disponibilidade turnoDaMadrugada() {
+        Map<DayOfWeek, List<Faixa>> horario = new EnumMap<>(DayOfWeek.class);
+        for (DayOfWeek dia : DayOfWeek.values()) {
+            horario.put(dia, List.of(Faixa.de("22:00", "06:00")));
+        }
+        return new Disponibilidade(horario, Pausa.nenhuma());
+    }
+
     public static Identificacao identificacao(FusoHorario fuso) {
         return new Identificacao(
                 "Pizzaria da Marli",

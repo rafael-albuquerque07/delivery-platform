@@ -7,8 +7,8 @@ import java.util.UUID;
 /**
  * O expediente de um estabelecimento mudou.
  *
- * <p>Hoje o único motivo é a abertura, e o único consumidor com comportamento
- * escrito é o {@code catalog-service}, que reativa todo produto e opção
+ * <p>Hoje o único motivo é a abertura, e o único consumidor que reage a ela com
+ * regra de domínio é o {@code catalog-service}, que reativa todo produto e opção
  * {@code ESGOTADO_HOJE} cujo {@code expedienteDeReferencia} seja diferente do
  * que vem aqui ({@code catalogo.md} §3).
  *

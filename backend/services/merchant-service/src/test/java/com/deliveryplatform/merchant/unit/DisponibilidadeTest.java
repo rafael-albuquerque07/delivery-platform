@@ -138,6 +138,50 @@ class DisponibilidadeTest {
                 .isTrue();
     }
 
+    // ── o início da faixa (ADR-046, emendada) ──────────────────────────────
+
+    @Test
+    void a_uma_da_manha_de_quarta_a_faixa_comecou_as_dezoito_de_terca() {
+        assertThat(PIZZARIA.inicioDaFaixaEm(emSaoPaulo("2026-09-16T01:00"), SP))
+                .as("o início é o da faixa de terça, não a meia-noite nem o instante")
+                .contains(emSaoPaulo("2026-09-15T18:00"));
+    }
+
+    @Test
+    void fora_do_horario_nao_ha_inicio() {
+        assertThat(PIZZARIA.inicioDaFaixaEm(emSaoPaulo("2026-09-16T18:00"), SP)).isEmpty();
+        assertThat(PIZZARIA.inicioDaFaixaEm(emSaoPaulo("2026-09-16T02:00"), SP))
+                .as("fim exclusivo vale aqui também")
+                .isEmpty();
+    }
+
+    @Test
+    void faixas_sobrepostas_respondem_com_a_de_inicio_mais_antigo() {
+        Map<DayOfWeek, List<Faixa>> horario = new EnumMap<>(DayOfWeek.class);
+        horario.put(DayOfWeek.TUESDAY, List.of(Faixa.de("11:00", "15:00"), Faixa.de("18:00", "02:00")));
+        horario.put(DayOfWeek.WEDNESDAY, List.of(Faixa.de("01:00", "03:00")));
+        Disponibilidade sobreposta = new Disponibilidade(horario, Pausa.nenhuma());
+
+        assertThat(sobreposta.inicioDaFaixaEm(emSaoPaulo("2026-09-16T01:30"), SP))
+                .as("01:30 de quarta está na faixa de terça 18:00–02:00 e na de quarta "
+                        + "01:00–03:00. Vale a que já estava aberta — é o que torna a "
+                        + "resposta independente da ordem de cadastro")
+                .contains(emSaoPaulo("2026-09-15T18:00"));
+        assertThat(sobreposta.inicioDaFaixaEm(emSaoPaulo("2026-09-16T02:30"), SP))
+                .as("depois das 02:00 só a de quarta contém o instante")
+                .contains(emSaoPaulo("2026-09-16T01:00"));
+    }
+
+    @Test
+    void faixas_sobrepostas_no_mesmo_dia_tambem() {
+        Map<DayOfWeek, List<Faixa>> horario = new EnumMap<>(DayOfWeek.class);
+        horario.put(DayOfWeek.TUESDAY, List.of(Faixa.de("12:00", "16:00"), Faixa.de("11:00", "14:00")));
+        Disponibilidade sobreposta = new Disponibilidade(horario, Pausa.nenhuma());
+
+        assertThat(sobreposta.inicioDaFaixaEm(emSaoPaulo("2026-09-15T13:00"), SP))
+                .contains(emSaoPaulo("2026-09-15T11:00"));
+    }
+
     // ── pausa ───────────────────────────────────────────────────────────────
 
     @Test

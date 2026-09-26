@@ -192,10 +192,52 @@ class AberturaDeExpedienteIT extends Infraestrutura {
                 .isFalse();
     }
 
+    // ── o turno que atravessa a hora de corte (ADR-046, emenda F.1) ─────────
+
+    @Test
+    @DisplayName("o turno 22h–06h atravessa as 04:00 e publica uma vez só")
+    void o_turno_que_atravessa_a_hora_de_corte_publica_uma_vez() {
+        lojas.salvar(LojaDeTeste.lojaDas22As06());
+
+        assertThat(passadaEm(TERCA_AS_22H)).isEqualTo(1);
+        assertThat(payloadDaUnicaLinha().get("expedienteDeReferencia").asString())
+                .isEqualTo("2026-09-22");
+        outbox.deleteAll();
+
+        // 04:30 de quarta: o dia operacional do INSTANTE já é quarta, mas o
+        // turno é o mesmo que abriu às 22h de terça. Publicar aqui reativaria,
+        // no meio do turno, o que acabou às 23h — o defeito do job à meia-noite
+        // que o catalogo.md §3 rejeita, reaparecendo pela hora de corte.
+        assertThat(passadaEm(QUARTA_AS_04H30))
+                .as("o expediente é o dia operacional do início da faixa, não do instante")
+                .isZero();
+        assertThat(outbox.findAll()).isEmpty();
+    }
+
+    @Test
+    void o_turno_seguinte_no_dia_seguinte_publica_de_novo() {
+        lojas.salvar(LojaDeTeste.lojaDas22As06());
+
+        assertThat(passadaEm(TERCA_AS_22H)).isEqualTo(1);
+        passadaEm(QUARTA_AS_04H30);
+        outbox.deleteAll();
+
+        assertThat(passadaEm(QUARTA_AS_22H))
+                .as("22h de quarta abre outra faixa, de outro dia operacional")
+                .isEqualTo(1);
+        assertThat(payloadDaUnicaLinha().get("expedienteDeReferencia").asString())
+                .isEqualTo("2026-09-23");
+    }
+
     // ── instantes, em hora civil de São Paulo (UTC−3) ───────────────────────
 
     private static final Instant TERCA_AS_15H = Instant.parse("2026-09-22T18:00:00Z");
     private static final Instant TERCA_AS_19H = Instant.parse("2026-09-22T22:00:00Z");
     private static final Instant TERCA_AS_20H = Instant.parse("2026-09-22T23:00:00Z");
     private static final Instant QUARTA_A_01H = Instant.parse("2026-09-23T04:00:00Z");
+
+    // para a loja 22:00–06:00
+    private static final Instant TERCA_AS_22H = Instant.parse("2026-09-23T01:00:00Z");
+    private static final Instant QUARTA_AS_04H30 = Instant.parse("2026-09-23T07:30:00Z");
+    private static final Instant QUARTA_AS_22H = Instant.parse("2026-09-24T01:00:00Z");
 }

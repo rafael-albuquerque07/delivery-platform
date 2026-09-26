@@ -6,6 +6,7 @@ import com.deliveryplatform.merchant.application.port.out.Outbox;
 import com.deliveryplatform.merchant.domain.evento.ExpedienteAlteradoV1;
 import com.deliveryplatform.merchant.domain.model.DiaOperacional;
 import com.deliveryplatform.merchant.domain.model.Estabelecimento;
+import com.deliveryplatform.merchant.domain.model.FusoHorario;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Quem percebe que a loja abriu.
@@ -61,11 +63,17 @@ public class PublicarAberturaDeExpediente {
 
         int publicadas = 0;
         for (Estabelecimento loja : lojas) {
-            if (!dentroDoHorario(loja, agora)) {
-                continue;
+            FusoHorario fuso = loja.getIdentificacao().fusoHorario();
+            Optional<Instant> inicio = inicioDaFaixa(loja, agora, fuso);
+            if (inicio.isEmpty()) {
+                continue; // fora do horário
             }
 
-            LocalDate expediente = DiaOperacional.de(agora, loja.getIdentificacao().fusoHorario());
+            // O dia operacional do INÍCIO da faixa, não do instante (ADR-046,
+            // emendada). Uma loja 22:00–06:00 às 04:30 está no expediente que
+            // abriu às 22h da véspera; o dia operacional do instante já virou às
+            // 04:00, e usá-lo publicaria uma segunda abertura no meio do turno.
+            LocalDate expediente = DiaOperacional.de(inicio.get(), fuso);
 
             // O banco decide. `false` significa que a abertura já estava
             // registrada — por uma passada anterior ou por outra instância
@@ -83,7 +91,10 @@ public class PublicarAberturaDeExpediente {
     }
 
     /**
-     * <b>Dentro do horário, e não "aberta".</b>
+     * O início da faixa de horário que contém {@code agora} — vazio fora do
+     * horário.
+     *
+     * <p><b>Dentro do horário, e não "aberta".</b>
      *
      * <p>{@code estaAberta} compõe horário <i>e</i> pausa. Se a pizzaria abre
      * às 18h e o dono pausou às 17h50 por uma hora, às 18h ela está dentro do
@@ -96,7 +107,7 @@ public class PublicarAberturaDeExpediente {
      * retomar acontecem <b>dentro</b> de um expediente e não abrem outro":
      * pausa pressupõe expediente. É o horário que abre.
      */
-    private boolean dentroDoHorario(Estabelecimento loja, Instant agora) {
-        return loja.getDisponibilidade().dentroDoHorario(agora, loja.getIdentificacao().fusoHorario());
+    private Optional<Instant> inicioDaFaixa(Estabelecimento loja, Instant agora, FusoHorario fuso) {
+        return loja.getDisponibilidade().inicioDaFaixaEm(agora, fuso);
     }
 }
