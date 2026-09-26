@@ -43,13 +43,11 @@ class HexagonalArchitectureTest {
                     // Spring Boot 4 usa o segundo.
                     "com.fasterxml.jackson..",
                     "tools.jackson..")
-            .because("o domínio não deve importar framework, ORM nem serialização")
-            .allowEmptyShould(true);
+            .because("o domínio não deve importar framework, ORM nem serialização");
 
     @ArchTest
     static final ArchRule entidadesJpaForaDoDominio = noClasses()
             .that().resideInAPackage("..domain..")
             .should().beAnnotatedWith("jakarta.persistence.Entity")
-            .because("entidades JPA vivem em infrastructure/persistence/entity")
-            .allowEmptyShould(true);
+            .because("entidades JPA vivem em infrastructure/persistence/entity");
 }
