@@ -124,6 +124,84 @@ cópia durável do evento, e a regra do `CLAUDE.md` sobre log vale para ela.
 serviço que pergunta (emenda na ADR-043), e o primeiro serviço com rota protegida
 é o gatilho escrito.
 
+### `ExpedienteAlteradoV1` — o contrato
+
+**Implementado na rodada F (ADR-046).** Origem `merchant-service` · exchange
+`delivery.eventos` (topic, durável) · chave de rota
+`merchant.expediente.alterado.v1`.
+
+O expediente de um estabelecimento mudou. Hoje o único motivo produzido é a
+abertura.
+
+**Quando é emitido.** Uma varredura no `merchant` percorre os estabelecimentos a
+cada minuto e, para cada um que está **dentro do horário** e cujo expediente
+corrente ainda não foi publicado, grava a marca d'água e o evento **na mesma
+transação**.
+
+**Dentro do horário, e não "aberta"** — pausa acontece *dentro* de um expediente
+e não abre outro (`estabelecimento.md` §4). Uma loja pausada no instante da
+abertura publica a abertura assim mesmo; não fizesse isso, o expediente dela
+nunca abriria e os produtos ficariam esgotados o dia inteiro.
+
+**Formato.** O envelope comum de `events/_envelope-v1.json`, com o `eventType`
+sem a versão:
+
+```json
+{
+  "eventId": "9a3c7f10-2b58-4d6e-b1c4-5e0f8a2d3b71",
+  "eventType": "ExpedienteAlterado",
+  "eventVersion": 1,
+  "occurredAt": "2026-09-26T21:00:04.117293Z",
+  "correlationId": "9a3c7f10-2b58-4d6e-b1c4-5e0f8a2d3b71",
+  "payload": {
+    "estabelecimentoId": "1c9c1f2e-3b44-4a71-9f2a-6b0d5e8c4a10",
+    "motivo": "ABERTURA_DE_EXPEDIENTE",
+    "expedienteDeReferencia": "2026-09-26"
+  }
+}
+```
+
+**As quatro cláusulas.**
+
+1. **`occurredAt` e `expedienteDeReferencia` são coisas diferentes.** O
+   primeiro é o instante da publicação; o segundo é o **dia operacional** da
+   loja (ADR-025), calculado no fuso dela com hora de corte às 04:00. Às 01:30
+   de domingo o instante é domingo e o expediente é sábado. **Quem usar o
+   carimbo do envelope como dia vai errar uma vez por dia, na madrugada** — que
+   é exatamente quando a pizzaria está vendendo.
+2. **A reativação compara, nunca calcula.** O consumidor reativa produto e
+   opção com `estado == ESGOTADO_HOJE ∧ expedienteDeReferencia != o que veio
+   aqui`. Ele não precisa do fuso da loja nem da hora de corte, e não deve
+   tentar derivá-los: o cálculo tem um dono só, o `merchant` (ADR-046 §6).
+3. **O consumidor é idempotente por `eventId`.** A entrega é pelo menos uma vez
+   (ADR-043 §3). A marca d'água do produtor garante que **uma abertura gera um
+   evento**, não que **um evento chega uma vez**.
+4. **`motivo` desconhecido é ignorado, não é erro.** Hoje só existe
+   `ABERTURA_DE_EXPEDIENTE`; fechamento, pausa e retomada entram quando tiverem
+   produtor. Acrescentar valor a enum é mudança compatível (ADR-027), e um
+   consumidor que estoure com valor novo transforma uma mudança compatível em
+   incidente.
+
+**Uma abertura por dia operacional, e não por transição.** A loja que abre duas
+vezes no mesmo dia — a padaria de 6h–14h e 18h–22h — publica **um** evento, o da
+primeira. A marca d'água é `(estabelecimento, expediente)`, e a segunda abertura
+do mesmo dia operacional não insere linha.
+
+Isto **emenda o exemplo da ADR-025 §5**, que descrevia o catálogo recebendo dois
+eventos e descartando o segundo por comparação. O resultado é o mesmo — o pão
+que acabou no almoço continua acabado no jantar — mas por um caminho mais curto:
+o produtor não chega a emitir.
+
+**O que não carrega.** O estado de abertura da loja. Quem quiser saber se ela
+está aberta **agora** pergunta pela `OperacaoDoEstabelecimentoPort`
+(`estabelecimento.md` §3) — este evento diz que um expediente começou, não que a
+loja segue aberta. Guardar o segundo como projeção seria manter, do lado de fora,
+um campo que o `merchant` deliberadamente não guarda do lado de dentro.
+
+**Quem consome.** Ninguém ainda. O primeiro consumidor é o `catalog-service`, no
+marco 2, e é ele o único com comportamento escrito para a abertura
+(`catalogo.md` §3).
+
 ---
 
 ## 2. Eventos consumidos pelo painel

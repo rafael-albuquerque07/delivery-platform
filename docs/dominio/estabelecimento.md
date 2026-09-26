@@ -240,6 +240,13 @@ record ContextoDeAcesso(UUID usuarioId, UUID estabelecimentoId,
                         Papel papel, Set<Permissao> permissoes) {}
 ```
 
+> **Emenda — 26/09/2026 (ADR-045).** A credencial entre serviços é o token de
+> quem pediu, encaminhado pelo consumidor. O `usuarioId` deixa de ser
+> parâmetro — ele vem provado no token, não afirmado por quem chama — e a
+> assinatura passa a `contexto(UUID estabelecimentoId)`. O `ContextoDeAcesso`
+> continua devolvendo o `usuarioId`, como resposta. A forma final nasce com o
+> primeiro consumidor, o `catalog`, no marco 2.
+
 | Aspecto | Regra | Por quê |
 |---|---|---|
 | Cache | **Em processo** (Caffeine), 60 s para resposta positiva e 10 s para negativa, chave `(usuarioId, estabelecimentoId)` — ADR-011 | Toda requisição de todo serviço passa aqui, e a cache existe para não sair do processo |
@@ -460,6 +467,30 @@ Quatro detalhes que a implementação precisou fixar e este documento não dizia
   então sobrepor é redundância, não contradição. Faixa **idêntica** repetida no
   mesmo dia é recusada, porque não significa nada.
 
+### Quem percebe que o expediente abriu
+
+Nada nesta seção é um ato: `abertaEm(instante)` é calculado na leitura, e é
+assim de propósito — *o registro diz o que foi feito; o cálculo diz o que vale
+agora*.
+
+Só que o `catalogo.md` §3 exige um evento na transição fechado → aberto, e
+transição só existe para quem observa. Desde a **ADR-046** existe um
+observador: uma varredura de minuto em minuto pergunta quais lojas estão
+**dentro do horário** e registra, numa tabela cuja chave primária é
+`(estabelecimento, expediente)`, que a abertura daquele dia operacional foi
+publicada. Inseriu linha, grava o `ExpedienteAlteradoV1` no outbox na mesma
+transação; não inseriu, já estava publicada.
+
+**A tabela não guarda o estado da loja** — guarda o que já foi publicado. A
+regra do parágrafo acima continua inteira.
+
+**A varredura pergunta `dentroDoHorario`, não `estaAberta`.** Uma loja pausada
+no instante em que entra no horário abre o expediente assim mesmo: pausa
+acontece *dentro* de um expediente e não abre outro. Se a abertura dependesse
+de `estaAberta`, a loja que estivesse pausada às 18h nunca publicaria a abertura
+daquele dia — quando a pausa vencesse já estaria aberta, sem transição para
+observar — e os produtos ficariam esgotados o dia inteiro.
+
 ### O dia operacional
 
 ```
@@ -583,7 +614,7 @@ Todos com `correlationId`, todos via outbox na mesma transação da alteração.
 | `EstabelecimentoCriadoV1` | Cadastro concluído | `conversation` |
 | `VinculoAlteradoV1` | Membro criado, alterado, suspenso, removido | **Todos** — invalidação de cache de autorização |
 | `ConfiguracaoOperacionalAlteradaV1` | Tipo, modalidades, métodos, troco, `maxEntregasSimultaneas` | `order`, `delivery`, `conversation` |
-| `ExpedienteAlteradoV1` | Abriu, fechou, pausou, retomou — com `motivo` | `conversation`, **`catalog`** (reativa `ESGOTADO_HOJE`) |
+| `ExpedienteAlteradoV1` | Abriu, fechou, pausou, retomou — com `motivo`. Hoje só a abertura é produzida (ADR-046); payload: `estabelecimentoId`, `motivo`, `expedienteDeReferencia` | `conversation`, **`catalog`** (reativa `ESGOTADO_HOJE`) |
 | `AreasDeEntregaAlteradasV1` | Área criada, alterada, desativada | `conversation` (lista de bairros) |
 | `VinculoEntregadorAlteradoV1` | Vínculo ou remuneração | `delivery` |
 
@@ -597,6 +628,18 @@ O `motivo` desse evento não é decoração: o `catalog-service` só reativa pro
 `ESGOTADO_HOJE` quando ele é `ABERTURA_DE_EXPEDIENTE`. Retomada de pausa **não**
 reativa nada, e é por isso que pausa e abertura precisam ser distinguíveis no
 payload.
+
+O payload leva `estabelecimentoId`, `motivo` e **`expedienteDeReferencia`** — o
+dia operacional (ADR-025), que é contra o que o `catalog` compara. Sem ele o
+consumidor teria de perguntar o expediente corrente a cada evento, e a
+idempotência de C11 passaria a depender de duas chamadas darem a mesma resposta
+num intervalo que atravessa a hora de corte todo dia.
+
+Hoje o `motivo` tem **um** valor, `ABERTURA_DE_EXPEDIENTE`, que é o único com
+produtor. Fechamento, pausa e retomada entram quando alguém os emitir —
+acrescentar valor a enum é mudança compatível (ADR-027), e valor sem emissor é
+promessa com sintaxe de código. O contrato completo está em
+[`contracts/eventos.md`](../../contracts/eventos.md).
 
 `VinculoAlteradoV1` é o mais crítico: é ele que faz a revogação de acesso valer
 em segundos em vez de esperar o TTL. Se este evento se perder, alguém continua

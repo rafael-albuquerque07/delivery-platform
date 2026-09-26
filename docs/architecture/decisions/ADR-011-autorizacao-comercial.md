@@ -2,7 +2,9 @@
 
 **Status:** Aceita — 23/08/2026 · **emendada pela ADR-043** (24/09/2026): o cache
 "em processo" mora em cada serviço que pergunta, não no `merchant`, e nasce junto
-com o primeiro consumidor do `VinculoAlteradoV1`
+com o primeiro consumidor do `VinculoAlteradoV1` · **emendada pela ADR-045** (26/09/2026): a
+credencial entre serviços é o token de quem pediu, e por isso `contexto` deixa
+de receber `usuarioId`
 **Relacionada:** ADR-012 (roteamento do gateway), ADR-015 (JWT com `NimbusJwtEncoder`)
 **Detalha:** `docs/dominio/estabelecimento.md` §2 e §3
 **Invariantes do `CLAUDE.md`:** 8 (nenhum serviço lê o banco de outro), 9 (identificador da URL não é confiável)
@@ -141,6 +143,19 @@ public interface AutorizacaoComercialPort {
 
 O adaptador é quem cacheia. O caso de uso não sabe que existe cache, não sabe que
 existe HTTP, e testa contra um duplo em memória.
+
+> **Emenda — 26/09/2026 (ADR-045).** A assinatura desenhada acima recebe
+> `usuarioId` porque o chamador **afirmava** quem era o usuário. Com o token
+> encaminhado ele não afirma: **prova**. O parâmetro sai:
+>
+> ```java
+> Optional<ContextoDeAcesso> contexto(UUID estabelecimentoId);
+> ```
+>
+> O `ContextoDeAcesso` continua devolvendo o `usuarioId` — como resposta, que é
+> o que ele sempre foi. Tudo o mais desta ADR fica de pé: Caffeine em processo,
+> 60 s positivo, 10 s negativo, invalidação por `VinculoAlteradoV1`, e falha
+> fechada. A forma final nasce com o primeiro consumidor, no marco 2.
 
 ## Consequências
 

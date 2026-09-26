@@ -12,7 +12,7 @@
 | 008 | MongoDB como replica set de nó único | ✅ aceita |
 | 009 | Modelo de valores do pedido | ✅ aceita · **emendada pela v1.1** |
 | 010 | Saga do pedido: pivô em `PRONTO`, pagamento fora da transação | ✅ aceita · **reescrita pela v1.1** |
-| 011 | Autorização comercial: cache em processo, invalidação por evento, fail-closed | ✅ aceita |
+| 011 | Autorização comercial: cache em processo, invalidação por evento, fail-closed | ✅ aceita · **emendada** (26/09/2026: a porta não recebe `usuarioId` — ADR-045) |
 | 012 | Roteamento do gateway por recurso, não por serviço | ✅ aceita · **emendada** (24/09/2026: limite de taxa e `correlationId` fora do marco 1) |
 | 013 | Retenção, anonimização e exclusão de dados pessoais | ✅ aceita |
 | 014 | Não adotar H2; Testcontainers como fonte de verdade | ✅ aceita · **emendada pela v1.1** |
@@ -26,7 +26,7 @@
 | 022 | A remuneração do entregador pertence ao vínculo | ✅ aceita |
 | 023 | Fronteira `order` × `payment`: pedido é dono do registro | ✅ aceita |
 | 024 | Desconto de retirada, não preço por modalidade | ✅ aceita |
-| 025 | Fuso horário do estabelecimento e o dia operacional | ✅ aceita |
+| 025 | Fuso horário do estabelecimento e o dia operacional | ✅ aceita · **emendada** (26/09/2026: um evento de abertura por dia operacional — ADR-046) |
 | 026 | Fila morta, retentativa e reprocessamento | ✅ aceita |
 | 027 | O que conta como mudança compatível num evento | ✅ aceita |
 | 028 | Pedido mínimo por modalidade, sobre o subtotal dos itens | ✅ aceita |
@@ -46,8 +46,10 @@
 | 042 | O código de verificação do cadastro, e quem o entrega | ✅ aceita |
 | 043 | O outbox e o relay | ✅ aceita · **emenda a 011** |
 | 044 | A cadeia de filtros do gateway, e o que passa sem token | ✅ aceita · **emenda a 012 e 037** |
+| 045 | A credencial entre serviços é o token de quem pediu | ✅ aceita · **emenda a 011** |
+| 046 | Quem observa a abertura do expediente | ✅ aceita · **emenda a 025** |
 
-**Quarenta e duas escritas, duas sem objeto — estas com registro próprio desde
+**Quarenta e quatro escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

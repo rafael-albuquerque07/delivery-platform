@@ -1,6 +1,7 @@
 # ADR-025 — Fuso horário do estabelecimento e o dia operacional
 
-**Status:** Aceita — 24/08/2026
+**Status:** Aceita — 24/08/2026 · **emendada pela ADR-046** (26/09/2026): é um evento de
+abertura por dia operacional, não um por transição
 **Relacionada:** ADR-011 (autorização), ADR-013 (retenção), ADR-021 (catálogo de serviços)
 **Detalhada em:** `docs/dominio/estabelecimento.md` §4 · `docs/dominio/liquidacao.md` §2 e §6 · `docs/dominio/catalogo.md` §3
 **Fecha duas pendências:** fuso horário (`estabelecimento.md` §9) e jornada que cruza a meia-noite (`liquidacao.md` §9)
@@ -157,6 +158,20 @@ reativa.
 
 A regra anterior — "só a transição fechado → aberto **por horário** conta" —
 continua valendo e agora tem um critério verificável por trás.
+
+> **Emenda — 26/09/2026 (ADR-046).** O texto acima diz que "o catálogo recebe
+> **dois** eventos de abertura" no dia da padaria. Com a marca d'água
+> `(estabelecimento, expediente)` que a ADR-046 introduziu, ele recebe **um**:
+> a segunda abertura do mesmo dia operacional não insere linha e não publica.
+>
+> O resultado desta seção continua exato — o pão que acabou no almoço continua
+> acabado no jantar —, mas por um caminho mais curto: em vez de o consumidor
+> comparar `D` com `D` e decidir não reativar, o produtor não chega a emitir. A
+> idempotência do consumidor **continua obrigatória**, porque a entrega é pelo
+> menos uma vez e o mesmo evento pode chegar duas vezes.
+>
+> A diferença importa para quem for escrever o consumidor: o exemplo acima
+> descreve um tráfego que não vai existir.
 
 ### 6. Horário de verão, se voltar
 
