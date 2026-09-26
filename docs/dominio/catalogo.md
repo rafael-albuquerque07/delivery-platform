@@ -335,6 +335,27 @@ acabou depois da abertura.
 | C12 | `QUANTITATIVO` não existe até o marco 10 — o enum tem dois valores (nota da §1) | Promete contagem que não existe |
 | C13 | Toda estrutura e índice via Mongock | Ambiente diverge do outro em silêncio |
 
+> **Quem cobra cada uma no código (26/09/2026, G-A e G-A.1).** C1, C2, C4 e C5
+> são cobradas em `Produto.publicar()` — o §2 diz que publicar é onde as
+> invariantes são cobradas; C1 recusa preço negativo também no rascunho. C2 é
+> cobrada por `Produto.precoMinimoPossivel()`. C3 é cobrada na construção do
+> `GrupoDeOpcoes`. C6 é `Produto.vendavel()`, sem campo. C11 tem o predicado,
+> `Disponibilidade.deveReativarNoExpediente(LocalDate)`, para produto e opção;
+> o ato — o consumidor do `ExpedienteAlteradoV1` — é da G-C. C12 é o sistema de
+> tipos (nota da §1). **Ainda só texto:** C7, C8 e C9 pela forma do agregado,
+> sem regra própria; C10 na cotação (G-C); C13 com a persistência (G-B).
+>
+> **C2 tem conta.** "Toda combinação válida": o menor preço unitário é o preço
+> base mais, em cada grupo, os `minEscolhas` acréscimos mais baratos, mais todo
+> acréscimo negativo que ainda caiba no `maxEscolhas`. É essa conta que a
+> publicação faz. Ela usa **todas** as opções, disponíveis ou não: "válida" é a
+> combinação que respeita mínimo, teto e pertinência — o §5 separa isso (400)
+> de opção indisponível (409, o estado do mundo mudou) —, e a opção esgotada
+> hoje volta amanhã.
+>
+> A conta só existe porque o `acrescimo` pode ser negativo (§4). Sem desconto no
+> cardápio, C2 seria a mesma coisa que C1.
+
 ---
 
 ## 10. O que este documento deliberadamente não decide
