@@ -45,7 +45,10 @@ class HexagonalArchitectureTest {
                     "org.springframework..",
                     "jakarta.persistence..",
                     "org.hibernate..",
-                    "com.fasterxml.jackson..")
+                    // Jackson 2 e Jackson 3 são pacotes-raiz diferentes, e o
+                    // Spring Boot 4 usa o segundo.
+                    "com.fasterxml.jackson..",
+                    "tools.jackson..")
             .because("o domínio não deve importar framework, ORM nem serialização");
 
     @ArchTest

@@ -28,7 +28,13 @@ class TiposDeValorNaoConhecemFrameworkTest {
                     "jakarta..",
                     "javax..",
                     "org.hibernate..",
+                    // Jackson 2 e Jackson 3 são pacotes-raiz DIFERENTES, e o
+                    // Spring Boot 4 usa o segundo. Enquanto só o primeiro
+                    // estivesse listado, um import de Jackson 3 aqui passaria —
+                    // o mesmo defeito que na C-B fez um ObjectMapper de Jackson
+                    // 2 ser escrito contra um contexto que só tem o de Jackson 3.
                     "com.fasterxml.jackson..",
+                    "tools.jackson..",
                     "org.testcontainers..")
             .because("o módulo é compartilhado pelos nove serviços (ADR-040) e a ADR-001 só o "
                     + "permite porque ele não arrasta framework junto: um tipo daqui que "
