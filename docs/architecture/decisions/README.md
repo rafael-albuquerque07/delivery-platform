@@ -2,7 +2,7 @@
 
 | ADR | Decisão | Status |
 |---|---|---|
-| 001 | Monorepo para os oito serviços, o gateway e os contratos | ✅ aceita |
+| 001 | Monorepo para os oito serviços, o gateway e os contratos | ✅ aceita · **emendada** (26/09/2026: a regra existe no build) |
 | 002 | Um banco por serviço, sem exceção | ✅ aceita |
 | 003 | ~~Mensageria híbrida RabbitMQ + MQTT~~ | ⛔ sem objeto — MQTT saiu do MVP (020, 021) |
 | 004 | Um pedido pertence a exatamente um estabelecimento | ✅ aceita |

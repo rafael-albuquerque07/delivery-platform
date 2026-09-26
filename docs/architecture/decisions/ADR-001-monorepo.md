@@ -1,6 +1,7 @@
 # ADR-001 — Monorepo para os oito serviços, o gateway e os contratos
 
-**Status:** Aceita — 16/08/2026 · **formalizada em 23/08/2026**
+**Status:** Aceita — 16/08/2026 · **formalizada em 23/08/2026** · **emendada em
+26/09/2026**: a regra existe no build (ver "Emenda de 26/09/2026")
 **Relacionada:** ADR-002 (banco por serviço), ADR-021 (catálogo de serviços)
 **Em vigor desde o primeiro commit** — esta ADR registra o porquê, que faltava
 
@@ -55,6 +56,9 @@ Serviço só depende de `build-logic` e de bibliotecas externas.
 Precisa de uma verificação no build que falhe se um `:services:*` depender de
 outro — requisito do marco 1, listado como pendência abaixo.
 
+> **Resolvido em 26/09/2026.** A verificação existe e roda no `check` de todo
+> módulo — ver "Emenda de 26/09/2026", no fim desta ADR.
+
 > **Emendado pela ADR-040 (08/09/2026).** Existe **um** módulo compartilhado que
 > não é serviço: `:value-types`, com tipos de valor sem framework, sem estado e
 > sem regra de negócio de serviço nenhum. Serviço passa a depender de
@@ -89,7 +93,8 @@ o esquema publicado e o evento real apareceria em produção.
 
 - **O monorepo torna o acoplamento barato**, e acoplamento barato é como
   microsserviços morrem. A regra acima existe por isso, e enquanto não for
-  verificada por build ela é só uma frase.
+  verificada por build ela é só uma frase. *(Verificada por build desde
+  26/09/2026.)*
 - **Tenta a publicar tudo junto.** "Está tudo no mesmo repositório, vamos subir
   tudo" desfaz a implantação independente sem ninguém decidir isso. Os filtros de
   caminho por pipeline são a defesa.
@@ -114,8 +119,110 @@ o esquema publicado e o evento real apareceria em produção.
 - **Submódulos do Git.** Rejeitado sem muita discussão: junta o pior dos dois —
   a sobrecarga do polirepo com a confusão de estado do monorepo.
 
-## Pendência que esta ADR cria
+## Pendência que esta ADR cria — **resolvida em 26/09/2026**
 
-**Verificação de dependência entre serviços no build.** Uma regra que falhe se
+~~**Verificação de dependência entre serviços no build.** Uma regra que falhe se
 `:services:X` declarar `:services:Y`. Requisito do marco 1 — sem ela, a decisão
-central desta ADR depende de ninguém errar.
+central desta ADR depende de ninguém errar.~~
+
+Resolvida pela emenda abaixo.
+
+## Emenda de 26/09/2026 — a regra existe, e roda no `check`
+
+A ADR-001 criou a própria pendência, com as palavras riscadas acima. Ela ficou
+aberta por um mês, e nesse mês nada errou — o repositório tem **exatamente uma**
+declaração `project(...)`, a do `merchant-service` para `:value-types`. É
+justamente essa a situação em que uma regra é barata de escrever e fácil de
+adiar para sempre: não há o que consertar, só o que impedir.
+
+### A regra
+
+`VerificarDependenciaEntreModulos`, em `build-logic`
+(`com.deliveryplatform.buildlogic`), registrada por `delivery.java-conventions` —
+o plugin que **todo** módulo do backend alcança, de modo que a regra vale também
+para o módulo que alguém criar amanhã sem ler esta ADR. Ela lê as dependências de
+projeto declaradas em qualquer configuração e falha se alguma não for
+`:value-types`. Roda nos dez módulos: os oito serviços, o `gateway` e o próprio
+`:value-types`.
+
+Pendurada no `check`. Uma verificação que dependa de alguém lembrar de executá-la
+não é diferente de um comentário pedindo cuidado.
+
+O pacote **não** se chama `build`: o `.gitignore` da raiz ignora todo diretório
+`build/`, e com esse nome a classe nunca teria entrado no Git — a regra passaria
+na máquina de quem a escreveu e o build quebraria em todo clone.
+
+### Por que task de build, e não teste
+
+A ADR-040 virou teste — o `TiposDeValorNaoConhecemFrameworkTest`, com ArchUnit —
+e seria natural tentar o mesmo aqui. Não serve, por três motivos:
+
+1. **Aresta não é classe.** A ADR-040 proíbe *imports dentro de um módulo*, e
+   import está no bytecode. Esta proíbe *arestas entre módulos*, e aresta está no
+   arquivo de build. Um `implementation(project(":services:x"))` declarado e
+   ainda não usado por nenhuma classe é invisível para o ArchUnit, e já é a
+   violação: a partir dele os dois módulos compilam juntos.
+2. **Não há onde o teste morar.** Para enxergar todos os módulos, ele teria de
+   estar num módulo que depende de todos — que é exatamente o que a regra
+   proíbe.
+3. **Não precisa compilar para decidir.** A task lê o grafo; o teste só existiria
+   depois de compilar. (Nada a *obriga* a rodar antes do `compileJava` — na prova
+   ela foi a primeira a falhar, por ordem de agendamento.)
+
+A informação está no grafo do Gradle. A verificação mora onde a informação está.
+
+### O que é permitido, e por que a lista importa
+
+Uma aresta: `:value-types`, aberta pela ADR-040.
+
+Esta é a parte que tornou a regra necessária. Enquanto a ADR-001 dizia "nenhum
+módulo", ela era autoverificável por leitura — qualquer `project(...)` era
+violação, e ninguém precisava lembrar de qual. Desde a ADR-040 a regra virou
+**"um, e só um"**, e uma lista de exceções com um item é uma lista de exceções:
+cresce por argumento razoável, um item de cada vez, e o segundo item sempre
+parece tão justificado quanto o primeiro.
+
+A mensagem de falha diz o que fazer no lugar — porta HTTP, evento, ou
+`:value-types` quando for tipo de valor —, e termina dizendo que a terceira saída
+é emendar esta ADR. É deliberado: se alguém precisar mesmo de uma segunda
+aresta, o caminho é abrir a decisão, não contornar o build.
+
+### A prova
+
+Em 26/09/2026, com `implementation(project(":services:identity-service"))`
+acrescentado de propósito ao `catalog-service` e desfeito em seguida, o
+`./gradlew :services:catalog-service:check` falhou com:
+
+```
+> ADR-001 violada em :services:catalog-service
+
+    Dependência de módulo declarada e não permitida:
+        :services:identity-service
+
+    Permitido: :value-types — e nada mais.
+    ...
+    O que fazer, em ordem de preferência:
+      1. Chamar o outro serviço pela porta dele (HTTP) ou reagir a um
+         evento — é assim que serviço fala com serviço aqui.
+      2. Se o que se quer compartilhar é tipo de valor sem estado e
+         sem framework, ele pertence a :value-types (ADR-040).
+      3. Se nenhuma das duas serve, o caso é emendar a ADR-001 — e
+         essa é uma decisão de arquitetura, não um ajuste de build.
+```
+
+E, antes disso, a prova de que ela **enxerga**: rodada em todos os módulos, a do
+`merchant-service` relatou `[:value-types]` e as outras nove, `[nenhum módulo]`.
+Uma regra que lesse uma lista vazia passaria em tudo — inclusive numa prova de
+violação feita errado.
+
+### Consequência negativa
+
+**A regra nunca falhou em código de verdade.** Ela foi provada disparando contra
+uma violação criada de propósito e desfeita em seguida, e não por uma suíte que a
+exercite a cada build.
+
+Isso é *"peça que nunca rodou não é peça, é intenção"* aplicado a esta própria
+ADR, e fica registrado como tal. **Gatilho escrito:** o dia em que houver uma
+segunda regra de build. Aí o `build-logic` passa a merecer suíte própria,
+pendurada no `check` da raiz, e as duas são exercitadas juntas — hoje, uma suíte
+para uma regra seria mais cerimônia do que verificação.

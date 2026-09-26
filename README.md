@@ -9,9 +9,14 @@ testes, container, contrato e pipeline próprios.
 > nasce numa conversa de WhatsApp. Se uma decisão parecer estranha, confira as
 > premissas em [`docs/PRD.md`](docs/PRD.md) §5 antes de "corrigir".
 
-> **Estado: esqueleto (marco 0).** A estrutura, o build e a infraestrutura estão
-> montados. Ainda não há regra de negócio — o marco 1 começa pelo
-> `identity-service`.
+> **Estado: marco 1 concluído (26/09/2026).** O `identity-service` cadastra com
+> verificação por telefone e emite o token. O `merchant-service` guarda
+> estabelecimento, disponibilidade, áreas de entrega, equipe e convite, atende a
+> primeira rota autorizada e publica `VinculoAlteradoV1` pelo outbox. O gateway
+> autentica e roteia as quinze rotas da ADR-012, com teste, e o `check` de todo
+> módulo recusa dependência entre serviços (ADR-001). Os outros seis serviços
+> ainda são esqueleto. O que ficou em aberto são decisões com gatilho escrito —
+> nenhuma bloqueia o marco 2.
 
 ---
 

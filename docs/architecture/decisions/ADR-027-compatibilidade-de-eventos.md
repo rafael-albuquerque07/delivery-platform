@@ -141,7 +141,7 @@ abreviada do par**. Não é o conteúdo de `eventType`.
   mais que a versão nova.
 - **A verificação de build ainda não existe.** Até existir, a regra depende de
   ninguém errar — a mesma situação da regra de dependência entre serviços da
-  ADR-001.
+  ADR-001, que deixou de ser pendência em 26/09/2026 e é o molde para esta.
 - **Nada disso vale para o contrato REST**, que tem regra própria e mais frouxa
   porque cliente e servidor conversam no mesmo instante. Duas regras diferentes
   para duas coisas parecidas é fonte de confusão, e está dito aqui para não ser
