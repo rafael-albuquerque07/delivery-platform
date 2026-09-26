@@ -118,8 +118,8 @@ class GrupoDeOpcoesTest {
         void min_dois() {
             GrupoDeOpcoes g = GrupoDeOpcoes.novo("Sabores", 2, 2, 0, List.of(
                     Opcao.nova("Calabresa", Precos.zero(), 0),
-                    Opcao.nova("Frango", Precos.zero(), 1).comDisponibilidade(false),
-                    Opcao.nova("Portuguesa", Precos.zero(), 2).comDisponibilidade(false)));
+                    Opcao.nova("Frango", Precos.zero(), 1).com(ProdutoDeTeste.estado(false)),
+                    Opcao.nova("Portuguesa", Precos.zero(), 2).com(ProdutoDeTeste.estado(false))));
 
             assertThat(g.estruturalmenteSatisfazivel()).isTrue();
             assertThat(g.satisfazivelHoje()).isFalse();

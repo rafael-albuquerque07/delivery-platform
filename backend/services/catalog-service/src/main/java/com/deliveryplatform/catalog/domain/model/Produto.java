@@ -144,6 +144,12 @@ public final class Produto {
                     "C4: maxEscolhas maior que o número de opções impede a publicação: "
                             + String.join(", ", tetosInalcancaveis));
         }
+        Money minimo = precoMinimoPossivel();
+        if (minimo.ehNegativo() || minimo.ehZero()) {
+            throw new RegraDoCatalogoViolada(
+                    "C2: existe combinação válida cujo preço unitário não é positivo — "
+                            + "mínimo possível " + minimo.valor());
+        }
         estadoDePublicacao = EstadoDePublicacao.ATIVO;
     }
 
@@ -222,6 +228,100 @@ public final class Produto {
                             + nome);
         }
         this.disponibilidade = nova;
+    }
+
+    /**
+     * Marca uma opção. É o par do {@link #marcar(Disponibilidade)}, e existe
+     * porque <b>o que acaba quase sempre é a opção</b>: a calabresa acaba às
+     * 23h; "Pizza grande" não acaba.
+     *
+     * <p>Passa pela raiz porque a opção é entidade dentro do agregado. A
+     * {@link Opcao} e o {@link GrupoDeOpcoes} são valores imutáveis; quem os
+     * substitui na lista é este método, e ninguém mais.
+     *
+     * <p><b>Id desconhecido estoura.</b> Engolir em silêncio faria a reativação
+     * da G-C varrer opções, não achar nenhuma e reportar sucesso — um sabor
+     * esgotado para sempre, sem erro em lugar nenhum.
+     *
+     * <p>Marcar duas vezes o mesmo estado é inofensivo: a entrega do evento é
+     * pelo menos uma vez (ADR-043 §3), e a segunda passada não pode virar
+     * exceção dentro do agregado. Por isso o laço procura o id antes de montar
+     * a lista nova — comparar a lista nova com a antiga confundiria "marcou o
+     * mesmo estado" com "não achou".
+     *
+     * <p><b>Não recusa estado por {@code SEM_CONTROLE}</b>, ao contrário de
+     * {@link #marcar(Disponibilidade)}. A §6 do {@code catalogo.md} diz "sempre
+     * disponível" do <i>produto</i>; a §3 dá à opção os mesmos quatro estados
+     * sem exceção por modo. O gelo acaba mesmo quando a lata não acaba.
+     */
+    public void marcarOpcao(UUID grupoId, UUID opcaoId, Disponibilidade nova) {
+        if (nova == null) {
+            throw new RegraDoCatalogoViolada("disponibilidade nula");
+        }
+        for (int i = 0; i < gruposDeOpcoes.size(); i++) {
+            GrupoDeOpcoes g = gruposDeOpcoes.get(i);
+            if (!g.id().equals(grupoId)) {
+                continue;
+            }
+            if (g.opcoes().stream().noneMatch(o -> o.id().equals(opcaoId))) {
+                break;
+            }
+            List<Opcao> novas = g.opcoes().stream()
+                    .map(o -> o.id().equals(opcaoId) ? o.com(nova) : o)
+                    .toList();
+            gruposDeOpcoes.set(i, new GrupoDeOpcoes(
+                    g.id(), g.nome(), g.minEscolhas(), g.maxEscolhas(), g.ordem(), novas));
+            return;
+        }
+        throw new RegraDoCatalogoViolada("opção não encontrada neste produto");
+    }
+
+    // ── o preço mínimo (C2) ─────────────────────────────────────────────────
+
+    /**
+     * O menor preço unitário que uma combinação válida deste produto pode ter —
+     * a conta que a C2 exige.
+     *
+     * <p>Em cada grupo: ordene os acréscimos do menor para o maior, pegue os
+     * {@code minEscolhas} primeiros porque é obrigatório, e continue pegando
+     * enquanto o próximo for negativo e o teto permitir. Como a lista está
+     * ordenada, o primeiro não-negativo depois do mínimo encerra o grupo —
+     * dali para a frente só encarece.
+     *
+     * <p>Usa <b>todas</b> as opções, disponíveis ou não. "Combinação válida" é a
+     * que respeita mínimo, teto e pertinência — o {@code catalogo.md} §5 separa
+     * isso (400) de opção indisponível (409, "o estado do mundo mudou"). C2 é
+     * invariante do cadastro, e a opção esgotada hoje volta amanhã; um produto
+     * que amanhã sai de graça é defeito hoje.
+     *
+     * <p>A conta só existe porque o acréscimo pode ser negativo. Sem desconto no
+     * cardápio, C2 seria a mesma coisa que C1.
+     */
+    public Money precoMinimoPossivel() {
+        Money total = precoBase;
+        for (GrupoDeOpcoes g : gruposDeOpcoes) {
+            for (Money acrescimo : escolhasMaisBaratas(g)) {
+                total = total.mais(acrescimo);
+            }
+        }
+        return total;
+    }
+
+    private static List<Money> escolhasMaisBaratas(GrupoDeOpcoes grupo) {
+        List<Money> ordenados = grupo.opcoes().stream()
+                .map(Opcao::acrescimo)
+                .sorted()
+                .toList();
+        List<Money> escolhidos = new ArrayList<>();
+        for (Money acrescimo : ordenados) {
+            boolean obrigatorio = escolhidos.size() < grupo.minEscolhas();
+            boolean baixaOPreco = acrescimo.ehNegativo() && escolhidos.size() < grupo.maxEscolhas();
+            if (!obrigatorio && !baixaOPreco) {
+                break;
+            }
+            escolhidos.add(acrescimo);
+        }
+        return escolhidos;
     }
 
     // ── o vendável ──────────────────────────────────────────────────────────

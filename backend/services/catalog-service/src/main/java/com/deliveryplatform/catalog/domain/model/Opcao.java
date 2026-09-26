@@ -16,22 +16,29 @@ import java.util.UUID;
  * segundo conceito duplicaria a soma da cotação e daria duas respostas
  * possíveis para a mesma pergunta.
  *
- * <p>O que <b>não</b> se decide aqui é se o total pode ficar negativo — isso é
- * da cotação, que é a G-C.
+ * <p>O que o acréscimo negativo <b>obriga</b> é a C2: se todo desconto de todo
+ * grupo puder ser escolhido ao mesmo tempo, existe uma combinação válida cujo
+ * preço unitário não é positivo. Quem cobra isso é
+ * {@link Produto#precoMinimoPossivel()}, na publicação.
  *
- * <h2>{@code disponivel} é booleano aqui, e o documento pede quatro estados</h2>
+ * <h2>A disponibilidade da opção tem os mesmos quatro estados do produto</h2>
  *
- * <p>O {@code catalogo.md} §1 e o §4 listam {@code disponivel} na opção sem
- * dizer o tipo. Quem diz é a §3, na subseção "Disponibilidade da opção":
- * <i>"{@code Opcao.disponivel} segue as mesmas quatro situações e a mesma
- * reativação"</i> — e a reativação precisa de {@code expedienteDeReferencia},
- * que um booleano não tem. O documento não se contradiz; <b>este código está
- * atrás dele</b>.
+ * <p>É o que o {@code catalogo.md} §3 manda, na subseção "Disponibilidade da
+ * opção": a opção segue as mesmas quatro situações e a mesma reativação. Na
+ * rodada G-A este campo era um {@code boolean}, e isso não era uma leitura
+ * diferente do documento — era um campo a menos. Um booleano não tem
+ * {@code expedienteDeReferencia}, e sem ele a opção que acabou às 23h não volta
+ * na abertura seguinte: o comerciante teria de religar cada sabor toda manhã, e
+ * o cardápio apodrece.
  *
- * <p>Fica booleano até a G-C, quando a reativação ganha código e a troca é
- * testada junto com ela: a opção passa a ter {@link Disponibilidade}, e o
- * {@link GrupoDeOpcoes#contarDisponiveis()} passa a perguntar
- * {@code op.disponibilidade().permiteVenda()}. A fórmula do vendável não muda.
+ * <p>É o caso que mais importa, porque o que acaba quase sempre é a <b>opção</b>
+ * e não o produto. A calabresa acaba; "Pizza grande" não.
+ *
+ * <p><b>Quem marca é o {@link Produto}</b>, por
+ * {@link Produto#marcarOpcao(UUID, UUID, Disponibilidade)}. A opção é entidade
+ * dentro do agregado e não se altera por fora — é por isso que o único jeito de
+ * trocar o estado dela é {@link #com(Disponibilidade)}, que devolve outra opção
+ * com o mesmo id.
  *
  * @param acrescimo quanto esta escolha move o preço; pode ser negativo
  * @param ordem     posição dentro do grupo, como o comerciante montou
@@ -40,7 +47,7 @@ public record Opcao(
         UUID id,
         String nome,
         Money acrescimo,
-        boolean disponivel,
+        Disponibilidade disponibilidade,
         int ordem
 ) {
 
@@ -52,14 +59,30 @@ public record Opcao(
         if (acrescimo == null) {
             throw new RegraDoCatalogoViolada("opção sem acréscimo — use zero, não nulo");
         }
+        if (disponibilidade == null) {
+            throw new RegraDoCatalogoViolada("opção sem disponibilidade");
+        }
     }
 
-    /** Opção nova, disponível, na posição pedida. */
+    /** Opção nova, disponível e sem carimbo — ninguém disse nada sobre ela ainda. */
     public static Opcao nova(String nome, Money acrescimo, int ordem) {
-        return new Opcao(UUID.randomUUID(), nome, acrescimo, true, ordem);
+        return new Opcao(UUID.randomUUID(), nome, acrescimo, Disponibilidade.inicial(), ordem);
     }
 
-    public Opcao comDisponibilidade(boolean disponivel) {
-        return new Opcao(id, nome, acrescimo, disponivel, ordem);
+    /** Mesma opção, outro estado. O id não muda: é a mesma escolha do cardápio. */
+    public Opcao com(Disponibilidade nova) {
+        return new Opcao(id, nome, acrescimo, nova, ordem);
+    }
+
+    /**
+     * Derivado, e é o que mantém a terceira cláusula do vendável intacta.
+     *
+     * <p>O {@link GrupoDeOpcoes#contarDisponiveis()} continua filtrando por
+     * {@code Opcao::disponivel} e não mudou uma linha quando o campo deixou de
+     * ser booleano. Quem decide se um estado vende continua sendo
+     * {@link EstadoDeDisponibilidade#permiteVenda()}, num lugar só.
+     */
+    public boolean disponivel() {
+        return disponibilidade.permiteVenda();
     }
 }

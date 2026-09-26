@@ -3,6 +3,7 @@ package com.deliveryplatform.catalog.unit;
 import com.deliveryplatform.catalog.domain.model.Opcao;
 import com.deliveryplatform.catalog.domain.exception.RegraDoCatalogoViolada;
 import com.deliveryplatform.catalog.support.Precos;
+import com.deliveryplatform.catalog.support.ProdutoDeTeste;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -43,7 +44,7 @@ class OpcaoTest {
     @DisplayName("mudar disponibilidade devolve outra opção com o mesmo id")
     void troca_de_disponibilidade_preserva_identidade() {
         Opcao antes = Opcao.nova("Bacon", Precos.reais("6.00"), 0);
-        Opcao depois = antes.comDisponibilidade(false);
+        Opcao depois = antes.com(ProdutoDeTeste.estado(false));
 
         assertThat(depois.id()).isEqualTo(antes.id());
         assertThat(depois.nome()).isEqualTo(antes.nome());
