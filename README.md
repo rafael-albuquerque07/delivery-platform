@@ -118,9 +118,9 @@ Em revisão manual, a arquitetura erode em duas semanas.
 | merchant-service | 8082 | PostgreSQL | [`estabelecimento.md`](docs/dominio/estabelecimento.md) |
 | catalog-service | 8083 | MongoDB + Redis | [`catalogo.md`](docs/dominio/catalogo.md) |
 | settlement-service | 8084 | PostgreSQL | [`liquidacao.md`](docs/dominio/liquidacao.md) |
-| order-service | 8085 | PostgreSQL + Redis | [`pedido.md`](docs/dominio/pedido.md) |
+| order-service | 8085 | PostgreSQL | [`pedido.md`](docs/dominio/pedido.md) |
 | payment-service | 8086 | PostgreSQL | — (fronteira com o PSP; ver ADR-021) |
-| delivery-service | 8087 | PostgreSQL + Redis | [`entrega.md`](docs/dominio/entrega.md) |
+| delivery-service | 8087 | PostgreSQL | [`entrega.md`](docs/dominio/entrega.md) |
 | conversation-service | 8088 | MongoDB | [`conversa.md`](docs/dominio/conversa.md) |
 
 Seis bancos PostgreSQL e dois MongoDB — oito bancos lógicos.

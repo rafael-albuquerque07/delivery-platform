@@ -40,10 +40,6 @@ spring:
           initial-interval: 2s
           max-attempts: 5
 
-  data:
-    redis:
-      url: ${REDIS_URL:redis://localhost:6379}
-
   security:
     oauth2:
       resourceserver:

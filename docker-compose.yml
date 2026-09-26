@@ -265,7 +265,6 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/order_db
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
@@ -274,8 +273,6 @@ services:
       - "127.0.0.1:8085:8085"
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
@@ -314,7 +311,6 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/delivery_db
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       RABBITMQ_ADDRESSES: rabbitmq:5672
       RABBITMQ_USERNAME: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
@@ -323,8 +319,6 @@ services:
       - "127.0.0.1:8087:8087"
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
