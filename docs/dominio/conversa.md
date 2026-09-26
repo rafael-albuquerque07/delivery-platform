@@ -413,6 +413,11 @@ canal.
 | `CategoriasReordenadasV1` | `catalog` | Ordem do menu numerado |
 | `ConfiguracaoOperacionalAlteradaV1` | `merchant` | Modalidades, métodos e regra de troco na conversa |
 
+> **Ressalva — 26/09/2026 (ADR-046).** Responder aberto/fechado corretamente
+> não sai do `ExpedienteAlteradoV1`: ele diz que um expediente começou, uma vez
+> por dia. O estado de agora é o da `OperacaoDoEstabelecimentoPort`
+> (`estabelecimento.md` §3), que calcula na leitura.
+
 **Publica:**
 
 | Evento | Quando |

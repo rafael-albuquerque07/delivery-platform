@@ -389,6 +389,13 @@ mudança de estado (invariante 7 do `CLAUDE.md`).
 | `JornadaFechadaV1` | `settlement` | Idem |
 | `ExpedienteAlteradoV1` | `merchant` | **Invalida cache** de operação da loja — não projeta |
 
+> **Ressalva — 26/09/2026 (ADR-046).** Este evento chega **uma vez por dia
+> operacional**, na abertura. Ele não avisa fechamento nem pausa, porque
+> ninguém os emite ainda. Invalidar o cache aqui é correto e insuficiente: a
+> resposta de "está aberta agora" continua vindo do TTL e da
+> `OperacaoDoEstabelecimentoPort`. A decisão de emitir os outros motivos tem
+> gatilho escrito na ADR-046 e vence no marco 3, com o `order`.
+
 `AreasDeEntregaAlteradasV1` **não** é consumido aqui, e é decisão: sem cache de
 cotação, não há entrada a invalidar. ADR-034 §1.
 

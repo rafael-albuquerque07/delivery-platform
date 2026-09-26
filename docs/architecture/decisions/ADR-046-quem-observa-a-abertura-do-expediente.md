@@ -2,7 +2,10 @@
 
 - **Estado:** aceita · **emendada em 26/09/2026**: o expediente é o dia operacional do
   **início da faixa**, não do instante (ver "Emenda de 26/09/2026 — o turno que
-  atravessa a hora de corte")
+  atravessa a hora de corte") · **emendada em 26/09/2026**: o `ExpedienteAlteradoV1`
+  significa "um expediente começou", não "a loja abriu ou fechou" — e dois
+  consumidores contam com o segundo (ver "Emenda de 26/09/2026 — o que este evento
+  passou a significar")
 - **Data:** 26/09/2026
 - **Fecha:** o buraco entre `catalogo.md` §3 e `estabelecimento.md` §4 — o evento
   de abertura é exigido por um e não tem produtor no outro
@@ -253,3 +256,39 @@ entrada do cálculo mudou, do instante para o início da faixa.
 **Consequência assumida.** Duas faixas **encostadas** — 22:00–04:00 e
 04:00–10:00, com fim exclusivo — são duas aberturas, porque o horário diz que são
 dois turnos. Quem opera continuamente cadastra uma faixa só.
+
+## Emenda de 26/09/2026 — o que este evento passou a significar
+
+A ADR-031 renomeou este evento de `DisponibilidadeAlteradaV1` para
+`ExpedienteAlteradoV1` e, na época, os dois nomes descreviam a mesma coisa: a
+loja mudou de estado. A ADR-046 mudou isso sem dizer. Com a marca d'água
+`(estabelecimento, expediente)`, o evento passou a significar **um expediente
+começou** — uma vez por dia operacional, no início da primeira faixa. Ele já
+não diz que a loja abriu, e nunca diz que ela fechou, pausou ou retomou.
+
+Dois documentos do repositório contam com o significado antigo:
+
+- **`pedido.md` §8** manda invalidar o cache de operação da loja quando este
+  evento chega. Invalidar uma vez por dia, na abertura, é quase nunca: o cache
+  vai servir "aberta" durante uma pausa e durante o fechamento inteiro, até
+  vencer por TTL.
+- **`conversa.md` §14** conta com ele para responder aberto/fechado
+  corretamente. Pela mesma razão, ele responde certo uma vez por dia.
+
+**Nenhum dos dois está errado como desenho; os dois estão esperando um produtor
+que ainda não existe.** O `merchant` hoje emite um motivo só,
+`ABERTURA_DE_EXPEDIENTE`, porque é o único que tem quem o emita — e valor de
+enum sem emissor é promessa com sintaxe de código.
+
+**O gatilho, escrito:** quando o `order` ganhar código — marco 3 — ele é o
+primeiro serviço a precisar da resposta *agora*, e não *uma vez por dia*. É
+nesse momento que se decide entre (a) o `merchant` passar a emitir fechamento,
+pausa e retomada, com os observadores que isso exige, e (b) quem precisa da
+resposta perguntar pela `OperacaoDoEstabelecimentoPort`, que já existe e já
+calcula na leitura. A segunda é mais barata e é o que o `estabelecimento.md` §3
+já manda fazer; a primeira só se paga se houver consumidor que não possa
+perguntar.
+
+Até lá, a regra é a do parágrafo final do contrato: **este evento diz que um
+expediente começou, não que a loja segue aberta.** Quem precisar do segundo,
+pergunta.

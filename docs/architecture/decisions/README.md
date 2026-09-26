@@ -47,7 +47,7 @@
 | 043 | O outbox e o relay | ✅ aceita · **emenda a 011** |
 | 044 | A cadeia de filtros do gateway, e o que passa sem token | ✅ aceita · **emenda a 012 e 037** |
 | 045 | A credencial entre serviços é o token de quem pediu | ✅ aceita · **emenda a 011** |
-| 046 | Quem observa a abertura do expediente | ✅ aceita · **emenda a 025** |
+| 046 | Quem observa a abertura do expediente | ✅ aceita · **emenda a 025** · **emendada** (26/09/2026: o expediente é o do início da faixa; o evento significa "um expediente começou") |
 
 **Quarenta e quatro escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**

@@ -18,6 +18,7 @@ Produto  (raiz)
 ├── estabelecimentoId, categoriaId
 ├── nome, descricao, imagemRef
 ├── precoBase                 Money
+├── ordem                     posição dentro da categoria
 ├── estadoDePublicacao        RASCUNHO | ATIVO | INATIVO
 ├── modoDeControle            SEM_CONTROLE | QUALITATIVO | QUANTITATIVO
 ├── disponibilidade           estado, marcadoEm: Instant, expedienteDeReferencia: LocalDate
@@ -28,6 +29,21 @@ Produto  (raiz)
 Categoria  (raiz)
 ├── estabelecimentoId, nome, ordem, ativa
 ```
+
+> **26/09/2026.** `ordem` do `Produto` entrou nesta lista na rodada G-A: a §7
+> sempre indexou `(estabelecimentoId, categoriaId, ordem)`, que é índice de
+> produto, e a lista estava incompleta.
+>
+> **O código nasce com dois valores de `modoDeControle`**: `SEM_CONTROLE` e
+> `QUALITATIVO`. `QUANTITATIVO` é controle por quantidade, e nada no sistema dá
+> ou tira unidade até o marco 10 — não há baixa no pedido, não há entrada, não
+> há tela. Com o valor presente, "`QUANTITATIVO` é inválido na publicação" seria
+> uma regra em tempo de execução que alguém pode remover sem perceber; sem ele,
+> é o sistema de tipos.
+>
+> **Gatilho:** o valor nasce junto com a primeira baixa de estoque, no marco 10.
+> Acrescentar valor a enum é mudança compatível (ADR-027), então esperar não
+> custa nada e antecipar custa um campo que mente.
 
 **Por que `GrupoDeOpcoes` e `Opcao` ficam dentro do `Produto`.** A invariante C6
 — produto com grupo obrigatório precisa ter opção disponível para ser vendável —
@@ -243,8 +259,9 @@ agora". Reserva só existe no modo `QUANTITATIVO`, no marco 10.
 
 O campo existe desde o marco 2 e é congelado no item do pedido como
 `estoqueControladoSnapshot` (ADR-018) — um boolean hoje, para evitar migration de
-dados quando o marco 10 chegar. Enquanto isso, `QUANTITATIVO` é valor **inválido
-na publicação**, com mensagem que diz o marco.
+dados quando o marco 10 chegar. Enquanto isso, `QUANTITATIVO` **não existe no
+código** (nota da §1, 26/09/2026): o enum tem dois valores, e não há como
+atribuir o terceiro. A linha da tabela descreve o marco 10.
 
 ---
 
@@ -315,7 +332,7 @@ acabou depois da abertura.
 | C9 | Produto nunca é apagado — `INATIVO` | Pedido antigo com referência morta |
 | C10 | `RASCUNHO` e `INATIVO` nunca cotizam | Cliente pede o que não está à venda |
 | C11 | Reativação de `ESGOTADO_HOJE` é idempotente por `expedienteDeReferencia` | Mensagem repetida reativa o que acabou agora |
-| C12 | `QUANTITATIVO` é inválido na publicação até o marco 10 | Promete contagem que não existe |
+| C12 | `QUANTITATIVO` não existe até o marco 10 — o enum tem dois valores (nota da §1) | Promete contagem que não existe |
 | C13 | Toda estrutura e índice via Mongock | Ambiente diverge do outro em silêncio |
 
 ---
