@@ -44,6 +44,15 @@ public final class LojaDeTeste {
                 identificacao(FusoHorario.PADRAO), operacao(), troco(), disponibilidade(), areas());
     }
 
+    /**
+     * A mesma loja, sem horário de funcionamento. Horário vazio é válido e
+     * significa "nunca abre por horário" ({@code estabelecimento.md} §4).
+     */
+    public static Estabelecimento semHorario() {
+        return Estabelecimento.novo(
+                identificacao(FusoHorario.PADRAO), operacao(), troco(), Disponibilidade.semHorario(), areas());
+    }
+
     public static Identificacao identificacao(FusoHorario fuso) {
         return new Identificacao(
                 "Pizzaria da Marli",

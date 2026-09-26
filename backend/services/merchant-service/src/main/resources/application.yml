@@ -62,6 +62,11 @@ delivery:
     intervalo-ms: 1000
     atraso-inicial-ms: 5000
     habilitado: true
+  # A varredura que publica a abertura do expediente (ADR-046).
+  expediente:
+    varredura-habilitada: true
+    intervalo-ms: 60000
+    atraso-inicial-ms: 10000
 
 management:
   endpoints:

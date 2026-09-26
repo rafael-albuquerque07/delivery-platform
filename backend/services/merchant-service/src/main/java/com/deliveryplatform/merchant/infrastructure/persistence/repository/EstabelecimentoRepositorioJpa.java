@@ -5,6 +5,7 @@ import com.deliveryplatform.merchant.domain.model.Estabelecimento;
 import com.deliveryplatform.merchant.infrastructure.persistence.mapper.EstabelecimentoJpaMapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,5 +30,10 @@ public class EstabelecimentoRepositorioJpa implements EstabelecimentoRepositorio
     @Override
     public Optional<Estabelecimento> buscarPorId(UUID id) {
         return springDataRepository.findById(id).map(mapper::paraDominio);
+    }
+
+    @Override
+    public List<Estabelecimento> todos() {
+        return springDataRepository.findAll().stream().map(mapper::paraDominio).toList();
     }
 }
