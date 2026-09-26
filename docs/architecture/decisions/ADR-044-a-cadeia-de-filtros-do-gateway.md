@@ -8,7 +8,7 @@
 
 ## Contexto
 
-O `infra/gateway` tem um `application.yml` com quinze rotas, um
+O `infra/gateway` tem um `application.yml` com catorze rotas, um
 `GatewayApplication` com o `main`, e três pacotes vazios com `.gitkeep`:
 `config/`, `filter/`, `security/`. Nenhum teste. **Nada nunca subiu este módulo.**
 
@@ -144,7 +144,7 @@ exposto à internet. Até lá a linha do gateway na ADR-021 continua com persist
 As quinze linhas de aviso sobre o namespace saem do `application.yml`. No lugar
 entra `RoteamentoIT`, que **sobe o gateway de verdade** contra oito *upstreams* de
 mentira, um por serviço, cada um respondendo o próprio nome e o caminho que
-recebeu — e confere as quinze rotas, uma a uma.
+recebeu — e confere as catorze rotas, uma a uma.
 
 Isso não substitui o comentário por um comentário melhor. Substitui uma instrução
 para um humano por uma asserção que roda: se o namespace estiver errado, nenhuma
@@ -161,7 +161,7 @@ exposto, junto com a decisão do limite de taxa.
 **Positivas**
 
 - Um módulo que nunca rodou passa a rodar em cada `./gradlew build`.
-- As quinze rotas da ADR-012 deixam de ser configuração que se espera que
+- As catorze rotas da ADR-012 deixam de ser configuração que se espera que
   funcione e passam a ser comportamento verificado.
 - O `iss`/`aud` fecha na borda também, e não só no `merchant`.
 

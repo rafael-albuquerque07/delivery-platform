@@ -477,8 +477,9 @@ Só que o `catalogo.md` §3 exige um evento na transição fechado → aberto, e
 transição só existe para quem observa. Desde a **ADR-046** existe um
 observador: uma varredura de minuto em minuto pergunta quais lojas estão
 **dentro do horário** e registra, numa tabela cuja chave primária é
-`(estabelecimento, expediente)`, que a abertura daquele dia operacional foi
-publicada. Inseriu linha, grava o `ExpedienteAlteradoV1` no outbox na mesma
+`(estabelecimento, expediente)`, que a abertura daquele expediente foi
+publicada. O expediente é o dia operacional do **início da faixa** que contém o
+instante — um turno 22h–06h é um expediente só, mesmo atravessando as 04:00. Inseriu linha, grava o `ExpedienteAlteradoV1` no outbox na mesma
 transação; não inseriu, já estava publicada.
 
 **A tabela não guarda o estado da loja** — guarda o que já foi publicado. A

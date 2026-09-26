@@ -164,8 +164,9 @@ sem a versão:
 **As quatro cláusulas.**
 
 1. **`occurredAt` e `expedienteDeReferencia` são coisas diferentes.** O
-   primeiro é o instante da publicação; o segundo é o **dia operacional** da
-   loja (ADR-025), calculado no fuso dela com hora de corte às 04:00. Às 01:30
+   primeiro é o instante da publicação; o segundo é o **dia operacional do
+   início da faixa** que estava aberta (ADR-025, ADR-046 emendada), calculado
+   no fuso da loja com hora de corte às 04:00. Às 01:30
    de domingo o instante é domingo e o expediente é sábado. **Quem usar o
    carimbo do envelope como dia vai errar uma vez por dia, na madrugada** — que
    é exatamente quando a pizzaria está vendendo.
@@ -199,8 +200,10 @@ loja segue aberta. Guardar o segundo como projeção seria manter, do lado de fo
 um campo que o `merchant` deliberadamente não guarda do lado de dentro.
 
 **Quem consome.** Ninguém ainda. O primeiro consumidor é o `catalog-service`, no
-marco 2, e é ele o único com comportamento escrito para a abertura
-(`catalogo.md` §3).
+marco 2, e é ele o único que reage à abertura com regra de domínio — reativa
+`ESGOTADO_HOJE` (`catalogo.md` §3). O `order` e o `conversation` também têm
+comportamento escrito, para qualquer `motivo`: invalidar a cache de operação da
+loja (`pedido.md` §8) e responder aberto/fechado (`conversa.md` §14).
 
 ---
 

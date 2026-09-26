@@ -1,6 +1,8 @@
 # ADR-046 — Quem observa a abertura do expediente
 
-- **Estado:** aceita
+- **Estado:** aceita · **emendada em 26/09/2026**: o expediente é o dia operacional do
+  **início da faixa**, não do instante (ver "Emenda de 26/09/2026 — o turno que
+  atravessa a hora de corte")
 - **Data:** 26/09/2026
 - **Fecha:** o buraco entre `catalogo.md` §3 e `estabelecimento.md` §4 — o evento
   de abertura é exigido por um e não tem produtor no outro
@@ -45,7 +47,8 @@ Um fato que não é ato não pode virar evento sozinho. O desenho está certo e
 
 A cada minuto, o `merchant` percorre os estabelecimentos, pergunta a cada um se
 está **dentro do horário**, e para os que estão tenta registrar a abertura do
-expediente corrente numa tabela cuja chave primária é
+expediente corrente — o dia operacional do **início da faixa** que contém o
+instante, e não do instante — numa tabela cuja chave primária é
 `(estabelecimento_id, expediente)`:
 
 ```sql
@@ -126,8 +129,10 @@ duas chamadas darem a mesma resposta, num intervalo que atravessa a hora de
 corte uma vez por dia. Com ele, o consumidor compara dois valores que recebeu.
 
 `occurredAt` é o instante da publicação; `expedienteDeReferencia` é o dia
-operacional. **São coisas diferentes e é de propósito**: às 01:30 de domingo o
-instante é domingo e o expediente é sábado (ADR-025).
+operacional do **início da faixa** que estava aberta. **São coisas diferentes e é
+de propósito**: às 01:30 de domingo o instante é domingo e o expediente é sábado
+(ADR-025); numa loja 22h–06h, às 04:30 o dia operacional do instante já virou, e o
+expediente continua sendo o da véspera.
 
 ### 5. O enum nasce com um valor só
 
@@ -205,3 +210,46 @@ vezes.
 
 A diferença importa para quem for escrever o consumidor: o exemplo da ADR-025
 descreve um tráfego que não vai existir.
+
+## Emenda de 26/09/2026 — o turno que atravessa a hora de corte
+
+**Por quê.** A §1 dizia "o expediente corrente", e o código o calculava como
+`diaOperacional(instante)`. Para a pizzaria 18h–02h dá no mesmo: o turno inteiro
+fica antes das 04:00 do dia seguinte. Para uma loja **22h–06h** não dá. Às 22h de
+terça o expediente é terça; às 04:30 de quarta, no mesmo turno, o dia operacional
+do instante já é quarta — e a varredura registrava uma segunda
+`ABERTURA_DE_EXPEDIENTE` no meio do turno. O catálogo reativaria o que acabou às
+23h. É o defeito do job à meia-noite que o `catalogo.md` §3 rejeita, reaparecendo
+pela hora de corte em vez da meia-noite.
+
+O defeito tinha uma segunda face, que o teste mostrou: a marca d'água de quarta
+já estava gravada às 04:30, e a abertura **verdadeira** de quarta, às 22h, não
+publicava nada.
+
+**A regra.** O expediente é o **dia operacional do início da faixa** que contém
+o instante:
+
+```
+inicio     = Disponibilidade.inicioDaFaixaEm(instante, fuso)   // vazio: fora do horário
+expediente = diaOperacional(inicio, fuso)
+```
+
+Com faixas sobrepostas (o `estabelecimento.md` §4 permite), vale a de início
+**mais antigo** entre as que contêm o instante: é a que já estava aberta, e a
+resposta não depende da ordem de cadastro.
+
+**Onde a equação da ADR-025 §5 continua valendo.** "O expediente de referência é
+o dia operacional" é exata para o turno que **não** atravessa as 04:00 — em que o
+dia operacional do instante e o do início da faixa coincidem, que é o caso de
+toda loja que fecha antes da hora de corte. Para o turno que atravessa, quem
+manda é a abertura: o `estabelecimento.md` §4 define expediente como *"uma
+abertura até o fechamento correspondente"*, e um turno contínuo tem uma
+abertura só.
+
+**O que não muda.** A marca d'água, a chave primária, o payload e o enum. O
+`expedienteDeReferencia` continua sendo um `LocalDate` de dia operacional; só a
+entrada do cálculo mudou, do instante para o início da faixa.
+
+**Consequência assumida.** Duas faixas **encostadas** — 22:00–04:00 e
+04:00–10:00, com fim exclusivo — são duas aberturas, porque o horário diz que são
+dois turnos. Quem opera continuamente cadastra uma faixa só.

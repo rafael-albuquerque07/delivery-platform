@@ -119,7 +119,9 @@ Três consequências que precisam estar no código:
    acabou no domingo. É o comportamento certo: o estoque físico também não se
    repõe sozinho.
 
-**`expedienteDeReferencia` é o `diaOperacional` da loja** (ADR-025). Isso
+**`expedienteDeReferencia` é o `diaOperacional` da loja** (ADR-025) — o do
+**início do turno** que está aberto, e não o do instante, para que um turno
+22h–06h continue sendo um expediente só depois das 04:00 (ADR-046). Isso
 responde o caso que faltava: a loja que abre **duas vezes no mesmo dia**.
 
 ```

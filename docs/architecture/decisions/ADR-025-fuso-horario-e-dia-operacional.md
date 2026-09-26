@@ -173,6 +173,16 @@ continua valendo e agora tem um critério verificável por trás.
 > A diferença importa para quem for escrever o consumidor: o exemplo acima
 > descreve um tráfego que não vai existir.
 
+> **Emenda — 26/09/2026 (ADR-046, segunda emenda).** A equação desta seção — *o
+> expediente de referência é o dia operacional* — é exata para o turno que
+> **não** atravessa as 04:00, e é o caso da padaria e da pizzaria acima. Para o
+> turno que atravessa, quem manda é a abertura: uma loja 22h–06h às 04:30 ainda
+> está no expediente que abriu às 22h da véspera, embora o dia operacional do
+> instante já tenha virado. O `estabelecimento.md` §4 define expediente como
+> *"uma abertura até o fechamento correspondente"*, e por isso o expediente é o
+> **dia operacional do início da faixa** que contém o instante — que coincide
+> com o do instante sempre que o turno termina antes da hora de corte.
+
 ### 6. Horário de verão, se voltar
 
 A regra de faixa que cruza a meia-noite (`estabelecimento.md` §4) não muda.
