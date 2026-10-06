@@ -6,13 +6,16 @@ import com.deliveryplatform.catalog.application.port.out.AutorizacaoIndisponivel
 import com.deliveryplatform.catalog.application.port.out.ExpedienteIndisponivel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Dois tratadores, e os dois respondem <b>a mesma coisa</b>.
+ * Cinco tratadores: as duas recusas de acesso (403), a loja sem expediente
+ * (409, G-C2), o expediente fora do ar (503, G-C2) e o conflito de versão (409,
+ * G-C3a, ADR-052). Os dois primeiros respondem <b>a mesma coisa</b>.
  *
  * <p>Isso não é redundância: é onde a distinção entre "negado" e "não
  * respondeu" encontra a borda. Para o cliente as duas são 403 com o mesmo
@@ -26,10 +29,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * alerta — não relaxar a regra"</i>. O alerta é esta linha de registro.
  *
  * <p>O {@code catalog} tem uma exceção de domínio escrita —
- * {@code RegraDoCatalogoViolada} — e ela <b>não tem tratador aqui</b>, pelo
- * mesmo motivo que o {@code merchant} não escreveu os sete dele: nenhuma
- * requisição a alcança, porque a única rota que existe é uma leitura. Cada
- * tratador nasce com a rota que o alcança.
+ * {@code RegraDoCatalogoViolada} — e ela <b>não tem tratador aqui</b>. A frase
+ * que estava neste lugar dizia que nenhuma requisição a alcança porque a única
+ * rota era uma leitura; <b>deixou de ser verdade na G-C2</b>: a marcação a
+ * alcança (opção de outro produto, {@code SEM_CONTROLE} marcado esgotado), e
+ * sem tratador ela sai como 500. <b>Em aberto:</b> 400 ou 422 — a escolha do
+ * código é de quem decidir o contrato, e fica registrada aqui até lá.
  */
 @RestControllerAdvice
 public class TratadorDeErros {
@@ -82,5 +87,17 @@ public class TratadorDeErros {
         log.warn("expediente indisponível: {}", excecao.getMessage(), excecao);
         return ProblemDetail.forStatusAndDetail(
                 HttpStatus.SERVICE_UNAVAILABLE, "não foi possível consultar o expediente");
+    }
+
+    /**
+     * 409: o produto foi gravado por outra pessoa entre a leitura e a gravação
+     * desta requisição (ADR-052). Não é 500 — o servidor não errou — e não é
+     * 400 — o pedido estava certo quando foi feito. O cliente que recarrega
+     * acerta. A mensagem é fixa: a da exceção nomeia id e versão.
+     */
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ProblemDetail produtoMudou(OptimisticLockingFailureException excecao) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+                "o produto mudou enquanto você marcava; recarregue e tente de novo");
     }
 }

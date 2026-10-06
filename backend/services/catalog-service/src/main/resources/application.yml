@@ -81,6 +81,14 @@ delivery:
   # serviço não sobe (ADR-048 §1).
   escuta:
     exchange: delivery.eventos
+  # A reativação na abertura do expediente (catalogo.md §3, ADR-052).
+  reativacao:
+    # Teto de identificadores por volta da varredura. Não é paginação de
+    # exposição — nada disto sai numa resposta —, é teto de memória.
+    lote: 50
+    # Tentativas por produto quando a gravação esbarra num conflito de versão.
+    # Conflito aqui é duas pessoas no mesmo produto no mesmo segundo.
+    tentativas: 3
 
 # Mongock cumpre para o MongoDB o papel do Flyway no SQL — ADR-017.
 # ATENÇÃO: este bloco é irmão de `spring`, não filho. Estava aninhado por

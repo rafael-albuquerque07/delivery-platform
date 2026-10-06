@@ -3,6 +3,7 @@ package com.deliveryplatform.catalog.domain.model;
 import com.deliveryplatform.catalog.domain.exception.RegraDoCatalogoViolada;
 import com.deliveryplatform.valuetypes.Money;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -57,6 +58,19 @@ public final class Produto {
     private Disponibilidade disponibilidade;
 
     private final List<GrupoDeOpcoes> gruposDeOpcoes = new ArrayList<>();
+
+    /**
+     * A versão do documento, e ela <b>não é do domínio</b> (ADR-052).
+     *
+     * <p>O mapeador a recebe do banco ao reconstituir e a devolve ao gravar.
+     * Nenhum método desta classe a lê, compara ou escreve, e quem a usar numa
+     * regra está errado: ela existe porque o mapeador reconstrói o documento, e
+     * uma versão que não atravesse o agregado chegaria nula em toda gravação —
+     * o que o Spring Data entende como documento novo.
+     *
+     * <p>Nula em produto que nunca foi gravado, de propósito.
+     */
+    private Long versao;
 
     private Produto(UUID id, UUID estabelecimentoId, UUID categoriaId, String nome,
                     Money precoBase, ModoDeControle modoDeControle, int ordem) {
@@ -127,7 +141,8 @@ public final class Produto {
                                        EstadoDePublicacao estadoDePublicacao,
                                        ModoDeControle modoDeControle,
                                        Disponibilidade disponibilidade,
-                                       List<GrupoDeOpcoes> gruposDeOpcoes) {
+                                       List<GrupoDeOpcoes> gruposDeOpcoes,
+                                       Long versao) {
         if (id == null) {
             throw new RegraDoCatalogoViolada("produto sem id");
         }
@@ -146,6 +161,7 @@ public final class Produto {
         if (gruposDeOpcoes != null) {
             gruposDeOpcoes.forEach(produto::acrescentarGrupo);
         }
+        produto.versao = versao;
         return produto;
     }
 
@@ -330,6 +346,47 @@ public final class Produto {
         throw new RegraDoCatalogoViolada("opção não encontrada neste produto");
     }
 
+    /**
+     * Devolve ao cardápio tudo o que acabou em expediente anterior a
+     * {@code expedienteQueAbriu}. É o ato que a §3 do {@code catalogo.md} exige na
+     * abertura, e o par da pergunta que a G-C1 corrigiu.
+     *
+     * <p><b>Quem decide é o {@link Disponibilidade#deveReativarNoExpediente}</b>,
+     * por item. Este método só percorre e aplica, pelos caminhos que já existem —
+     * {@link #marcar} e {@link #marcarOpcao} —, para que as invariantes deles
+     * continuem valendo.
+     *
+     * <p><b>Volta sem carimbo.</b> O par {@code marcadoEm}/{@code expedienteDeReferencia}
+     * existe para a comparação da reativação; depois dela não há comparação a
+     * fazer, e meio par é o que a ADR-049 proíbe.
+     *
+     * <p>Produto e opções no mesmo ato, porque o documento é gravado inteiro de
+     * qualquer forma e o {@code vendavel} do produto depende das opções (§4).
+     * {@code SEM_CONTROLE} não é caso especial: o produto não pode estar
+     * {@code ESGOTADO_HOJE}, mas uma opção dele pode.
+     *
+     * @return {@code true} se alguma coisa mudou. {@code false} é resposta
+     *         legítima: a consulta acha candidatos, e o predicado pode recusá-los.
+     */
+    public boolean reativarNoExpediente(LocalDate expedienteQueAbriu) {
+        boolean mudou = false;
+
+        if (disponibilidade.deveReativarNoExpediente(expedienteQueAbriu)) {
+            marcar(Disponibilidade.inicial());
+            mudou = true;
+        }
+
+        for (GrupoDeOpcoes grupo : getGruposDeOpcoes()) {
+            for (Opcao opcao : grupo.opcoes()) {
+                if (opcao.disponibilidade().deveReativarNoExpediente(expedienteQueAbriu)) {
+                    marcarOpcao(grupo.id(), opcao.id(), Disponibilidade.inicial());
+                    mudou = true;
+                }
+            }
+        }
+        return mudou;
+    }
+
     // ── o preço mínimo (C2) ─────────────────────────────────────────────────
 
     /**
@@ -472,6 +529,11 @@ public final class Produto {
     /** Cópia imutável: quem quiser mudar grupo passa pela raiz. */
     public List<GrupoDeOpcoes> getGruposDeOpcoes() {
         return List.copyOf(gruposDeOpcoes);
+    }
+
+    /** Só para o mapeador — ver o javadoc do campo (ADR-052). */
+    public Long getVersao() {
+        return versao;
     }
 
     /**

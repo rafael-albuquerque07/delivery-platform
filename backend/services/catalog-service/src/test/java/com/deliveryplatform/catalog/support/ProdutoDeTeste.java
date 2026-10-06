@@ -88,4 +88,28 @@ public final class ProdutoDeTeste {
         p.publicar();
         return p;
     }
+
+    /** Margherita publicada, ela mesma {@code ESGOTADO_HOJE} carimbada em {@code dia} (G-C3a). */
+    public static Produto esgotadoHojeEm(LocalDate dia) {
+        Produto p = margheritaPublicada();
+        p.marcar(Disponibilidade.esgotadoHoje(noiteDe(dia), dia));
+        return p;
+    }
+
+    /**
+     * Margherita publicada e {@code DISPONIVEL}, com a primeira opção do
+     * "Tamanho" {@code ESGOTADO_HOJE} carimbada em {@code dia} (G-C3a). As outras
+     * duas seguem disponíveis, e o produto continua vendável.
+     */
+    public static Produto comOpcaoEsgotadaHojeEm(LocalDate dia) {
+        Produto p = margheritaPublicada();
+        GrupoDeOpcoes grupo = p.getGruposDeOpcoes().get(0);
+        p.marcarOpcao(grupo.id(), grupo.opcoes().get(0).id(),
+                Disponibilidade.esgotadoHoje(noiteDe(dia), dia));
+        return p;
+    }
+
+    private static Instant noiteDe(LocalDate dia) {
+        return dia.atTime(22, 0).toInstant(java.time.ZoneOffset.UTC);
+    }
 }

@@ -1,6 +1,7 @@
 package com.deliveryplatform.catalog.infrastructure.persistence.entity;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -59,7 +60,15 @@ public record ProdutoDocumento(
         String estadoDePublicacao,
         String modoDeControle,
         DisponibilidadeDocumento disponibilidade,
-        List<GrupoDocumento> gruposDeOpcoes
+        List<GrupoDocumento> gruposDeOpcoes,
+        /*
+         * A versão do documento (ADR-052) — o primeiro {@code @Version} do
+         * repositório. {@code Long} e não {@code long}: nula é o que diz ao
+         * Spring Data que o documento é novo e deve ser inserido. Primitiva
+         * começaria em zero, e toda inserção viraria a atualização de um
+         * documento que não existe.
+         */
+        @Version Long versao
 ) {
 
     /** Texto, e não número. Ver a decisão 1 no javadoc da classe. */

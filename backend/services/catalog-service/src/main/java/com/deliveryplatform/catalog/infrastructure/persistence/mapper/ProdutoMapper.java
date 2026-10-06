@@ -53,7 +53,8 @@ public final class ProdutoMapper {
                 produto.getEstadoDePublicacao().name(),
                 produto.getModoDeControle().name(),
                 disponibilidade(produto.getDisponibilidade()),
-                produto.getGruposDeOpcoes().stream().map(ProdutoMapper::grupo).toList());
+                produto.getGruposDeOpcoes().stream().map(ProdutoMapper::grupo).toList(),
+                produto.getVersao());
     }
 
     private static GrupoDocumento grupo(GrupoDeOpcoes g) {
@@ -95,7 +96,8 @@ public final class ProdutoMapper {
                 disponibilidadeDe(doc.disponibilidade()),
                 doc.gruposDeOpcoes() == null
                         ? List.of()
-                        : doc.gruposDeOpcoes().stream().map(ProdutoMapper::grupoDe).toList());
+                        : doc.gruposDeOpcoes().stream().map(ProdutoMapper::grupoDe).toList(),
+                doc.versao());
     }
 
     private static GrupoDeOpcoes grupoDe(GrupoDocumento g) {

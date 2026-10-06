@@ -147,6 +147,11 @@ class MarcarDisponibilidadeServiceTest {
                             org.springframework.data.domain.Pageable paginacao) {
                         throw new UnsupportedOperationException("não é deste caso de uso");
                     }
+
+                    @Override
+                    public List<UUID> idsParaReativar(UUID estabelecimentoId, LocalDate expediente, int limite) {
+                        throw new UnsupportedOperationException("não é deste caso de uso");
+                    }
                 },
                 Clock.fixed(AGORA, ZoneOffset.UTC));
 
@@ -303,6 +308,11 @@ class MarcarDisponibilidadeServiceTest {
             public org.springframework.data.domain.Page<Produto> publicadosDe(
                     UUID estabelecimentoId,
                     org.springframework.data.domain.Pageable paginacao) {
+                throw new UnsupportedOperationException("não é deste caso de uso");
+            }
+
+            @Override
+            public List<UUID> idsParaReativar(UUID estabelecimentoId, LocalDate expediente, int limite) {
                 throw new UnsupportedOperationException("não é deste caso de uso");
             }
         };
