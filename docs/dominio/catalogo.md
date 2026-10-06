@@ -192,6 +192,38 @@ atraso — e não há outbox neste serviço. É um adiamento, não uma decisão:
 continua valendo. **Gatilho escrito:** o `conversation-service` ganhar código,
 que é quem o consome.
 
+### Quem reativa, e o que acontece quando dois escrevem juntos
+
+O ato de reativar é um caso de uso do `catalog` (`ReativarNoExpediente`, G-C3a,
+06/10/2026), e ele **não pergunta nada a ninguém**: o expediente que abriu vem
+dentro do `ExpedienteAlteradoV1`. Por isso a reativação não depende da decisão de
+identidade de serviço (ADR-045). **Quem o chama ainda não existe** — o consumidor
+do evento é a G-C3b; hoje o único chamador é o teste de integração.
+
+**A consulta acha candidatos; o agregado decide.** O filtro do Mongo espelha o
+predicado da reativação — produto **ou** qualquer opção, com `$elemMatch`
+aninhado —, mas a palavra final é do `Disponibilidade.deveReativarNoExpediente`,
+com `isBefore`. Se os dois divergirem, o produto volta sem mudança e **o número de
+candidatos recusados aparece no resultado da varredura**, em vez de a divergência
+ficar invisível. Um lote inteiro sem mudança interrompe a varredura e registra o
+motivo — a alternativa era girar para sempre.
+
+**Reativar apaga o carimbo.** O produto volta a `DISPONIVEL` com `marcadoEm` e
+`expedienteDeReferencia` nulos: o par existe para a comparação da reativação, e
+depois dela não há comparação a fazer. É a mesma regra da ADR-049 — o par nasce
+inteiro ou não nasce.
+
+**A varredura não é atômica.** Um produto por transação, para que o conflito possa
+ser refeito (ADR-052). Falhando no meio, parte do cardápio voltou e parte não — e
+isso é inofensivo porque refazer a varredura não desfaz nada nem reativa o que
+acabou agora. É a mesma propriedade que torna a repetição do evento inofensiva.
+
+**Duas gravações do mesmo produto ao mesmo tempo: a segunda falha, com nome.**
+Até a G-C3a ela falhava como **500** dentro de transação — o MongoDB recusa a
+escrita com `WriteConflict` — e, fora de uma, apagava a primeira em silêncio.
+Com a ADR-052, as duas formas viram o mesmo conflito: a marcação responde **409**
+e o cliente recarrega; a reativação refaz aquele produto até três vezes.
+
 ### Disponibilidade da opção
 
 **Acréscimo ao PRD, e necessário.** E3 fala de disponibilidade por produto.

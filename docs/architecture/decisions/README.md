@@ -53,8 +53,9 @@
 | 049 | O carimbo com a loja fechada | ✅ aceita · **emenda a 046** · **emendada** (06/10/2026: o que a marcação faz com o 409) |
 | 050 | A documentação viva, e só no seu computador | ✅ aceita |
 | 051 | A imagem carrega o jar, não o compilador | ✅ aceita |
+| 052 | A versão no documento, e o 409 que ela cria | ✅ aceita |
 
-**Quarenta e nove escritas, duas sem objeto — estas com registro próprio desde
+**Cinquenta escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê
