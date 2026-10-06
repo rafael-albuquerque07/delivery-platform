@@ -35,8 +35,17 @@ dependencies {
     testImplementation(catalog.findLibrary("archunit-junit5").orElseThrow())
 }
 
-// A imagem é construída pelo Dockerfile de cada módulo (multi-stage, não root),
-// não por bootBuildImage — mantém o build reproduzível e a base sob controle.
+// A imagem é construída pelo Dockerfile de cada módulo (um estágio, não root),
+// não por bootBuildImage — mantém a base sob controle. O Dockerfile não compila:
+// ele copia este app.jar, construído antes no host (ADR-051).
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     archiveFileName.set("app.jar")
+}
+
+// O jar simples não tem consumidor: nenhum módulo executável é biblioteca de
+// outro (ADR-040 — o único compartilhado é o :value-types, com outro plugin).
+// Desligado, build/libs fica com um arquivo só, que é o que o .dockerignore
+// reinclui.
+tasks.named<Jar>("jar") {
+    enabled = false
 }

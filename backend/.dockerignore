@@ -1,0 +1,14 @@
+# O contexto de build das nove imagens é este diretório, backend/ (o `context:`
+# de cada serviço no docker-compose.yml). Ele é grande: nove diretórios build,
+# o .gradle, o build-logic, o código-fonte. Com o build fora da imagem
+# (ADR-051), a única coisa que o Docker precisa receber é o jar.
+#
+# Por isso a regra é invertida: exclui tudo, e reinclui o que entra.
+# A última regra que casa com o caminho é a que vale.
+#
+# A reinclusão usa `**` de propósito: os executáveis moram em dois lugares —
+# services/<nome>/ e infra/gateway/ —, e um padrão que dependesse do nome
+# deixaria uma imagem de fora.
+*
+
+!**/build/libs/app.jar
