@@ -7,6 +7,9 @@ import com.deliveryplatform.merchant.application.port.in.ConsultarEquipe;
 import com.deliveryplatform.merchant.domain.model.EstadoDoMembro;
 import com.deliveryplatform.merchant.domain.model.Membro;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -51,6 +54,12 @@ public class EquipeController {
      * quem administra precisa enxergar quem está de fora para poder trazer de
      * volta.
      */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "A equipe da loja"),
+            @ApiResponse(responseCode = "400", description = "Identificador da loja malformado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem GERENCIAR_EQUIPE ou loja inexistente — a mesma recusa", content = @Content)
+    })
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Lista a equipe do estabelecimento",
             description = "Exige vínculo ativo com GERENCIAR_EQUIPE. "

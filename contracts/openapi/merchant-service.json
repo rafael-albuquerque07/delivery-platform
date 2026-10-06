@@ -33,7 +33,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "O contexto do portador nesta loja",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -41,6 +41,15 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "Identificador da loja malformado"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo ativo com a loja, ou loja inexistente — a mesma recusa"
           }
         }
       }
@@ -62,7 +71,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "O expediente de referência para carimbar",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -70,6 +79,18 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "Identificador da loja malformado"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo ativo com a loja, ou loja inexistente — a mesma recusa"
+          },
+          "409" : {
+            "description" : "A loja não abre por horário (ADR-049 §5)"
           }
         }
       }
@@ -91,7 +112,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "A equipe da loja",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -99,6 +120,15 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "Identificador da loja malformado"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem GERENCIAR_EQUIPE ou loja inexistente — a mesma recusa"
           }
         }
       }
@@ -111,7 +141,7 @@
         "operationId" : "minhasLojas",
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "As lojas em que o portador tem vínculo ativo",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -122,6 +152,9 @@
                 }
               }
             }
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
           }
         }
       }

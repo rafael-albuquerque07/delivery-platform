@@ -8,11 +8,19 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Um tratador só, e é de propósito.
+ * Dois tratadores: {@code AcessoNegado} → 403 e {@code SemExpedientePorHorario}
+ * → 409 (G-C1). Esta frase dizia "um tratador só" desde a C-B, e a G-C1 pôs o
+ * segundo sem emendá-la.
+ *
+ * <p><b>O contrato não sai daqui.</b> Cada rota declara as próprias recusas em
+ * {@code @ApiResponses}, e o {@code ContratoDeErrosIT} prova as duas direções
+ * (ADR-053). {@code @ResponseStatus} nestes métodos não mudaria nada: o springdoc
+ * o ignora com {@code override-with-generic-response: false}, e em execução quem
+ * manda é o status do {@code ProblemDetail}.
  *
  * <p>Este serviço tem sete exceções de domínio escritas — escalada, A2, A3,
  * convite inválido, já pertence à equipe. <b>Nenhuma delas é alcançável por
- * HTTP ainda</b>, porque a única rota que existe é uma leitura. Escrever os
+ * HTTP ainda</b>, porque as quatro rotas que existem são leituras. Escrever os
  * tratadores agora seria escrever sete blocos que nenhuma requisição executa —
  * a peça-que-nunca-rodou em forma de {@code @ExceptionHandler}, e ainda por
  * cima a mais perigosa: um tratador errado só aparece no dia em que a exceção

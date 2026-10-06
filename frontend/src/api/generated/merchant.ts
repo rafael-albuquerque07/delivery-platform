@@ -157,7 +157,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description O contexto do portador nesta loja */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -165,6 +165,27 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ContextoDeAcesso"];
                 };
+            };
+            /** @description Identificador da loja malformado */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo ativo com a loja, ou loja inexistente — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -179,7 +200,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description O expediente de referência para carimbar */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -187,6 +208,34 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ExpedienteCorrenteResponse"];
                 };
+            };
+            /** @description Identificador da loja malformado */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo ativo com a loja, ou loja inexistente — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description A loja não abre por horário (ADR-049 §5) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -201,7 +250,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description A equipe da loja */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -209,6 +258,27 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["EquipeResponse"];
                 };
+            };
+            /** @description Identificador da loja malformado */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem GERENCIAR_EQUIPE ou loja inexistente — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -221,7 +291,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description As lojas em que o portador tem vínculo ativo */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -229,6 +299,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["LojaDoUsuario"][];
                 };
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

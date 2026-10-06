@@ -4,6 +4,9 @@ import com.deliveryplatform.merchant.api.dto.ExpedienteCorrenteResponse;
 import com.deliveryplatform.merchant.api.seguranca.SujeitoDoToken;
 import com.deliveryplatform.merchant.application.port.in.ConsultarExpedienteCorrente;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -71,6 +74,13 @@ public class ExpedienteCorrenteController {
         this.expedientes = expedientes;
     }
 
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "O expediente de referência para carimbar"),
+            @ApiResponse(responseCode = "400", description = "Identificador da loja malformado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo ativo com a loja, ou loja inexistente — a mesma recusa", content = @Content),
+            @ApiResponse(responseCode = "409", description = "A loja não abre por horário (ADR-049 §5)", content = @Content)
+    })
     @GetMapping(path = "/expediente-corrente", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "O dia operacional a carimbar numa marcação de disponibilidade",
             description = "Devolve o expediente em curso quando a loja está dentro do horário, "

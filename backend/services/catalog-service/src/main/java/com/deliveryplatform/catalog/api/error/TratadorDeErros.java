@@ -4,6 +4,7 @@ import com.deliveryplatform.catalog.application.exception.AcessoNegado;
 import com.deliveryplatform.catalog.application.exception.LojaSemExpediente;
 import com.deliveryplatform.catalog.application.port.out.AutorizacaoIndisponivel;
 import com.deliveryplatform.catalog.application.port.out.ExpedienteIndisponivel;
+import com.deliveryplatform.catalog.domain.exception.RegraDoCatalogoViolada;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -13,11 +14,25 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Cinco tratadores: as duas recusas de acesso (403), a loja sem expediente
- * (409, G-C2), o expediente fora do ar (503, G-C2) e o conflito de versão (409,
- * G-C3a, ADR-052). Os dois primeiros respondem <b>a mesma coisa</b>.
+ * Seis tratadores, e cada um devolve o código que monta no {@code ProblemDetail}:
  *
- * <p>Isso não é redundância: é onde a distinção entre "negado" e "não
+ * <ul>
+ *   <li>{@code AcessoNegado} e {@code AutorizacaoIndisponivel} → 403;</li>
+ *   <li>{@code RegraDoCatalogoViolada} → 400 (G-E);</li>
+ *   <li>{@code LojaSemExpediente} → 409 (G-C2);</li>
+ *   <li>{@code OptimisticLockingFailureException} → 409 (G-C3a, ADR-052);</li>
+ *   <li>{@code ExpedienteIndisponivel} → 503 (G-C2).</li>
+ * </ul>
+ *
+ * <p><b>O contrato não sai daqui.</b> O que cada rota declara está nela, em
+ * {@code @ApiResponses} (ADR-053), e o {@code ContratoDeErrosIT} prova as duas
+ * direções. Um tratador novo que não apareça em nenhuma rota é recusa que o
+ * contrato esconde; o teste a acha quando alguém a provoca. E {@code @ResponseStatus}
+ * aqui não serve: com {@code springdoc.override-with-generic-response: false} o
+ * springdoc o ignora, e em execução quem manda é o status do {@code ProblemDetail}
+ * — medido na G-E.
+ *
+ * <p>Os dois primeiros respondem <b>a mesma coisa</b>. Isso não é redundância: é onde a distinção entre "negado" e "não
  * respondeu" encontra a borda. Para o cliente as duas são 403 com o mesmo
  * corpo — falha fechada, e nenhuma pista de qual das duas foi. Para quem opera,
  * a segunda é um registro em nível de alerta, porque significa que o
@@ -27,14 +42,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * merchant-service cair por mais de um minuto, a plataforma inteira para de
  * autorizar. A resposta a isso é disponibilidade — réplicas, health check,
  * alerta — não relaxar a regra"</i>. O alerta é esta linha de registro.
- *
- * <p>O {@code catalog} tem uma exceção de domínio escrita —
- * {@code RegraDoCatalogoViolada} — e ela <b>não tem tratador aqui</b>. A frase
- * que estava neste lugar dizia que nenhuma requisição a alcança porque a única
- * rota era uma leitura; <b>deixou de ser verdade na G-C2</b>: a marcação a
- * alcança (opção de outro produto, {@code SEM_CONTROLE} marcado esgotado), e
- * sem tratador ela sai como 500. <b>Em aberto:</b> 400 ou 422 — a escolha do
- * código é de quem decidir o contrato, e fica registrada aqui até lá.
  */
 @RestControllerAdvice
 public class TratadorDeErros {
@@ -87,6 +94,31 @@ public class TratadorDeErros {
         log.warn("expediente indisponível: {}", excecao.getMessage(), excecao);
         return ProblemDetail.forStatusAndDetail(
                 HttpStatus.SERVICE_UNAVAILABLE, "não foi possível consultar o expediente");
+    }
+
+    /**
+     * 400: o chamador pediu o que o produto não tem — e nunca vai ter. Um
+     * {@code SEM_CONTROLE} marcado como esgotado, uma opção que não é daquele
+     * produto. É erro dele, não do mundo: a §5 do {@code catalogo.md} dá 400 ao
+     * pedido malformado e 409 ao estado que mudou. 400 e não 422, por decisão da
+     * G-E (ADR-053): um terceiro código viraria precedente sem que nada o exigisse.
+     *
+     * <p><b>Até a G-E isto era 500</b>, medido na G-C3a e de novo no
+     * {@code ContratoDeErrosIT}, que nasceu vermelho por ele.
+     *
+     * <p>A mensagem sai inteira: ela nomeia produto, grupo e estado — dado da
+     * loja, para quem já passou pela autorização —, e nenhuma nomeia host, caminho
+     * ou identificador técnico (conferido na G-E).
+     *
+     * <p><b>Um caso que este tratador classifica errado, e fica escrito:</b> a
+     * mesma exceção sai do {@code Produto.reconstituir} quando um documento
+     * gravado está corrompido ("produto sem id"). Isso é defeito do servidor e
+     * sairia como 400. Só acontece com o banco estragado; o {@code DocumentoIlegivel}
+     * do mapeador, que cobre o caso comum, continua 500.
+     */
+    @ExceptionHandler(RegraDoCatalogoViolada.class)
+    public ProblemDetail regraViolada(RegraDoCatalogoViolada excecao) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, excecao.getMessage());
     }
 
     /**

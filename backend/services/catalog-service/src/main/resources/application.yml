@@ -115,6 +115,11 @@ management:
       show-details: never
 
 springdoc:
+  # Desligado de propósito (ADR-053): ligado, toda resposta que um
+  # @RestControllerAdvice anuncia vira resposta de TODAS as operações — medido
+  # na G-E, o 409 da loja sem horário apareceu no GET da listagem. Cada rota
+  # declara as próprias recusas em @ApiResponses, e o ContratoDeErrosIT prova.
+  override-with-generic-response: false
   swagger-ui:
     path: /swagger-ui.html
 

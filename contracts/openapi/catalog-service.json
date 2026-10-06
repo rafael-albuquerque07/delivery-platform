@@ -60,7 +60,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "O produto recalculado",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -68,6 +68,21 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "Corpo inválido, ou opção que não pertence a este produto"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem ALTERAR_PRODUTO, produto de outra loja ou merchant indisponível — a mesma recusa"
+          },
+          "409" : {
+            "description" : "ESGOTADO_HOJE numa loja que não abre por horário (ADR-049), ou o produto mudou durante a marcação (ADR-052)"
+          },
+          "503" : {
+            "description" : "O merchant não respondeu sobre o expediente"
           }
         }
       }
@@ -107,7 +122,7 @@
         },
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "O produto recalculado",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -115,6 +130,21 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "Corpo inválido, ou estado que o modo do produto não tem (SEM_CONTROLE não acaba)"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem ALTERAR_PRODUTO, produto de outra loja ou merchant indisponível — a mesma recusa"
+          },
+          "409" : {
+            "description" : "ESGOTADO_HOJE numa loja que não abre por horário (ADR-049), ou o produto mudou durante a marcação (ADR-052)"
+          },
+          "503" : {
+            "description" : "O merchant não respondeu sobre o expediente"
           }
         }
       }
@@ -167,7 +197,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK",
+            "description" : "A página de produtos publicados",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -175,6 +205,15 @@
                 }
               }
             }
+          },
+          "400" : {
+            "description" : "Identificador ou paginação malformados"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem VER_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa"
           }
         }
       }

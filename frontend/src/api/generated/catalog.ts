@@ -126,7 +126,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description O produto recalculado */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -134,6 +134,41 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ProdutoResumoResponse"];
                 };
+            };
+            /** @description Corpo inválido, ou opção que não pertence a este produto */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem ALTERAR_PRODUTO, produto de outra loja ou merchant indisponível — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ESGOTADO_HOJE numa loja que não abre por horário (ADR-049), ou o produto mudou durante a marcação (ADR-052) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description O merchant não respondeu sobre o expediente */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -153,7 +188,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
+            /** @description O produto recalculado */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -161,6 +196,41 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ProdutoResumoResponse"];
                 };
+            };
+            /** @description Corpo inválido, ou estado que o modo do produto não tem (SEM_CONTROLE não acaba) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem ALTERAR_PRODUTO, produto de outra loja ou merchant indisponível — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description ESGOTADO_HOJE numa loja que não abre por horário (ADR-049), ou o produto mudou durante a marcação (ADR-052) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description O merchant não respondeu sobre o expediente */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -182,7 +252,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description A página de produtos publicados */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -190,6 +260,27 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PaginaResponseProdutoResumoResponse"];
                 };
+            };
+            /** @description Identificador ou paginação malformados */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem VER_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

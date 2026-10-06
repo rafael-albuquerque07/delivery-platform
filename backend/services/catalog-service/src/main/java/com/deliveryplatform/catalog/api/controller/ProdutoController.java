@@ -6,6 +6,9 @@ import com.deliveryplatform.catalog.api.dto.ProdutoResumoResponse;
 import com.deliveryplatform.catalog.application.port.in.ListarProdutos;
 import com.deliveryplatform.catalog.application.port.in.MarcarDisponibilidade;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -82,6 +85,12 @@ public class ProdutoController {
      * sem parâmetro nenhum. Com ele saem {@code page}, {@code size} e
      * {@code sort}, opcionais, que é o que a rota de fato lê.
      */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "A página de produtos publicados"),
+            @ApiResponse(responseCode = "400", description = "Identificador ou paginação malformados", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem VER_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa", content = @Content)
+    })
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Lista os produtos publicados do estabelecimento",
             description = "Exige vínculo ativo com VER_PRODUTO, resolvido no merchant-service "
@@ -96,6 +105,14 @@ public class ProdutoController {
                 ProdutoResumoResponse::de);
     }
 
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "O produto recalculado"),
+            @ApiResponse(responseCode = "400", description = "Corpo inválido, ou estado que o modo do produto não tem (SEM_CONTROLE não acaba)", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem ALTERAR_PRODUTO, produto de outra loja ou merchant indisponível — a mesma recusa", content = @Content),
+            @ApiResponse(responseCode = "409", description = "ESGOTADO_HOJE numa loja que não abre por horário (ADR-049), ou o produto mudou durante a marcação (ADR-052)", content = @Content),
+            @ApiResponse(responseCode = "503", description = "O merchant não respondeu sobre o expediente", content = @Content)
+    })
     @PutMapping(path = "/{produtoId}/disponibilidade",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -118,6 +135,14 @@ public class ProdutoController {
      * corpo: marcar a última opção disponível de um grupo obrigatório derruba o
      * {@code vendavel} do produto, e a tela não consegue derivar isso sozinha.
      */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "O produto recalculado"),
+            @ApiResponse(responseCode = "400", description = "Corpo inválido, ou opção que não pertence a este produto", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem ALTERAR_PRODUTO, produto de outra loja ou merchant indisponível — a mesma recusa", content = @Content),
+            @ApiResponse(responseCode = "409", description = "ESGOTADO_HOJE numa loja que não abre por horário (ADR-049), ou o produto mudou durante a marcação (ADR-052)", content = @Content),
+            @ApiResponse(responseCode = "503", description = "O merchant não respondeu sobre o expediente", content = @Content)
+    })
     @PutMapping(path = "/{produtoId}/grupos/{grupoId}/opcoes/{opcaoId}/disponibilidade",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)

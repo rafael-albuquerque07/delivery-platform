@@ -4,6 +4,9 @@ import com.deliveryplatform.merchant.api.seguranca.SujeitoDoToken;
 import com.deliveryplatform.merchant.application.port.in.ConsultarContextoDeAcesso;
 import com.deliveryplatform.merchant.application.port.in.ContextoDeAcesso;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -73,6 +76,12 @@ public class ContextoDeAcessoController {
      * {@code TratadorDeErros} já faz essa tradução, e M7 é o motivo — respostas
      * diferentes transformariam a rota num scanner de estabelecimentos.
      */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "O contexto do portador nesta loja"),
+            @ApiResponse(responseCode = "400", description = "Identificador da loja malformado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo ativo com a loja, ou loja inexistente — a mesma recusa", content = @Content)
+    })
     @GetMapping(path = "/contexto-de-acesso", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "O contexto de acesso do portador do token nesta loja",
             description = "Exige apenas token válido — nenhuma permissão. Responde sobre o "

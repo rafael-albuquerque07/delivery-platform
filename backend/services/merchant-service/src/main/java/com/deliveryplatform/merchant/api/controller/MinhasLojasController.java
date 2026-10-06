@@ -4,6 +4,9 @@ import com.deliveryplatform.merchant.api.seguranca.SujeitoDoToken;
 import com.deliveryplatform.merchant.application.port.in.ConsultarMinhasLojas;
 import com.deliveryplatform.merchant.application.port.in.LojaDoUsuario;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -72,6 +75,10 @@ public class MinhasLojasController {
      * <p>Um {@code sub} que não seja {@code UUID} vira {@code AcessoNegado}, e
      * portanto 403 — não 500, que é o que um {@code UUID.fromString} solto daria.
      */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "As lojas em que o portador tem vínculo ativo"),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content)
+    })
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "As lojas de que o portador do token faz parte",
             description = "Só vínculos ATIVOS. Traz papel e permissões de cada uma, "
