@@ -4,6 +4,46 @@
  */
 
 export interface paths {
+    "/api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}/grupos/{grupoId}/opcoes/{opcaoId}/disponibilidade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Marca a disponibilidade de uma opção do produto
+         * @description Mesmo carimbo e mesmas recusas da marcação do produto. Devolve o produto recalculado, porque marcar uma opção pode derrubar o vendavel.
+         */
+        put: operations["marcarOpcao"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}/disponibilidade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Marca a disponibilidade do produto
+         * @description O carimbo é do servidor: o instante pelo relógio do serviço e o expediente perguntado ao merchant (ADR-049). Exige ALTERAR_PRODUTO. 409 quando a loja não abre por horário e o estado é ESGOTADO_HOJE. Devolve o produto recalculado.
+         */
+        put: operations["marcarProduto"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/merchants/{estabelecimentoId}/catalog/produtos": {
         parameters: {
             query?: never;
@@ -28,14 +68,14 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        PaginaResponseProdutoResumoResponse: {
-            conteudo?: components["schemas"]["ProdutoResumoResponse"][];
-            /** Format: int32 */
-            pagina?: number;
-            /** Format: int32 */
-            tamanho?: number;
-            /** Format: int64 */
-            total?: number;
+        /** @description O novo estado de disponibilidade. O carimbo é do servidor. */
+        MarcacaoRequest: {
+            /**
+             * @description DISPONIVEL, ACABANDO, ESGOTADO_HOJE ou ESGOTADO_INDETERMINADO.
+             * @example ESGOTADO_HOJE
+             * @enum {string}
+             */
+            estado: "DISPONIVEL" | "ACABANDO" | "ESGOTADO_HOJE" | "ESGOTADO_INDETERMINADO";
         };
         ProdutoResumoResponse: {
             /** Format: uuid */
@@ -50,6 +90,15 @@ export interface components {
             disponibilidade?: "DISPONIVEL" | "ACABANDO" | "ESGOTADO_HOJE" | "ESGOTADO_INDETERMINADO";
             vendavel?: boolean;
         };
+        PaginaResponseProdutoResumoResponse: {
+            conteudo?: components["schemas"]["ProdutoResumoResponse"][];
+            /** Format: int32 */
+            pagina?: number;
+            /** Format: int32 */
+            tamanho?: number;
+            /** Format: int64 */
+            total?: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -59,6 +108,62 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    marcarOpcao: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+                produtoId: string;
+                grupoId: string;
+                opcaoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarcacaoRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProdutoResumoResponse"];
+                };
+            };
+        };
+    };
+    marcarProduto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+                produtoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarcacaoRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProdutoResumoResponse"];
+                };
+            };
+        };
+    };
     listar: {
         parameters: {
             query?: {

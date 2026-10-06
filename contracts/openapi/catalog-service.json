@@ -9,6 +9,116 @@
     "bearerAuth" : [ ]
   } ],
   "paths" : {
+    "/api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}/grupos/{grupoId}/opcoes/{opcaoId}/disponibilidade" : {
+      "put" : {
+        "tags" : [ "produto-controller" ],
+        "summary" : "Marca a disponibilidade de uma opção do produto",
+        "description" : "Mesmo carimbo e mesmas recusas da marcação do produto. Devolve o produto recalculado, porque marcar uma opção pode derrubar o vendavel.",
+        "operationId" : "marcarOpcao",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "produtoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "grupoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "opcaoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MarcacaoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProdutoResumoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}/disponibilidade" : {
+      "put" : {
+        "tags" : [ "produto-controller" ],
+        "summary" : "Marca a disponibilidade do produto",
+        "description" : "O carimbo é do servidor: o instante pelo relógio do serviço e o expediente perguntado ao merchant (ADR-049). Exige ALTERAR_PRODUTO. 409 quando a loja não abre por horário e o estado é ESGOTADO_HOJE. Devolve o produto recalculado.",
+        "operationId" : "marcarProduto",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "produtoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MarcacaoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProdutoResumoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/merchants/{estabelecimentoId}/catalog/produtos" : {
       "get" : {
         "tags" : [ "produto-controller" ],
@@ -72,28 +182,18 @@
   },
   "components" : {
     "schemas" : {
-      "PaginaResponseProdutoResumoResponse" : {
+      "MarcacaoRequest" : {
         "type" : "object",
+        "description" : "O novo estado de disponibilidade. O carimbo é do servidor.",
         "properties" : {
-          "conteudo" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/ProdutoResumoResponse"
-            }
-          },
-          "pagina" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "tamanho" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "total" : {
-            "type" : "integer",
-            "format" : "int64"
+          "estado" : {
+            "type" : "string",
+            "description" : "DISPONIVEL, ACABANDO, ESGOTADO_HOJE ou ESGOTADO_INDETERMINADO.",
+            "enum" : [ "DISPONIVEL", "ACABANDO", "ESGOTADO_HOJE", "ESGOTADO_INDETERMINADO" ],
+            "example" : "ESGOTADO_HOJE"
           }
-        }
+        },
+        "required" : [ "estado" ]
       },
       "ProdutoResumoResponse" : {
         "type" : "object",
@@ -122,6 +222,29 @@
           },
           "vendavel" : {
             "type" : "boolean"
+          }
+        }
+      },
+      "PaginaResponseProdutoResumoResponse" : {
+        "type" : "object",
+        "properties" : {
+          "conteudo" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ProdutoResumoResponse"
+            }
+          },
+          "pagina" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "tamanho" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       }

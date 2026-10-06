@@ -1,15 +1,20 @@
 package com.deliveryplatform.catalog.api.controller;
 
+import com.deliveryplatform.catalog.api.dto.MarcacaoRequest;
 import com.deliveryplatform.catalog.api.dto.PaginaResponse;
 import com.deliveryplatform.catalog.api.dto.ProdutoResumoResponse;
 import com.deliveryplatform.catalog.application.port.in.ListarProdutos;
+import com.deliveryplatform.catalog.application.port.in.MarcarDisponibilidade;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -49,9 +54,11 @@ import java.util.UUID;
 public class ProdutoController {
 
     private final ListarProdutos produtos;
+    private final MarcarDisponibilidade marcacoes;
 
-    public ProdutoController(ListarProdutos produtos) {
+    public ProdutoController(ListarProdutos produtos, MarcarDisponibilidade marcacoes) {
         this.produtos = produtos;
+        this.marcacoes = marcacoes;
     }
 
     /**
@@ -87,5 +94,44 @@ public class ProdutoController {
         return PaginaResponse.de(
                 produtos.publicadosDaLoja(estabelecimentoId, paginacao),
                 ProdutoResumoResponse::de);
+    }
+
+    @PutMapping(path = "/{produtoId}/disponibilidade",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Marca a disponibilidade do produto",
+            description = "O carimbo é do servidor: o instante pelo relógio do serviço e o "
+                    + "expediente perguntado ao merchant (ADR-049). Exige ALTERAR_PRODUTO. "
+                    + "409 quando a loja não abre por horário e o estado é ESGOTADO_HOJE. "
+                    + "Devolve o produto recalculado.")
+    public ProdutoResumoResponse marcarProduto(
+            @PathVariable UUID estabelecimentoId,
+            @PathVariable UUID produtoId,
+            @Valid @RequestBody MarcacaoRequest pedido) {
+
+        return ProdutoResumoResponse.de(
+                marcacoes.deProduto(estabelecimentoId, produtoId, pedido.estado()));
+    }
+
+    /**
+     * O par da de cima, para a opção — e é a que mais precisa da resposta com
+     * corpo: marcar a última opção disponível de um grupo obrigatório derruba o
+     * {@code vendavel} do produto, e a tela não consegue derivar isso sozinha.
+     */
+    @PutMapping(path = "/{produtoId}/grupos/{grupoId}/opcoes/{opcaoId}/disponibilidade",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Marca a disponibilidade de uma opção do produto",
+            description = "Mesmo carimbo e mesmas recusas da marcação do produto. Devolve o "
+                    + "produto recalculado, porque marcar uma opção pode derrubar o vendavel.")
+    public ProdutoResumoResponse marcarOpcao(
+            @PathVariable UUID estabelecimentoId,
+            @PathVariable UUID produtoId,
+            @PathVariable UUID grupoId,
+            @PathVariable UUID opcaoId,
+            @Valid @RequestBody MarcacaoRequest pedido) {
+
+        return ProdutoResumoResponse.de(marcacoes.deOpcao(
+                estabelecimentoId, produtoId, grupoId, opcaoId, pedido.estado()));
     }
 }

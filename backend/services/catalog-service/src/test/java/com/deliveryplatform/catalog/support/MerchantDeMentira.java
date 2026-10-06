@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -55,6 +56,14 @@ public final class MerchantDeMentira implements AutoCloseable {
 
     public enum Modo { RESPONDE, NEGA, TOKEN_RECUSADO, ERRO, SILENCIO }
 
+    /**
+     * O sexto modo, e ele é de outra rota: o expediente corrente
+     * ({@code /internal/…/expediente-corrente}, G-C1). Fica separado dos cinco
+     * da autorização porque a marcação chama as duas rotas na mesma requisição,
+     * e cada uma precisa responder o que o caso pede.
+     */
+    public enum ModoDoExpediente { DATA, SEM_HORARIO, ERRO }
+
     private final HttpServer servidor;
     private final List<String> autorizacoes = new CopyOnWriteArrayList<>();
     private final List<String> caminhos = new CopyOnWriteArrayList<>();
@@ -62,6 +71,8 @@ public final class MerchantDeMentira implements AutoCloseable {
     private volatile Modo modo = Modo.RESPONDE;
     private volatile String corpo = "{}";
     private volatile Duration silencio = Duration.ofSeconds(10);
+    private volatile ModoDoExpediente modoDoExpediente = ModoDoExpediente.DATA;
+    private volatile LocalDate expediente = LocalDate.parse("2026-10-01");
 
     private MerchantDeMentira(HttpServer servidor) {
         this.servidor = servidor;
@@ -85,6 +96,12 @@ public final class MerchantDeMentira implements AutoCloseable {
         autorizacoes.add(troca.getRequestHeaders().getFirst("Authorization"));
         caminhos.add(troca.getRequestURI().getPath());
 
+        String caminho = troca.getRequestURI().getPath();
+        if (caminho.endsWith("/expediente-corrente")) {
+            atenderExpediente(troca, caminho);
+            return;
+        }
+
         switch (modo) {
             case SILENCIO -> {
                 try {
@@ -102,6 +119,23 @@ public final class MerchantDeMentira implements AutoCloseable {
             case ERRO -> responder(troca, 500, """
                     {"type":"about:blank","title":"Internal Server Error","status":500}""");
             case RESPONDE -> responder(troca, 200, corpo);
+        }
+    }
+
+    /** O corpo ecoa a loja do caminho — o adaptador confere, e é bom que confira. */
+    private void atenderExpediente(com.sun.net.httpserver.HttpExchange troca, String caminho)
+            throws IOException {
+        String[] partes = caminho.split("/");
+        String loja = partes[partes.length - 2];
+        switch (modoDoExpediente) {
+            case DATA -> responder(troca, 200, """
+                    {"estabelecimentoId":"%s","expedienteDeReferencia":"%s"}"""
+                    .formatted(loja, expediente));
+            case SEM_HORARIO -> responder(troca, 409, """
+                    {"type":"about:blank","title":"Conflict","status":409,\
+                    "detail":"a loja não abre por horário"}""");
+            case ERRO -> responder(troca, 500, """
+                    {"type":"about:blank","title":"Internal Server Error","status":500}""");
         }
     }
 
@@ -157,6 +191,25 @@ public final class MerchantDeMentira implements AutoCloseable {
     public MerchantDeMentira respondeCruamente(String json) {
         this.corpo = json;
         this.modo = Modo.RESPONDE;
+        return this;
+    }
+
+    /** O expediente corrente responde esta data — o padrão é 01/10/2026. */
+    public MerchantDeMentira expedienteE(LocalDate dia) {
+        this.expediente = dia;
+        this.modoDoExpediente = ModoDoExpediente.DATA;
+        return this;
+    }
+
+    /** O expediente corrente responde 409: a loja não abre por horário. */
+    public MerchantDeMentira semHorario() {
+        this.modoDoExpediente = ModoDoExpediente.SEM_HORARIO;
+        return this;
+    }
+
+    /** O expediente corrente responde 500. A autorização segue no modo dela. */
+    public MerchantDeMentira expedienteEstoura() {
+        this.modoDoExpediente = ModoDoExpediente.ERRO;
         return this;
     }
 

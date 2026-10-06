@@ -1,7 +1,9 @@
 package com.deliveryplatform.catalog.api.error;
 
 import com.deliveryplatform.catalog.application.exception.AcessoNegado;
+import com.deliveryplatform.catalog.application.exception.LojaSemExpediente;
 import com.deliveryplatform.catalog.application.port.out.AutorizacaoIndisponivel;
+import com.deliveryplatform.catalog.application.port.out.ExpedienteIndisponivel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -58,5 +60,27 @@ public class TratadorDeErros {
     public ProblemDetail autorizacaoIndisponivel(AutorizacaoIndisponivel excecao) {
         log.warn("autorização indisponível: {}", excecao.getMessage(), excecao);
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, RECUSA);
+    }
+
+    /**
+     * 409: a loja não abre por horário, e {@code ESGOTADO_HOJE} nunca
+     * reativaria (ADR-049 §5). A mensagem da exceção é de domínio e diz o que
+     * fazer — ela sai inteira.
+     */
+    @ExceptionHandler(LojaSemExpediente.class)
+    public ProblemDetail lojaSemExpediente(LojaSemExpediente excecao) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, excecao.getMessage());
+    }
+
+    /**
+     * 503, e não 403: a autorização já passou, então dizer que o expediente
+     * está indisponível não revela nada sobre a loja. A mensagem é fixa — a da
+     * exceção pode nomear o host, e endereço de serviço não sai na resposta.
+     */
+    @ExceptionHandler(ExpedienteIndisponivel.class)
+    public ProblemDetail expedienteIndisponivel(ExpedienteIndisponivel excecao) {
+        log.warn("expediente indisponível: {}", excecao.getMessage(), excecao);
+        return ProblemDetail.forStatusAndDetail(
+                HttpStatus.SERVICE_UNAVAILABLE, "não foi possível consultar o expediente");
     }
 }
