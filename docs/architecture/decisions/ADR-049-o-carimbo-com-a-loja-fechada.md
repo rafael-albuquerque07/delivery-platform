@@ -174,3 +174,24 @@ quais identificadores existem neste sistema.
 - **O catálogo calcular o dia operacional com um fuso replicado.** Rejeitada pela
   ADR-046 §6, e a estrutura já a impede: não há `FusoHorario` na classe do
   catálogo.
+
+## Emenda de 06/10/2026 — o que a marcação faz com o 409
+
+A §5 deixou em aberto o que o `catalog` faz quando a loja não abre por horário.
+A G-C2 decidiu, e a decisão tem dois ramos, porque o domínio já os separa: o
+par `marcadoEm` + `expedienteDeReferencia` nasce inteiro ou não nasce, e
+**apenas `ESGOTADO_HOJE` o exige**.
+
+- **`ESGOTADO_HOJE` é recusado**, com 409 e um detalhe que diz o caminho: "Use
+  ESGOTADO_INDETERMINADO." Sem expediente ele nunca reativaria, e o produto
+  sumiria do cardápio para sempre sem erro em lugar nenhum — que é o mesmo
+  motivo pelo qual esta ADR recusou devolver uma data inventada;
+- **os outros três estados são aceitos sem carimbo.** É legal pelo construtor
+  da `Disponibilidade`, e é honesto: o carimbo existe para a comparação da
+  reativação, e numa loja que nunca abre expediente não há comparação a fazer.
+  Gravar só o instante seria inventar a metade que o domínio proíbe.
+
+**A consequência que fica escrita:** numa loja sem horário, `ACABANDO` e
+`DISPONIVEL` não registram *quando* alguém os disse. Se um dia isso for preciso
+— auditoria, "marcado há quanto tempo" na tela —, o lugar de mudar é o par de
+campos da `Disponibilidade`, e não esta regra.

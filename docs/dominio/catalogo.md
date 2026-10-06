@@ -166,6 +166,32 @@ O pão que acabou no almoço continua acabado no jantar, que é o comportamento
 certo — o estoque físico também não se repôs. No dia seguinte, `D+1 ≠ D`, e
 reativa.
 
+### Quem marca, e de onde vem o carimbo
+
+`PUT /api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}/disponibilidade`
+— e o par dela para a opção, em
+`…/produtos/{produtoId}/grupos/{grupoId}/opcoes/{opcaoId}/disponibilidade`
+(G-C2, 06/10/2026). Exige `ALTERAR_PRODUTO`.
+
+**O corpo traz um estado, e mais nada.** O `marcadoEm` é o relógio do serviço;
+o `expedienteDeReferencia` é perguntado ao `merchant`, que é o único lugar que
+calcula dia operacional (ADR-046 §6). Data escolhida pelo cliente é data que
+decide, errado, se um produto volta ao cardápio amanhã.
+
+**Loja que não abre por horário:** `ESGOTADO_HOJE` é recusado com 409 — ele
+nunca reativaria —, e os outros três estados são aceitos **sem carimbo**.
+ADR-049, emenda de 06/10/2026.
+
+**A resposta traz o produto inteiro**, recalculado. Marcar uma opção pode
+derrubar o `vendavel` do produto pela terceira cláusula da §4, e o cliente não
+consegue derivar isso: o resumo não carrega os grupos.
+
+**O que esta rota ainda não faz:** publicar `DisponibilidadeAlteradaV1`. A §8 o
+exige em toda mudança de disponibilidade e diz que ele é o mais sensível a
+atraso — e não há outbox neste serviço. É um adiamento, não uma decisão: a §8
+continua valendo. **Gatilho escrito:** o `conversation-service` ganhar código,
+que é quem o consome.
+
 ### Disponibilidade da opção
 
 **Acréscimo ao PRD, e necessário.** E3 fala de disponibilidade por produto.
