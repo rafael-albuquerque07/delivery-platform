@@ -163,7 +163,7 @@ responde o caso que faltava: a loja que abre **duas vezes no mesmo dia**.
 ```
 
 O pão que acabou no almoço continua acabado no jantar, que é o comportamento
-certo — o estoque físico também não se repôs. No dia seguinte, `D+1 ≠ D`, e
+certo — o estoque físico também não se repôs. No dia seguinte, `D < D+1`, e
 reativa.
 
 ### Quem marca, e de onde vem o carimbo

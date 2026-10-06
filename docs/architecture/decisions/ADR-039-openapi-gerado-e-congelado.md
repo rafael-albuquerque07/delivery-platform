@@ -142,3 +142,23 @@ sugere a intenção. Sugere, não decide, e a decisão é do marco 3.
 **As rotas públicas de webhook nos outros oito serviços.** Continuam públicas
 apenas em comentário de YAML, e nenhuma cadeia de filtros as libera. É a sétima
 peça da mesma lista, ainda de pé.
+
+## Emenda de 06/10/2026 — a lista de erros é afirmada, e tem prova
+
+Esta ADR dizia que o contrato é **gerado do código**. Em 06/10/2026 mediu-se o
+que isso produzia para os erros: **nada**. As sete rotas do `catalog` e do
+`merchant` declaravam só 200 — o springdoc lê anotação, os tratadores montam o
+`ProblemDetail` em tempo de execução, e o 401 e o 400 de parâmetro nem passam
+por eles. E a forma óbvia de consertar, `@ResponseStatus` nos tratadores, fazia o
+springdoc pendurar a resposta em **todas** as operações.
+
+A ADR-053 decide que **o conjunto de erros de cada rota é declarado na rota**, em
+`@ApiResponses`, com `springdoc.override-with-generic-response: false` — e
+portanto é uma *afirmação*, não uma derivação. Para que uma afirmação possa viver
+num arquivo que se chama contrato, ela vem com prova: o `ContratoDeErrosIT` de
+cada serviço provoca cada código por HTTP e confere, contra este arquivo, que a
+operação o declara — e confere também o inverso, que nada declarado ficou sem
+provocação.
+
+**O que continua valendo desta ADR:** a forma do documento é gerada, o arquivo é
+congelado no repositório, e mudança de contrato é mudança de rodada.

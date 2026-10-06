@@ -40,7 +40,7 @@
 | 036 | O telefone é o identificador de login | ✅ aceita |
 | 037 | A emissão do access token: a chave, o tempo, e o que fica público | ✅ aceita · **emendada** (24/09/2026: cinco rotas públicas, lista viva na 044) |
 | 038 | O `sub` vira `UUID` na borda, e o caso de uso não conhece o token | ✅ aceita |
-| 039 | O contrato OpenAPI é gerado do código e congelado | ✅ aceita |
+| 039 | O contrato OpenAPI é gerado do código e congelado | ✅ aceita · **emendada** (06/10/2026: a lista de erros de cada rota é afirmada, e o `ContratoDeErrosIT` a prova) |
 | 040 | Um módulo de tipos de valor, e a regra que impede ele de crescer | ✅ aceita · **emendada** (28/09/2026: a `Permissao` não entra — cada serviço nomeia o seu recorte) |
 | 041 | Observabilidade sai do repositório, e a volta é por condição | ✅ aceita |
 | 042 | O código de verificação do cadastro, e quem o entrega | ✅ aceita |
@@ -54,8 +54,9 @@
 | 050 | A documentação viva, e só no seu computador | ✅ aceita |
 | 051 | A imagem carrega o jar, não o compilador | ✅ aceita |
 | 052 | A versão no documento, e o 409 que ela cria | ✅ aceita |
+| 053 | O contrato declara o que a rota recusa, e um teste prova | ✅ aceita · **emenda a 039** |
 
-**Cinquenta escritas, duas sem objeto — estas com registro próprio desde
+**Cinquenta e uma escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê
