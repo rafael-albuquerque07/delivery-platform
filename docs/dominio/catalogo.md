@@ -192,6 +192,12 @@ atraso — e não há outbox neste serviço. É um adiamento, não uma decisão:
 continua valendo. **Gatilho escrito:** o `conversation-service` ganhar código,
 que é quem o consome.
 
+**Estado que o modo do produto não tem é 400.** Marcar como esgotado um produto
+`SEM_CONTROLE` é erro do chamador: o produto não acaba hoje nem amanhã, e não é o
+mundo que mudou — por isso 400 e não 409, seguindo a distinção que a §5 faz para a
+cotação. O mesmo vale para marcar uma opção que não é daquele produto. Até a G-E
+isso era 500, porque a `RegraDoCatalogoViolada` não tinha tratador (ADR-053).
+
 ### Quem reativa, e o que acontece quando dois escrevem juntos
 
 O ato de reativar é um caso de uso do `catalog` (`ReativarNoExpediente`, G-C3a,

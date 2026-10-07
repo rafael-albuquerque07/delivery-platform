@@ -76,6 +76,25 @@ No `catalog`, o mesmo 403 com o mesmo corpo sai para: sem vínculo, sem permiss�
 loja não é sua" de "o sistema está com problema". Escolher uma das quatro na
 mensagem é mentir com mais confiança do que o servidor.
 
+### 2.5 O que a tela mostra quando o servidor recusa (W-C)
+
+O `detail` do `ProblemDetail`, como veio, e **sem interpretar o texto** — ADR-055.
+Frase de recusa é escrita uma vez, no servidor, onde a regra mora; uma segunda
+redação no front diverge da primeira sem ninguém notar.
+
+Três consequências que o código tem de respeitar:
+
+- **quem lê o corpo de erro é o `cliente.ts`, e só ele** (`lerDetalhe`, desde a
+  W-A). O contrato declara os erros sem corpo — os tipos gerados dizem
+  `content?: never` —, então nenhuma tela lê corpo de erro por conta própria;
+- **`detail` que não é texto não vai à tela**, e texto em branco também não. Cai
+  na mensagem por código. Resposta de erro pode vir do gateway, de um proxy ou da
+  página de erro do contêiner;
+- **no 403 o texto do servidor não é mostrado.** Ele é fixo e genérico de propósito
+  (§2.4), e o que a tela faz é oferecer recarregar o painel — o menu é montado das
+  permissões que o servidor respondeu, e um 403 numa ação oferecida significa que
+  elas mudaram.
+
 ---
 
 ## 3 · Dinheiro
@@ -186,4 +205,7 @@ interpolação é, por si, a razão: no dia em que o nome do produto vier da API
 | 403 não desloga | teste `403 NÃO derruba a sessão` |
 | O corpo do login usa `telefone` e `senha` | teste `manda telefone e senha` |
 | O tipo do corpo casa com o contrato | `npm run tipos:conferir`, no CI |
+| A tela mostra o `detail`, e só texto não vazio vira `detail` | testes `corpo sem detail textual não vira detalhe` (cliente) e `3 · a recusa mostra o detail do servidor, como veio` |
+| No 403 o texto do servidor não vai à tela | testes `no 403 descarta o detail…` e `5 · no 403, não mostra o texto do servidor…` |
+| Estado de enum desconhecido não concede nada | testes `estado que o front não conhece vira null…` e `estado que o front não conhece não aparece como "Disponível"` |
 | As seis premissas | **ninguém, e é por isso que este documento existe.** Nenhuma máquina confere que uma tela não foi desenhada. |

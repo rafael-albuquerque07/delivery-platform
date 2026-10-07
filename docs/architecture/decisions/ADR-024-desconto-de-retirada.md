@@ -215,3 +215,19 @@ livre. A versão vigente está no `pedido.md`.
 
 Os valores concretos do exemplo continuam válidos — exemplo é exemplo, e a
 aritmética não mudou.
+
+## Emenda de 07/10/2026 — o `cotar` é marco 3, e o prazo desta decisão vai com ele
+
+Esta ADR escreveu *"decida antes de escrever o `cotar`, e o `cotar` é marco 2"*. Por
+decisão de 07/10/2026, o `cotar` passa a ser **marco 3**, com o `order-service`,
+porque é ele o primeiro chamador: o PRD §10 define o marco 2 como *"Cardápio com
+opções e disponibilidade qualitativa"* e não nomeia a cotação, e escrever uma rota
+sem chamador é a peça sem execução que o `CLAUDE.md` já registra como defeito
+recorrente deste repositório.
+
+**O que muda para esta ADR é o prazo, não a decisão.** A pergunta do preço por
+modalidade continua tendo de ser respondida **antes** do `cotar` — e agora ela tem
+um marco a mais de folga. Isso é folga, não dispensa: o custo que esta ADR nomeia é
+de desenho, não de dado, e ele não fica menor por esperar.
+
+Registrado também na ADR-054, que é quem mediu que a cotação não tem chamador.

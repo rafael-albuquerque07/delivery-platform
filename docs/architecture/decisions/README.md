@@ -25,7 +25,7 @@
 | 021 | Catálogo de serviços do MVP — oito serviços | ✅ aceita · **emendada** (24/09/2026: `merchant` sem Redis; 26/09/2026: `order` e `delivery` sem Redis; 27/09/2026: `catalog` sem o starter, motivo mantido) |
 | 022 | A remuneração do entregador pertence ao vínculo | ✅ aceita |
 | 023 | Fronteira `order` × `payment`: pedido é dono do registro | ✅ aceita |
-| 024 | Desconto de retirada, não preço por modalidade | ✅ aceita |
+| 024 | Desconto de retirada, não preço por modalidade | ✅ aceita · **emendada** (07/10/2026: o `cotar` é marco 3, e o prazo desta decisão vai com ele) |
 | 025 | Fuso horário do estabelecimento e o dia operacional | ✅ aceita · **emendada** (26/09/2026: um evento de abertura por dia operacional — ADR-046) |
 | 026 | Fila morta, retentativa e reprocessamento | ✅ aceita · **emendada** (29/09/2026: consumidor de invalidação não tem retentativa nem fila morta) |
 | 027 | O que conta como mudança compatível num evento | ✅ aceita |
@@ -56,8 +56,9 @@
 | 052 | A versão no documento, e o 409 que ela cria | ✅ aceita |
 | 053 | O contrato declara o que a rota recusa, e um teste prova | ✅ aceita · **emenda a 039** |
 | 054 | O gatilho da identidade de serviço não disparou | ✅ aceita · **emenda a 045** |
+| 055 | O que o cliente mostra quando o servidor recusa | ✅ aceita |
 
-**Cinquenta e duas escritas, duas sem objeto — estas com registro próprio desde
+**Cinquenta e três escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

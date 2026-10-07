@@ -105,6 +105,9 @@ opções e disponibilidade qualitativa", sem nomear a cotação. Tirá-la do mar
 ou escrevê-la nele sem chamador — é decisão de planejamento, e ela tem de emendar
 a ADR-024 quando for tomada.
 
+> **Respondido em 07/10/2026:** marco 3, com o `order-service`. A ADR-024 foi
+> emendada, e com ela o prazo da decisão do preço por modalidade.
+
 **A G-C3b pode escrever o consumidor citando esta ADR** em vez de um raciocínio
 que só existia numa conversa.
 
