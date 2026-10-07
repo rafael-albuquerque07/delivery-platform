@@ -1,3 +1,4 @@
+import { estadoConhecido, type EstadoDeDisponibilidade } from '../api/disponibilidade';
 import type { components } from '../api/generated/catalog';
 
 /**
@@ -16,7 +17,7 @@ import type { components } from '../api/generated/catalog';
 /** Exportado porque o componente precisa nomeá-lo — sem truque de `Parameters<>`. */
 export type PaginaDoContrato = components['schemas']['PaginaResponseProdutoResumoResponse'];
 
-type ProdutoDoContrato = components['schemas']['ProdutoResumoResponse'];
+export type ProdutoDoContrato = components['schemas']['ProdutoResumoResponse'];
 
 /** O que a tela usa, já achatado — nenhum componente lê o contrato direto. */
 export type Produto = {
@@ -24,6 +25,8 @@ export type Produto = {
   nome: string;
   preco: string;
   vendavel: boolean;
+  /** `null` quando o servidor mandou um estado que este front não conhece — §4.1. */
+  disponibilidade: EstadoDeDisponibilidade | null;
 };
 
 export type PaginaDeProdutos = {
@@ -39,7 +42,7 @@ export function caminhoDosProdutos(estabelecimentoId: string, tamanho = 20): str
 export function paraTela(pagina: PaginaDoContrato): PaginaDeProdutos {
   const conteudo = pagina.conteudo ?? [];
   return {
-    produtos: conteudo.map(umProduto),
+    produtos: conteudo.map(produtoParaTela),
     total: pagina.total ?? conteudo.length,
     // Sem `ultima` no contrato: há mais quando o que já foi mostrado — as
     // páginas anteriores mais esta — não alcança o total.
@@ -49,12 +52,14 @@ export function paraTela(pagina: PaginaDoContrato): PaginaDeProdutos {
   };
 }
 
-function umProduto(produto: ProdutoDoContrato): Produto {
+/** Um produto na forma da tela — também o que a marcação devolve (W-C). */
+export function produtoParaTela(produto: ProdutoDoContrato): Produto {
   return {
     id: String(produto.id ?? ''),
     nome: produto.nome ?? '',
     preco: precoLegivel(produto.precoBase),
     vendavel: produto.vendavel === true,
+    disponibilidade: estadoConhecido(produto.disponibilidade),
   };
 }
 

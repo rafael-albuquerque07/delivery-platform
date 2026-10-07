@@ -118,6 +118,23 @@ describe('cliente HTTP', () => {
     expect((erro as ErroDaApi).detalhe).toBeUndefined();
   });
 
+  // ADR-055 §3 (W-C): o `detail` vai à tela, então só texto vira `detalhe`.
+  // Resposta de erro pode vir do gateway, de um proxy ou da página de erro do
+  // contêiner — e colar na tela o corpo do que chegou seria o defeito.
+  it.each([
+    ['texto solto', '<html>502 Bad Gateway</html>'],
+    ['número', '42'],
+    ['objeto sem detail', '{"title":"Conflict","status":409}'],
+    ['detail que não é texto', '{"detail":{"mensagem":"oi"}}'],
+  ])('corpo sem detail textual não vira detalhe: %s', async (_nome, corpo) => {
+    vi.stubGlobal('fetch', responderCom(409, corpo));
+
+    const erro = await chamar('/api/v1/x', { token: 'abc' }).catch((causa: unknown) => causa);
+
+    expect((erro as ErroDaApi).status).toBe(409);
+    expect((erro as ErroDaApi).detalhe).toBeUndefined();
+  });
+
   it('corpo de erro que não é JSON não esconde o status', async () => {
     vi.stubGlobal('fetch', responderCom(500, '<html>Internal Server Error</html>'));
 

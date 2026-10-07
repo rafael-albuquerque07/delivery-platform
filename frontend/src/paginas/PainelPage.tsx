@@ -24,6 +24,12 @@ import type { LojaDoUsuario } from '../painel/tipos';
  * permissões de cada uma. O menu é construído **das permissões**, por loja — e
  * trocar de loja troca o menu. Nada aqui decide acesso: o que protege é o
  * servidor, e a tela só desenha o que ele respondeu.
+ *
+ * <h2>O que a W-C trouxe</h2>
+ *
+ * A seção "Disponibilidade", que o `ALTERAR_PRODUTO` abre: a mesma lista, com os
+ * quatro estados por produto. A seção é derivada das permissões, como a do
+ * cardápio — não há URL que a abra por fora.
  */
 export function PainelPage() {
   const { sessao, sair } = useSessao();
@@ -94,6 +100,9 @@ export function PainelPage() {
         <>
           <MenuDoPainel permissoes={loja.permissoes} atual={secao} aoEscolher={escolherSecao} />
           {secao === 'cardapio' && <ListaDeProdutos estabelecimentoId={loja.estabelecimentoId} />}
+          {secao === 'disponibilidade' && (
+            <ListaDeProdutos estabelecimentoId={loja.estabelecimentoId} podeMarcar />
+          )}
         </>
       )}
     </main>
