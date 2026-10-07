@@ -2,7 +2,9 @@ package com.deliveryplatform.catalog.api.controller;
 
 import com.deliveryplatform.catalog.api.dto.MarcacaoRequest;
 import com.deliveryplatform.catalog.api.dto.PaginaResponse;
+import com.deliveryplatform.catalog.api.dto.ProdutoResponse;
 import com.deliveryplatform.catalog.api.dto.ProdutoResumoResponse;
+import com.deliveryplatform.catalog.application.port.in.ConsultarProduto;
 import com.deliveryplatform.catalog.application.port.in.ListarProdutos;
 import com.deliveryplatform.catalog.application.port.in.MarcarDisponibilidade;
 import io.swagger.v3.oas.annotations.Operation;
@@ -57,11 +59,44 @@ import java.util.UUID;
 public class ProdutoController {
 
     private final ListarProdutos produtos;
+    private final ConsultarProduto consultas;
     private final MarcarDisponibilidade marcacoes;
 
-    public ProdutoController(ListarProdutos produtos, MarcarDisponibilidade marcacoes) {
+    public ProdutoController(ListarProdutos produtos, ConsultarProduto consultas,
+                             MarcarDisponibilidade marcacoes) {
         this.produtos = produtos;
+        this.consultas = consultas;
         this.marcacoes = marcacoes;
+    }
+
+    /**
+     * Um produto da loja, inteiro — com os grupos e as opções, que é o que a tela da
+     * opção precisa para chamar a marcação (G-F).
+     *
+     * <p>Qualquer estado de publicação sai, rascunho inclusive: esta é a tela de agir
+     * sobre um item, e a listagem é a vitrine. <b>404</b> quando o produto não existe
+     * <b>ou é de outra loja</b>, com o mesmo corpo — o identificador da URL nunca é
+     * confiado (invariante 9), e um 403 aqui diria "existe, mas não é seu".
+     *
+     * <p>Sem 409 e sem 503: esta rota não grava e não pergunta o expediente.
+     */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "O produto, com grupos e opções"),
+            @ApiResponse(responseCode = "400", description = "Identificador malformado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem VER_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa", content = @Content),
+            @ApiResponse(responseCode = "404", description = "O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta", content = @Content)
+    })
+    @GetMapping(path = "/{produtoId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Um produto do estabelecimento, com os grupos e as opções",
+            description = "Exige VER_PRODUTO. Devolve o produto em qualquer estado de "
+                    + "publicação. 404 para produto inexistente ou de outra loja, com o "
+                    + "mesmo corpo.")
+    public ProdutoResponse consultar(
+            @PathVariable UUID estabelecimentoId,
+            @PathVariable UUID produtoId) {
+
+        return ProdutoResponse.de(consultas.consultar(estabelecimentoId, produtoId));
     }
 
     /**

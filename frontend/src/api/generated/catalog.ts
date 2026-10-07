@@ -64,6 +64,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Um produto do estabelecimento, com os grupos e as opções
+         * @description Exige VER_PRODUTO. Devolve o produto em qualquer estado de publicação. 404 para produto inexistente ou de outra loja, com o mesmo corpo.
+         */
+        get: operations["consultar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -98,6 +118,47 @@ export interface components {
             tamanho?: number;
             /** Format: int64 */
             total?: number;
+        };
+        GrupoResponse: {
+            /** Format: uuid */
+            id?: string;
+            nome?: string;
+            /** Format: int32 */
+            minEscolhas?: number;
+            /** Format: int32 */
+            maxEscolhas?: number;
+            /** Format: int32 */
+            ordem?: number;
+            opcoes?: components["schemas"]["OpcaoResponse"][];
+        };
+        OpcaoResponse: {
+            /** Format: uuid */
+            id?: string;
+            nome?: string;
+            acrescimo?: number;
+            /** Format: int32 */
+            ordem?: number;
+            /** @enum {string} */
+            disponibilidade?: "DISPONIVEL" | "ACABANDO" | "ESGOTADO_HOJE" | "ESGOTADO_INDETERMINADO";
+        };
+        ProdutoResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            categoriaId?: string;
+            nome?: string;
+            descricao?: string;
+            precoBase?: number;
+            /** Format: int32 */
+            ordem?: number;
+            /** @enum {string} */
+            modoDeControle?: "SEM_CONTROLE" | "QUALITATIVO";
+            /** @enum {string} */
+            estadoDePublicacao?: "RASCUNHO" | "ATIVO" | "INATIVO";
+            /** @enum {string} */
+            disponibilidade?: "DISPONIVEL" | "ACABANDO" | "ESGOTADO_HOJE" | "ESGOTADO_INDETERMINADO";
+            vendavel?: boolean;
+            gruposDeOpcoes?: components["schemas"]["GrupoResponse"][];
         };
     };
     responses: never;
@@ -277,6 +338,57 @@ export interface operations {
             };
             /** @description Sem vínculo, sem VER_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    consultar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+                produtoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description O produto, com grupos e opções */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProdutoResponse"];
+                };
+            };
+            /** @description Identificador malformado */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem VER_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

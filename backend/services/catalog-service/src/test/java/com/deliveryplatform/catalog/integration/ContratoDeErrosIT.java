@@ -84,6 +84,7 @@ class ContratoDeErrosIT extends Infraestrutura {
 
     private static final String BASE = "/api/v1/merchants/{estabelecimentoId}/catalog/produtos";
     private static final String LISTAR = BASE;
+    private static final String CONSULTAR = BASE + "/{produtoId}";
     private static final String MARCAR_PRODUTO = BASE + "/{produtoId}/disponibilidade";
     private static final String MARCAR_OPCAO =
             BASE + "/{produtoId}/grupos/{grupoId}/opcoes/{opcaoId}/disponibilidade";
@@ -146,6 +147,28 @@ class ContratoDeErrosIT extends Infraestrutura {
                             String token = IDENTITY.tokenDe(UUID.randomUUID());
                             MERCHANT.nega();
                             return listar(loja.toString(), token);
+                        }),
+
+                new Provocacao("GET", CONSULTAR, 400, "identificador do produto que não é UUID",
+                        () -> {
+                            Cena c = cena("VER_PRODUTO");
+                            return ler(c, "nao-e-uuid");
+                        }),
+                new Provocacao("GET", CONSULTAR, 401, "sem token",
+                        () -> {
+                            Cena c = cena("VER_PRODUTO");
+                            return ler(c.semToken(), c.pizza().getId().toString());
+                        }),
+                new Provocacao("GET", CONSULTAR, 403, "vínculo sem VER_PRODUTO",
+                        () -> {
+                            Cena c = cena("ALTERAR_PRODUTO");
+                            return ler(c, c.pizza().getId().toString());
+                        }),
+                new Provocacao("GET", CONSULTAR, 404,
+                        "produto que não existe — o de outra loja dá o mesmo, no ConsultaDeProdutoIT",
+                        () -> {
+                            Cena c = cena("VER_PRODUTO");
+                            return ler(c, UUID.randomUUID().toString());
                         }),
 
                 new Provocacao("PUT", MARCAR_PRODUTO, 400,
@@ -321,6 +344,15 @@ class ContratoDeErrosIT extends Infraestrutura {
         var requisicao = cliente().get().uri("/api/v1/merchants/" + loja + "/catalog/produtos");
         if (token != null) {
             requisicao = requisicao.header("Authorization", "Bearer " + token);
+        }
+        return requisicao.exchange().returnResult(String.class).getStatus().value();
+    }
+
+    private int ler(Cena c, String produtoId) {
+        var requisicao = cliente().get()
+                .uri("/api/v1/merchants/" + c.loja() + "/catalog/produtos/" + produtoId);
+        if (c.token() != null) {
+            requisicao = requisicao.header("Authorization", "Bearer " + c.token());
         }
         return requisicao.exchange().returnResult(String.class).getStatus().value();
     }

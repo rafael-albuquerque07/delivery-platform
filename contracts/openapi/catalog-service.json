@@ -217,6 +217,55 @@
           }
         }
       }
+    },
+    "/api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}" : {
+      "get" : {
+        "tags" : [ "produto-controller" ],
+        "summary" : "Um produto do estabelecimento, com os grupos e as opções",
+        "description" : "Exige VER_PRODUTO. Devolve o produto em qualquer estado de publicação. 404 para produto inexistente ou de outra loja, com o mesmo corpo.",
+        "operationId" : "consultar",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "produtoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "O produto, com grupos e opções",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProdutoResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Identificador malformado"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem VER_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa"
+          },
+          "404" : {
+            "description" : "O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta"
+          }
+        }
+      }
     }
   },
   "components" : {
@@ -284,6 +333,106 @@
           "total" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }
+      },
+      "GrupoResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "minEscolhas" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxEscolhas" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "ordem" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "opcoes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/OpcaoResponse"
+            }
+          }
+        }
+      },
+      "OpcaoResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "acrescimo" : {
+            "type" : "number"
+          },
+          "ordem" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "disponibilidade" : {
+            "type" : "string",
+            "enum" : [ "DISPONIVEL", "ACABANDO", "ESGOTADO_HOJE", "ESGOTADO_INDETERMINADO" ]
+          }
+        }
+      },
+      "ProdutoResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "categoriaId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "descricao" : {
+            "type" : "string"
+          },
+          "precoBase" : {
+            "type" : "number"
+          },
+          "ordem" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "modoDeControle" : {
+            "type" : "string",
+            "enum" : [ "SEM_CONTROLE", "QUALITATIVO" ]
+          },
+          "estadoDePublicacao" : {
+            "type" : "string",
+            "enum" : [ "RASCUNHO", "ATIVO", "INATIVO" ]
+          },
+          "disponibilidade" : {
+            "type" : "string",
+            "enum" : [ "DISPONIVEL", "ACABANDO", "ESGOTADO_HOJE", "ESGOTADO_INDETERMINADO" ]
+          },
+          "vendavel" : {
+            "type" : "boolean"
+          },
+          "gruposDeOpcoes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/GrupoResponse"
+            }
           }
         }
       }

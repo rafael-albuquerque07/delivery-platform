@@ -2,6 +2,7 @@ package com.deliveryplatform.catalog.api.error;
 
 import com.deliveryplatform.catalog.application.exception.AcessoNegado;
 import com.deliveryplatform.catalog.application.exception.LojaSemExpediente;
+import com.deliveryplatform.catalog.application.exception.ProdutoNaoEncontrado;
 import com.deliveryplatform.catalog.application.port.out.AutorizacaoIndisponivel;
 import com.deliveryplatform.catalog.application.port.out.ExpedienteIndisponivel;
 import com.deliveryplatform.catalog.domain.exception.RegraDoCatalogoViolada;
@@ -14,11 +15,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Seis tratadores, e cada um devolve o código que monta no {@code ProblemDetail}:
+ * Sete tratadores, e cada um devolve o código que monta no {@code ProblemDetail}:
  *
  * <ul>
  *   <li>{@code AcessoNegado} e {@code AutorizacaoIndisponivel} → 403;</li>
  *   <li>{@code RegraDoCatalogoViolada} → 400 (G-E);</li>
+ *   <li>{@code ProdutoNaoEncontrado} → 404 (G-F);</li>
  *   <li>{@code LojaSemExpediente} → 409 (G-C2);</li>
  *   <li>{@code OptimisticLockingFailureException} → 409 (G-C3a, ADR-052);</li>
  *   <li>{@code ExpedienteIndisponivel} → 503 (G-C2).</li>
@@ -72,6 +74,16 @@ public class TratadorDeErros {
     public ProblemDetail autorizacaoIndisponivel(AutorizacaoIndisponivel excecao) {
         log.warn("autorização indisponível: {}", excecao.getMessage(), excecao);
         return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, RECUSA);
+    }
+
+    /**
+     * 404: o produto não existe nesta loja — inexistente, ou de outra loja (G-F). A
+     * mensagem da exceção é fixa de propósito e sai inteira: ela não diz qual dos
+     * dois casos aconteceu.
+     */
+    @ExceptionHandler(ProdutoNaoEncontrado.class)
+    public ProblemDetail produtoNaoEncontrado(ProdutoNaoEncontrado excecao) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, excecao.getMessage());
     }
 
     /**
