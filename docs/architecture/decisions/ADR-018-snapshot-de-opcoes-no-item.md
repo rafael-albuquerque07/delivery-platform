@@ -56,6 +56,11 @@ POST /internal/catalog/quote
 → 409 se algum produto não está ACTIVE ou é de outro estabelecimento
 ```
 
+> **⚠ 07/10/2026:** esta rota é `/internal/`, e a emenda de 28/09 da ADR-045 diz
+> que rota `/internal/` responde *sobre o portador do token*. A cotação não terá
+> portador — quem a chamará age por um consumidor de WhatsApp. A contradição está
+> registrada na ADR-054, e é a rodada da cotação que a resolve.
+
 O catálogo é o dono das regras de produto — validação e precificação ficam com
 ele. O `order-service` faz **uma** chamada (a mesma que já faria só para buscar
 preços), recebe linhas validadas e precificadas, e congela o resultado.

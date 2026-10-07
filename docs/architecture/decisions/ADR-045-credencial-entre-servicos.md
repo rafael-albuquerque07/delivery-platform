@@ -214,3 +214,23 @@ segundos em dez segundos de recusa para todo mundo. E cachear positivo depois de
 um erro é o contrário disso, e pior.
 
 **Falha fechada nos dois casos** — o que muda é só o que se guarda.
+
+## Emenda de 07/10/2026 — o gatilho estava escrito de um jeito que dispara falso
+
+O gatilho desta ADR dizia *"o primeiro serviço que precisar autorizar sem uma
+pessoa do outro lado"*. Em 01/10/2026 ele foi lido como tendo disparado, e a fila
+de rodadas foi reordenada para tomar a decisão antes da cotação.
+
+**Não havia disparado.** A ADR-054 procurou o caso no repositório e não achou
+nenhum: a varredura do `merchant` publica e não autoriza (as Consequências da
+ADR-046 já diziam isso), o consumidor da G-B4 só mexe em memória, e a reativação
+recebe o expediente dentro do evento.
+
+O defeito é da redação: *"agir sem pessoa do outro lado"* descreve a varredura tão
+bem quanto descreve o caso de verdade. **O gatilho é substituído pelos dois da
+ADR-054**, que distinguem quem pergunta de quem é perguntado — e aquela ADR também
+escreve a regra que responde "não" na maioria dos casos: *consumidor que recebe no
+evento o dado de que precisa não autoriza nada*.
+
+As **alternativas consideradas** desta ADR continuam valendo inteiras, e a rodada
+que um dia decidir parte delas.
