@@ -198,6 +198,46 @@ mundo que mudou — por isso 400 e não 409, seguindo a distinção que a §5 fa
 cotação. O mesmo vale para marcar uma opção que não é daquele produto. Até a G-E
 isso era 500, porque a `RegraDoCatalogoViolada` não tinha tratador (ADR-053).
 
+### Ler um produto inteiro, e por que a listagem não basta
+
+`GET /api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}` — exige
+`VER_PRODUTO` (G-F, 07/10/2026).
+
+**Ela existe por um motivo concreto:** a rota de marcar a disponibilidade de uma
+opção precisa de `grupoId` e `opcaoId`, e **o resumo da listagem não carrega os
+grupos**. Até a G-F, a única forma de um cliente descobrir uma opção era marcar o
+produto e ler os grupos da resposta — e por isso a tela da opção não existia.
+
+**A resposta usa a forma da listagem** para o que as duas têm em comum:
+`disponibilidade` é o estado, sem carimbo, e preço e acréscimo são número. O carimbo
+é do servidor.
+
+**Produto que não existe e produto de outra loja são 404, com o mesmo corpo.** A
+autorização é sobre a loja da URL; o produto não estar nela não é recusa de acesso, é
+ausência. Distinguir os dois no corpo desfaz o que o status fechou.
+
+**⚠ Divergência em aberto: a marcação responde 403 para a mesma situação.** O
+`MarcarDisponibilidadeService` (G-C2) trata produto de outra loja — e produto que não
+existe — como **403**, com a razão escrita no código: *"a diferença entre os dois
+códigos é um varredor de identificadores"*. Cada rota é coerente consigo mesma e
+nenhuma das duas distingue os dois casos, então nenhuma vaza; mas a mesma situação
+tem dois códigos na mesma API, conforme o método. **Em aberto:** alinhar a marcação a
+404, ou esta a 403 — é decisão sobre o contrato das duas rotas, e não está tomada.
+
+**A ordem das etapas é regra, não detalhe:** autoriza, depois busca. Buscar antes
+faria quem não tem vínculo distinguir produto que existe de produto que não existe.
+O `ConsultarProdutoServiceTest` afirma isso contando as buscas.
+
+**Ela devolve qualquer estado de publicação**, e a listagem só os publicados. A
+listagem é a vitrine do cardápio, e esta é a tela de agir sobre um item — o
+comerciante precisa ver o rascunho para publicá-lo, pelo mesmo motivo que a listagem
+mostra o que não está vendável. A resposta carrega `estadoDePublicacao` para a tela
+saber o que está olhando.
+
+**O que ela não traz:** `precoMinimoPossivel`. A tela da opção mostra o acréscimo de
+cada opção, que já vem nos grupos. **Gatilho escrito:** a primeira tela que mostre
+"a partir de".
+
 ### Quem reativa, e o que acontece quando dois escrevem juntos
 
 O ato de reativar é um caso de uso do `catalog` (`ReativarNoExpediente`, G-C3a,
