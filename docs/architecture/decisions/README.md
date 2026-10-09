@@ -57,8 +57,9 @@
 | 053 | O contrato declara o que a rota recusa, e um teste prova | ✅ aceita · **emenda a 039** |
 | 054 | O gatilho da identidade de serviço não disparou | ✅ aceita · **emenda a 045** |
 | 055 | O que o cliente mostra quando o servidor recusa | ✅ aceita |
+| 056 | Recurso de outra loja é 404, e o 403 fica com um significado só | ✅ aceita |
 
-**Cinquenta e três escritas, duas sem objeto — estas com registro próprio desde
+**Cinquenta e quatro escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

@@ -212,17 +212,15 @@ produto e ler os grupos da resposta — e por isso a tela da opção não existi
 `disponibilidade` é o estado, sem carimbo, e preço e acréscimo são número. O carimbo
 é do servidor.
 
-**Produto que não existe e produto de outra loja são 404, com o mesmo corpo.** A
-autorização é sobre a loja da URL; o produto não estar nela não é recusa de acesso, é
-ausência. Distinguir os dois no corpo desfaz o que o status fechou.
+**Recurso de outra loja é 404, aqui e na marcação** (ADR-056). A autorização é sobre a
+loja da URL; o recurso não estar nela é ausência, não recusa. As duas respostas de
+404 — inexistente e de outra loja — têm **o mesmo corpo**, porque distinguir no corpo
+desfaz o que o status fechou.
 
-**⚠ Divergência em aberto: a marcação responde 403 para a mesma situação.** O
-`MarcarDisponibilidadeService` (G-C2) trata produto de outra loja — e produto que não
-existe — como **403**, com a razão escrita no código: *"a diferença entre os dois
-códigos é um varredor de identificadores"*. Cada rota é coerente consigo mesma e
-nenhuma das duas distingue os dois casos, então nenhuma vaza; mas a mesma situação
-tem dois códigos na mesma API, conforme o método. **Em aberto:** alinhar a marcação a
-404, ou esta a 403 — é decisão sobre o contrato das duas rotas, e não está tomada.
+E o **403 tem um significado só**: sem acesso a esta loja, ou sem a permissão
+exigida. Era isso que a divergência de 07/10 a 09/10 tirava do cliente — com dois
+sentidos no mesmo código, a tela não conseguia saber se pedia para recarregar o
+painel ou se o identificador estava errado.
 
 **A ordem das etapas é regra, não detalhe:** autoriza, depois busca. Buscar antes
 faria quem não tem vínculo distinguir produto que existe de produto que não existe.
