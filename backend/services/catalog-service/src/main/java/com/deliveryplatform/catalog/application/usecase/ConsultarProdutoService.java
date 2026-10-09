@@ -29,12 +29,8 @@ import org.springframework.stereotype.Service;
  * produto que existe de produto que não existe pelo tempo ou pela resposta — e isso
  * é um scanner de produtos com dois passos.
  *
- * <p><b>⚠ Divergência em aberto com a marcação.</b> O
- * {@code MarcarDisponibilidadeService} (G-C2) responde <b>403</b> para a mesma
- * situação — produto de outra loja, ou que não existe. Cada rota é coerente consigo
- * mesma, e nenhuma das duas distingue os dois casos, então nenhuma vaza; mas a mesma
- * situação tem dois códigos na mesma API. Registrado no {@code catalogo.md} §3,
- * "Ler um produto inteiro".
+ * <p>A marcação responde o mesmo 404 para a mesma situação desde a G-G (ADR-056).
+ * Entre 07/10 e 09/10 ela respondia 403, e este javadoc registrava a divergência.
  */
 @Service
 public class ConsultarProdutoService implements ConsultarProduto {

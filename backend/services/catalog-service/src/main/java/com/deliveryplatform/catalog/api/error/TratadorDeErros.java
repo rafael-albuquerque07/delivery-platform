@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * <ul>
  *   <li>{@code AcessoNegado} e {@code AutorizacaoIndisponivel} → 403;</li>
  *   <li>{@code RegraDoCatalogoViolada} → 400 (G-E);</li>
- *   <li>{@code ProdutoNaoEncontrado} → 404 (G-F);</li>
+ *   <li>{@code ProdutoNaoEncontrado} → 404 (G-F; a marcação desde a G-G, ADR-056);</li>
  *   <li>{@code LojaSemExpediente} → 409 (G-C2);</li>
  *   <li>{@code OptimisticLockingFailureException} → 409 (G-C3a, ADR-052);</li>
  *   <li>{@code ExpedienteIndisponivel} → 503 (G-C2).</li>
@@ -77,7 +77,7 @@ public class TratadorDeErros {
     }
 
     /**
-     * 404: o produto não existe nesta loja — inexistente, ou de outra loja (G-F). A
+     * 404: o produto não existe nesta loja — inexistente, ou de outra loja (G-F, ADR-056). A
      * mensagem da exceção é fixa de propósito e sai inteira: ela não diz qual dos
      * dois casos aconteceu.
      */

@@ -190,6 +190,12 @@ class ContratoDeErrosIT extends Infraestrutura {
                             Cena c = cena("VER_PRODUTO");
                             return marcarProduto(c, c.pizza.getId(), "ACABANDO");
                         }),
+                new Provocacao("PUT", MARCAR_PRODUTO, 404,
+                        "produto que não existe nesta loja — ADR-056; o de outra loja dá o mesmo",
+                        () -> {
+                            Cena c = cena("ALTERAR_PRODUTO");
+                            return marcarProduto(c, UUID.randomUUID(), "ACABANDO");
+                        }),
                 new Provocacao("PUT", MARCAR_PRODUTO, 409, "ESGOTADO_HOJE numa loja sem horário",
                         () -> {
                             Cena c = cena("ALTERAR_PRODUTO");
@@ -218,6 +224,15 @@ class ContratoDeErrosIT extends Infraestrutura {
                         () -> {
                             Cena c = cena("VER_PRODUTO");
                             return marcarOpcao(c, c.tamanho().id(), c.pequena(), "ACABANDO");
+                        }),
+                new Provocacao("PUT", MARCAR_OPCAO, 404,
+                        "produto que não existe nesta loja — ADR-056",
+                        () -> {
+                            Cena c = cena("ALTERAR_PRODUTO");
+                            return put("/api/v1/merchants/" + c.loja() + "/catalog/produtos/"
+                                    + UUID.randomUUID() + "/grupos/" + c.tamanho().id()
+                                    + "/opcoes/" + c.pequena() + "/disponibilidade",
+                                    c.token(), "ACABANDO");
                         }),
                 new Provocacao("PUT", MARCAR_OPCAO, 409, "ESGOTADO_HOJE numa loja sem horário",
                         () -> {

@@ -210,8 +210,15 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Sem vínculo, sem ALTERAR_PRODUTO, produto de outra loja ou merchant indisponível — a mesma recusa */
+            /** @description Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -272,8 +279,15 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Sem vínculo, sem ALTERAR_PRODUTO, produto de outra loja ou merchant indisponível — a mesma recusa */
+            /** @description Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056) */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

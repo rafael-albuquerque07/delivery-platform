@@ -62,6 +62,23 @@ describe('recusaDe', () => {
     expect(r.ofereceRecarregar).toBe(false);
   });
 
+  it('o 404 traz a mensagem própria sem detail, e o detail do servidor quando vem', () => {
+    expect(recusaDe(404, undefined).mensagem).toBe('Este produto não está mais nesta loja.');
+    expect(recusaDe(404, undefined).detail).toBeNull();
+    expect(recusaDe(404, 'produto não encontrado nesta loja').detail).toBe(
+      'produto não encontrado nesta loja',
+    );
+  });
+
+  // ADR-056: o que a decisão compra — 403 pede o painel, 404 pede a lista, e
+  // nenhum dos dois é ambíguo.
+  it('o 404 oferece recarregar a lista, e não o painel', () => {
+    const r = recusaDe(404, 'produto não encontrado nesta loja');
+
+    expect(r.ofereceRecarregar).toBe(true);
+    expect(r.contextoVelho).toBe(false);
+  });
+
   it('o 400 não oferece recarregar, porque recarregar não muda nada', () => {
     const r = recusaDe(400, 'produto SEM_CONTROLE não acaba');
 

@@ -238,13 +238,13 @@ class MarcacaoDeDisponibilidadeIT extends Infraestrutura {
     }
 
     @Test
-    @DisplayName("produto de outra loja: 403 — quem tem ALTERAR_PRODUTO aqui não marca o cardápio de lá")
-    void produto_de_outra_loja_e_403() {
+    @DisplayName("produto de outra loja: 404 — quem tem ALTERAR_PRODUTO aqui não marca o cardápio de lá (ADR-056)")
+    void produto_de_outra_loja_e_404() {
         Produto daLoja = margherita();
         UUID outraLoja = UUID.randomUUID();
         MERCHANT.respondeCom(marli, outraLoja, "ADMINISTRADOR", List.of("ALTERAR_PRODUTO"));
 
-        marcar(outraLoja, daLoja.getId(), "ACABANDO").expectStatus().isForbidden();
+        marcar(outraLoja, daLoja.getId(), "ACABANDO").expectStatus().isNotFound();
 
         assertThat(produtos.buscarPorId(daLoja.getId()).orElseThrow()
                 .getDisponibilidade().estado())

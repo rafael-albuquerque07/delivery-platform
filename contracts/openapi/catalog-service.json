@@ -76,7 +76,10 @@
             "description" : "Sem token, ou token inválido"
           },
           "403" : {
-            "description" : "Sem vínculo, sem ALTERAR_PRODUTO, produto de outra loja ou merchant indisponível — a mesma recusa"
+            "description" : "Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa"
+          },
+          "404" : {
+            "description" : "O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056)"
           },
           "409" : {
             "description" : "ESGOTADO_HOJE numa loja que não abre por horário (ADR-049), ou o produto mudou durante a marcação (ADR-052)"
@@ -138,7 +141,10 @@
             "description" : "Sem token, ou token inválido"
           },
           "403" : {
-            "description" : "Sem vínculo, sem ALTERAR_PRODUTO, produto de outra loja ou merchant indisponível — a mesma recusa"
+            "description" : "Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa"
+          },
+          "404" : {
+            "description" : "O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056)"
           },
           "409" : {
             "description" : "ESGOTADO_HOJE numa loja que não abre por horário (ADR-049), ou o produto mudou durante a marcação (ADR-052)"

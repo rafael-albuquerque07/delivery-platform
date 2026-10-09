@@ -144,7 +144,8 @@ public class ProdutoController {
             @ApiResponse(responseCode = "200", description = "O produto recalculado"),
             @ApiResponse(responseCode = "400", description = "Corpo inválido, ou estado que o modo do produto não tem (SEM_CONTROLE não acaba)", content = @Content),
             @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem ALTERAR_PRODUTO, produto de outra loja ou merchant indisponível — a mesma recusa", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa", content = @Content),
+            @ApiResponse(responseCode = "404", description = "O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056)", content = @Content),
             @ApiResponse(responseCode = "409", description = "ESGOTADO_HOJE numa loja que não abre por horário (ADR-049), ou o produto mudou durante a marcação (ADR-052)", content = @Content),
             @ApiResponse(responseCode = "503", description = "O merchant não respondeu sobre o expediente", content = @Content)
     })
@@ -174,7 +175,8 @@ public class ProdutoController {
             @ApiResponse(responseCode = "200", description = "O produto recalculado"),
             @ApiResponse(responseCode = "400", description = "Corpo inválido, ou opção que não pertence a este produto", content = @Content),
             @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem ALTERAR_PRODUTO, produto de outra loja ou merchant indisponível — a mesma recusa", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa", content = @Content),
+            @ApiResponse(responseCode = "404", description = "O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056)", content = @Content),
             @ApiResponse(responseCode = "409", description = "ESGOTADO_HOJE numa loja que não abre por horário (ADR-049), ou o produto mudou durante a marcação (ADR-052)", content = @Content),
             @ApiResponse(responseCode = "503", description = "O merchant não respondeu sobre o expediente", content = @Content)
     })

@@ -2,6 +2,7 @@ package com.deliveryplatform.catalog.unit;
 
 import com.deliveryplatform.catalog.application.exception.AcessoNegado;
 import com.deliveryplatform.catalog.application.exception.LojaSemExpediente;
+import com.deliveryplatform.catalog.application.exception.ProdutoNaoEncontrado;
 import com.deliveryplatform.catalog.application.port.out.AutorizacaoComercialPort;
 import com.deliveryplatform.catalog.application.port.out.ContextoDeAcesso;
 import com.deliveryplatform.catalog.application.port.out.ExpedienteCorrentePort;
@@ -80,7 +81,7 @@ class MarcarDisponibilidadeServiceTest {
     }
 
     @Test
-    @DisplayName("produto de outra loja é 403, e não 404 — a diferença varreria identificadores")
+    @DisplayName("produto de outra loja é 404, o mesmo de não existir (ADR-056)")
     void produto_de_outra_loja() {
         Produto deOutraLoja = produtoDe(OUTRA_LOJA);
 
@@ -94,7 +95,27 @@ class MarcarDisponibilidadeServiceTest {
                 .as("invariante 9: o identificador da URL é confrontado com o do "
                         + "produto. Sem o confronto, quem tem ALTERAR_PRODUTO numa "
                         + "loja marcaria o cardápio de qualquer outra")
-                .isInstanceOf(AcessoNegado.class);
+                .isInstanceOf(ProdutoNaoEncontrado.class);
+    }
+
+    /**
+     * A ordem: a conferência de loja vem antes de perguntar o expediente. Com a loja
+     * sem horário e {@code ESGOTADO_HOJE}, a conferência depois daria 409 — uma
+     * resposta sobre uma loja que não é a de quem perguntou.
+     */
+    @Test
+    @DisplayName("produto de outra loja numa loja sem horário: 404, e não o 409 do expediente")
+    void outra_loja_responde_antes_do_expediente() {
+        Produto deOutraLoja = produtoDe(OUTRA_LOJA);
+
+        var servico = servico(
+                autorizacaoCom(PermissaoDoCatalogo.ALTERAR_PRODUTO),
+                semExpediente(),
+                repositorioCom(deOutraLoja));
+
+        assertThatThrownBy(() -> servico.deProduto(
+                PIZZARIA, deOutraLoja.getId(), EstadoDeDisponibilidade.ESGOTADO_HOJE))
+                .isInstanceOf(ProdutoNaoEncontrado.class);
     }
 
     // ── o carimbo ───────────────────────────────────────────────────────────

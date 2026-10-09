@@ -79,6 +79,7 @@ const MENSAGEM_POR_CODIGO: Record<number, string> = {
   0: 'Não foi possível falar com o servidor.',
   400: 'Este produto não aceita esse estado.',
   403: 'Você não tem mais permissão para alterar este produto.',
+  404: 'Este produto não está mais nesta loja.',
   409: 'O produto mudou enquanto você marcava.',
   503: 'Não foi possível consultar o expediente da loja agora.',
 };
@@ -105,7 +106,9 @@ export function recusaDe(status: number, detalhe: string | undefined): Recusa {
     // 409: conflito de versão se resolve recarregando, e na loja sem horário
     // recarregar não atrapalha — ADR-055 §2, a desambiguação vem do pedido.
     // 503 e sem resposta: o outro lado pode ter voltado.
-    ofereceRecarregar: status === 409 || status === 503 || status === 0,
+    // 404 (ADR-056): o produto pode ter sido despublicado ou removido, e é na
+    // lista que isso se vê. O 403 continua pedindo o painel, e só ele.
+    ofereceRecarregar: status === 404 || status === 409 || status === 503 || status === 0,
     contextoVelho,
   };
 }

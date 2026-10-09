@@ -2,6 +2,7 @@ package com.deliveryplatform.catalog.application.usecase;
 
 import com.deliveryplatform.catalog.application.exception.AcessoNegado;
 import com.deliveryplatform.catalog.application.exception.LojaSemExpediente;
+import com.deliveryplatform.catalog.application.exception.ProdutoNaoEncontrado;
 import com.deliveryplatform.catalog.application.port.in.MarcarDisponibilidade;
 import com.deliveryplatform.catalog.application.port.out.AutorizacaoComercialPort;
 import com.deliveryplatform.catalog.application.port.out.ContextoDeAcesso;
@@ -97,24 +98,39 @@ public class MarcarDisponibilidadeService implements MarcarDisponibilidade {
                 (alvo) -> alvo.produto.marcarOpcao(grupoId, opcaoId, alvo.nova));
     }
 
+    /**
+     * A invariante 9 pela borda certa: o {@code estabelecimentoId} da URL é confrontado
+     * com o do produto, e produto de outra loja é <b>404</b> — o mesmo de não existir
+     * (ADR-056).
+     *
+     * <p><b>Até 09/10/2026 isto era 403</b>, com esta razão: "a diferença entre os dois
+     * códigos é um varredor de identificadores". A razão está certa e a conclusão não: o
+     * que ela exige é que as duas situações respondam <i>igual</i>, e 404 para as duas
+     * cumpre isso tanto quanto 403 para as duas. Quem decidiu foi o cliente — com dois
+     * sentidos no 403, a tela não consegue saber se pede para recarregar o painel ou se
+     * o identificador está errado.
+     *
+     * <p><b>A ordem é parte da regra:</b> autoriza, busca, confere a loja — e só então
+     * pergunta o expediente ao {@code merchant}. Com a conferência depois, um produto de
+     * outra loja poderia receber 409 ou 503, respostas sobre uma loja que não é a dele.
+     * O {@code MarcarDisponibilidadeServiceTest} tem o caso.
+     *
+     * <p>(Este javadoc estava, até a G-G, solto acima do {@code exigirPermissao}, onde
+     * não documentava nada.)
+     */
     private Produto marcar(UUID estabelecimentoId, UUID produtoId,
                            EstadoDeDisponibilidade novo, Consumer<Alvo> ato) {
         exigirPermissao(estabelecimentoId);
 
         Produto produto = produtos.buscarPorId(produtoId)
                 .filter(encontrado -> encontrado.getEstabelecimentoId().equals(estabelecimentoId))
-                .orElseThrow(AcessoNegado::new);
+                .orElseThrow(ProdutoNaoEncontrado::new);
 
         ato.accept(new Alvo(produto, carimbar(estabelecimentoId, novo)));
 
         return produtos.salvar(produto);
     }
 
-    /**
-     * A invariante 9 pela borda certa: o {@code estabelecimentoId} da URL é
-     * confrontado com o do produto, e produto de outra loja é <b>403</b>, não
-     * 404 — a diferença entre os dois códigos é um varredor de identificadores.
-     */
     /** A forma do {@code ListarProdutosService}: sem contexto é 403, sem a permissão também. */
     private void exigirPermissao(UUID estabelecimentoId) {
         ContextoDeAcesso contexto = autorizacao
