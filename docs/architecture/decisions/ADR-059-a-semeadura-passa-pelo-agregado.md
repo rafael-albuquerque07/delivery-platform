@@ -145,3 +145,32 @@ não fundação.
 **E um segundo, que mede o andaime:** a primeira vez que alguém quiser semear algo que o
 agregado não deixa construir. Se isso acontecer, a resposta **não** é escrever SQL — é
 descobrir por que o domínio recusa aquele estado, porque provavelmente ele está certo.
+
+## Emenda de 10/10/2026 (W-D) — o terceiro semeador, e o vínculo
+
+A I-C deixou a loja da fixture sem ninguém que entrasse nela. A W-D acrescenta:
+
+- **no `identity`, o usuário**, com id e telefone fixos na `Fixture` dele. A senha vem
+  de `DELIVERY_SEMEADURA_SENHA` e passa pela porta `CodificadorDeSenha` — **a mesma**
+  que o `CadastrarUsuarioService` usa; nenhum hash no repositório. Com a bandeira
+  ligada e sem a senha (ou com uma que o cadastro recusaria, fora de 8 a 72), o serviço
+  **não sobe**: semeadura pela metade é pior que nenhuma. O telefone da fixture numa
+  conta que não é a da fixture também recusa a subida, em vez de trocar a senha de
+  alguém;
+- **no `merchant`, o vínculo**, no semeador que já existia: `Membro.fundador` —
+  `ADMINISTRADOR`, ativo, todas as permissões —, e o `VinculoAlteradoV1` ao outbox por
+  `GerenciarEquipeService.registrarVinculoNascido`, **na mesma transação**. A loja e o
+  vínculo são idempotentes cada um por si, então uma loja da I-C ganha o vínculo na
+  subida seguinte sem ser ressemeada.
+
+**O que o usuário semeado não tem: a U4 provada.** O cadastro de verdade carimba
+`telefoneVerificadoEm` no instante em que o código foi conferido (ADR-042), e é isso
+que torna a U4 verdadeira em vez de afirmada. A fixture nasce por
+`Usuario.reconstituir` — o id precisa ser fixo, porque o `merchant` grava o vínculo
+sem perguntar — e o carimbo é o instante da semeadura, para um telefone que ninguém
+atende. **A U4 é afirmada, não provada**, num usuário que só existe com a bandeira
+ligada. É mais uma razão para os três semeadores saírem com as rotas de escrita.
+
+**Ressemear é receita, não código** (`como-subir-local.md` §2.7): nada no repositório
+sabe apagar dado. Andaime que grava já é dívida; andaime que apaga seria dívida com
+risco.

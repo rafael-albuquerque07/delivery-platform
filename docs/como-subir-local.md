@@ -317,8 +317,8 @@ não está nele: ela cria um usuário a cada execução.
 
 ### 2.7 O circuito, visto de fora
 
-Com `DELIVERY_SEMEADURA=true` no `.env`, a subida do grupo 3 grava a fixture da
-ADR-059: no `merchant`, uma loja cuja faixa de horário **começa cinco minutos à
+Com `DELIVERY_SEMEADURA=true` e `DELIVERY_SEMEADURA_SENHA` no `.env`, a subida grava a
+fixture da ADR-059: no `identity`, o usuário que entra nela (W-D); no `merchant`, uma loja cuja faixa de horário **começa cinco minutos à
 frente** e dura três horas; no `catalog`, um produto publicado e `ESGOTADO_HOJE`, com
 uma opção também esgotada, ambos com carimbo de trinta dias atrás. As duas linhas
 `semeadura:` do log dizem o id do produto e a hora em que a faixa abre.
@@ -359,7 +359,46 @@ mostra é o estado do produto e o de cada opção.
 frente, o produto existe antes de a abertura ser publicada. **Uma abertura gera um
 evento** — medido: com o produto semeado depois da abertura, nenhum segundo evento veio
 em duas passadas e meia, e ele ficou esgotado. Para ver o circuito de novo, é preciso
-outra abertura: a da semana seguinte, ou apagar a loja e a marca d'água e subir de novo.
+outra abertura: a da semana seguinte, ou a receita abaixo.
+
+#### Entrar com a fixture
+
+Telefone **`+5511999990001`**, senha a do `DELIVERY_SEMEADURA_SENHA`. O vínculo é de
+fundador — `ADMINISTRADOR`, todas as permissões —, então o painel abre as seções
+"Cardápio" e "Disponibilidade", e o nome do produto abre a tela da opção (W-D).
+
+Sem a senha, com a bandeira ligada, o `identity` **não sobe**, e diz por quê:
+`delivery.semeadura.ligada=true exige a senha do usuário da fixture em
+DELIVERY_SEMEADURA_SENHA` (medido em 10/10/2026).
+
+Medido em 10/10/2026, pela API, com as chamadas que o painel faz: entrar `200`, minhas
+lojas `200` com uma loja, a lista `200`, o produto aberto `200`. E o circuito visto
+**pela API**, não pelo documento: a faixa abriu às 11:19:00Z e o produto apareceu
+`DISPONIVEL` e vendável na leitura de 11:19:51Z.
+
+#### Ressemear
+
+Três comandos, no WSL. **Nada no repositório sabe apagar dado** — é receita, e não
+bandeira (ADR-059, emenda da W-D).
+
+```bash
+docker compose --profile marco2 exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d merchant_db -v ON_ERROR_STOP=1 -c "begin; delete from abertura_de_expediente where estabelecimento_id = '"'"'5eed0000-0000-4000-8000-000000000001'"'"'; delete from membro where estabelecimento_id = '"'"'5eed0000-0000-4000-8000-000000000001'"'"'; delete from estabelecimento where id = '"'"'5eed0000-0000-4000-8000-000000000001'"'"'; commit;"'
+docker compose --profile marco2 exec -T mongodb mongosh --quiet --eval 'db.getSiblingDB("catalog_db").produtos.deleteMany({estabelecimentoId: UUID("5eed0000-0000-4000-8000-000000000001")})'
+docker compose --profile marco2 up -d --force-recreate --no-deps --wait merchant-service catalog-service
+```
+
+A ordem do primeiro comando é a das chaves estrangeiras: a marca d'água e o vínculo
+apontam para a loja sem `cascade`; o resto da loja cai junto com ela. O usuário do
+`identity` fica — ele não depende da loja.
+
+Os três comandos, como estão acima, levaram **91 s** em 10/10/2026, e os dois semeadores gravaram.
+
+**O `--force-recreate` não é enfeite.** Os semeadores rodam na **subida**, e o `up -d`
+não recria contêiner que não mudou. Medido em 10/10/2026: sem ele, o `merchant` foi
+recriado (a imagem era nova) e o `catalog` não (a mudança tinha sido só em
+comentário, e a imagem saiu idêntica) — a loja abriu sem produto nenhum. **E a ordem
+importa:** os dois juntos, no mesmo comando, para o produto existir antes de a faixa
+abrir, cinco minutos depois.
 
 ---
 
