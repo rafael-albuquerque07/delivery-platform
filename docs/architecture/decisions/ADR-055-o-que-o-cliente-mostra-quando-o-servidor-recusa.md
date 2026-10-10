@@ -125,3 +125,26 @@ linha por exceção. **Recusada porque nenhuma tela precisa disso hoje:** a
 desambiguação pelo pedido resolve, e inventar um vocabulário de URIs antes de haver
 quem o consuma é o erro que a ADR-054 acabou de registrar sobre identidade de
 serviço.
+
+## Emenda de 10/10/2026 (I-C) — o 500 sem `detail` entra no mapa
+
+Medido na I-B: com o `JWT_JWKS_URI` inalcançável, a rota protegida responde **500**
+com o corpo padrão do `/error` do Boot — `timestamp`, `status`, `error`, `path` —,
+**sem `detail`**. Ele estoura no filtro de segurança, antes do `TratadorDeErros`.
+
+**Não é exceção a esta decisão: é a linha "sem detail" dela**, e o §3 já previa a
+origem — *"página de erro do contêiner"*. O pacote da I-C propôs esta emenda como
+exceção, afirmando que a decisão *"pressupõe um corpo"* e que a mensagem do 500 seria
+*"a única que não vem do servidor"*. As duas afirmações não se sustentam no texto: a
+decisão já tinha a linha para a resposta sem `detail`, e as mensagens do `0` e a
+padrão também nunca vêm do servidor.
+
+**O que faltava era a entrada.** Até aqui o 500 caía na mensagem padrão — *"Não foi
+possível marcar a disponibilidade."* — e **não** oferecia tentar de novo. Agora ele tem
+mensagem própria e oferece, como o 503 e o sem-resposta: o outro lado pode ter voltado.
+E **não** marca o contexto como velho, que continua sendo só do 403: um erro nosso não
+diz nada sobre a permissão de quem marcou. O caso de teste que prova as duas coisas é
+`o 500 mostra a mensagem fixa, não a do 403, e oferece tentar de novo`.
+
+Um 500 que um dia **traga** `detail` mostra o `detail`, pela regra geral — nada aqui
+precisa ser desfeito quando isso acontecer.

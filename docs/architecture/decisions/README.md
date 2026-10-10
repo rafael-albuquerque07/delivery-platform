@@ -59,8 +59,10 @@
 | 055 | O que o cliente mostra quando o servidor recusa | ✅ aceita |
 | 056 | Recurso de outra loja é 404, e o 403 fica com um significado só | ✅ aceita |
 | 057 | A idempotência natural por chave de domínio, e a segunda exceção à invariante 7 | ✅ aceita · **emenda a 048** |
+| 058 | O limite do contêiner dimensiona o JVM, e a pilha sobe em grupos | ✅ aceita |
+| 059 | A semeadura passa pelo agregado, e não pelas tabelas | ✅ aceita |
 
-**Cinquenta e cinco escritas, duas sem objeto — estas com registro próprio desde
+**Cinquenta e sete escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

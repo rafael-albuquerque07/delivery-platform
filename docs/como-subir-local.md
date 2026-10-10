@@ -315,6 +315,52 @@ saúde do gateway e o Swagger do `merchant`, parando no primeiro erro.
 **Rodou do começo ao fim em 10/10/2026**, com a pilha já de pé. A prova da 2.5
 não está nele: ela cria um usuário a cada execução.
 
+### 2.7 O circuito, visto de fora
+
+Com `DELIVERY_SEMEADURA=true` no `.env`, a subida do grupo 3 grava a fixture da
+ADR-059: no `merchant`, uma loja cuja faixa de horário **começa cinco minutos à
+frente** e dura três horas; no `catalog`, um produto publicado e `ESGOTADO_HOJE`, com
+uma opção também esgotada, ambos com carimbo de trinta dias atrás. As duas linhas
+`semeadura:` do log dizem o id do produto e a hora em que a faixa abre.
+
+Depois disso, ninguém publica nada à mão. A faixa abre, a varredura do `merchant`
+acha a loja dentro do horário sem marca d'água, grava a marca e o evento **na mesma
+transação**, o relay entrega ao broker, e o consumidor do `catalog` reativa o que está
+atrás do expediente.
+
+**Medido em 10/10/2026**, com a pilha de pé e o grupo 3 recriado com a bandeira
+(saudáveis em 40 s):
+
+| Instante (UTC) | O que aconteceu | De onde se lê |
+| --- | --- | --- |
+| 05:49:15–17 | as duas semeaduras | `docker compose logs`, linha `semeadura:` |
+| 05:54:00 | a faixa abre | a linha `semeadura:` do `merchant` |
+| 05:54:27,37 | marca d'água e evento gravados | `abertura_de_expediente` e `outbox.ocorrido_em`, no `merchant_db` |
+| 05:54:28,27 | o relay publica | `outbox.publicado_em` |
+| 05:54:28 | o produto e a opção voltam a `DISPONIVEL` | o documento em `catalog_db.produtos`, e o log `Resultado[produtosAlterados=1, …]` |
+
+**Da faixa abrir ao produto virar: 28 s.** Quase tudo é a fase da varredura, que roda
+de minuto em minuto a partir da subida (`delivery.expediente.intervalo-ms`, 60 s, com
+10 s de atraso inicial); o relay roda a cada segundo. **O pior caso é cerca de 61 s.**
+A fila de trabalho e a fila morta ficaram em zero mensagens, antes e depois.
+
+O que olhar, no WSL:
+
+```bash
+docker compose --profile marco2 exec -T mongodb mongosh --quiet --eval   'JSON.stringify(db.getSiblingDB("catalog_db").produtos.findOne({}, {nome:1, disponibilidade:1, "gruposDeOpcoes.opcoes.nome":1, "gruposDeOpcoes.opcoes.disponibilidade":1}))'
+docker compose --profile marco2 exec -T postgres sh -c   'psql -U "$POSTGRES_USER" -d merchant_db -c "select * from abertura_de_expediente"'
+docker compose --profile marco2 exec -T rabbitmq rabbitmqctl list_queues -q name messages
+```
+
+**O `vendavel` não aparece no documento**: é derivado, não é campo. O que o documento
+mostra é o estado do produto e o de cada opção.
+
+**A ordem da semeadura é decisão, não acidente** (ADR-059): com a faixa começando à
+frente, o produto existe antes de a abertura ser publicada. **Uma abertura gera um
+evento** — medido: com o produto semeado depois da abertura, nenhum segundo evento veio
+em duas passadas e meia, e ele ficou esgotado. Para ver o circuito de novo, é preciso
+outra abertura: a da semana seguinte, ou apagar a loja e a marca d'água e subir de novo.
+
 ---
 
 ## 3. O front
@@ -395,3 +441,16 @@ as invariantes que só existem no agregado, e passaria a ser um segundo lugar on
 as regras do domínio estão escritas. **Gatilho escrito:** a rodada que der ao
 `merchant` as rotas de escrita. Aí o `seed` é uma sequência de chamadas HTTP, e
 ela passa pelas mesmas regras que um usuário passa.
+
+**O que mudou em 10/10/2026 (I-C), e o que não mudou.** A recusa acima é contra escrever
+**direto nas tabelas**, e ela continua de pé. A I-C semeia por outro caminho: um
+`ApplicationRunner` dentro de cada serviço, que constrói o agregado com os construtores
+de verdade e grava pelo repositório de verdade (ADR-059, seção 2.7). As duas razões da
+recusa ficam atendidas — as invariantes são o caminho, e não há segundo lugar onde as
+regras estejam escritas.
+
+**A rota de escrita continua devida.** Uma fixture não é uma API: ninguém monta um
+cardápio por `ApplicationRunner`, e a bandeira que a liga é falsa em todo lugar que não
+seja a máquina de quem desenvolve. **O gatilho desta seção segue armado** — a rodada que
+der ao `merchant` as rotas de escrita troca a fixture por chamadas HTTP, e **apaga os
+semeadores do repositório**. Eles são andaime.
