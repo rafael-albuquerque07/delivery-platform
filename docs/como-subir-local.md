@@ -5,10 +5,11 @@ numa conversa e, por isso, não existia. Oito das nove imagens de serviço nunca
 tinham sido construídas, e o comando que a gente achava que subia o ambiente
 derrubou a máquina.
 
-**Todo tempo abaixo foi medido nesta máquina em 06/10/2026**, com o comando ao
-lado. Se você medir outro, troque — número lembrado não serve. E **a pilha
-inteira ainda não subiu nenhuma vez**: a seção 2.4 diz o que aconteceu quando se
-tentou, e é o estado de verdade deste caminho.
+**Todo tempo abaixo foi medido nesta máquina**, em 06/10/2026 (build e imagens)
+ou em 10/10/2026 (a subida em grupos), com o comando ao lado. Se você medir
+outro, troque — número lembrado não serve. **O marco 2 subiu de pé pela primeira
+vez em 10/10/2026**, em quatro grupos e com limite de memória por contêiner
+(seção 2.4). Os quinze contêineres juntos continuam sem ter subido nenhuma vez.
 
 ---
 
@@ -42,9 +43,15 @@ constrói nada sem dizer nada. `--profile services` sozinho é projeto inválido
 porque os serviços dependem do `postgres`. É sempre:
 
 ```bash
-docker compose --profile core ...                     # só a infraestrutura
-docker compose --profile core --profile services ...  # infraestrutura e serviços
+docker compose --profile marco2 ...                   # o marco 2: postgres, mongodb, rabbitmq e os quatro serviços
+docker compose --profile core ...                     # só a infraestrutura, inclusive redis e minio
+docker compose --profile core --profile services ...  # infraestrutura e os nove serviços
 ```
+
+O `marco2` existe desde a I-B: é o que o marco 2 usa de verdade. Os cinco
+esqueletos (`settlement`, `order`, `payment`, `delivery`, `conversation`) só
+ligam uma JVM, e o `redis` e o `minio` não têm usuário no repositório — o cache
+de autorização é em processo (ADR-011).
 
 Pré-requisitos, uma vez:
 
@@ -150,11 +157,13 @@ convenção não o gera mais. `.\gradlew.bat clean bootJar` resolve.
 ### 2.3 As imagens — no WSL
 
 ```bash
-docker compose --profile core --profile services build
+docker compose --profile marco2 build                      # as quatro do marco 2
+docker compose --profile core --profile services build     # as nove
 ```
 
 | Medido com | Tempo |
 | --- | --- |
+| as quatro do marco 2, duas delas vindas do cache (10/10) | **47 s** |
 | as nove, primeira vez depois da ADR-051 | **234 s** |
 | uma (`catalog-service`), de novo | **58 s**, dos quais 12 s mandando o contexto |
 | **antes da ADR-051**, uma (`identity-service`), com o Gradle dentro | **959 s**: 366 s mandando o contexto e 538 s de Gradle |
@@ -164,24 +173,80 @@ Cada imagem manda ao BuildKit só o jar dela — o contexto do `catalog` tem
 tudo e reinclui `**/build/libs/app.jar`. O pico do `vmmemWSL` durante as nove foi
 de **4,2 GB**; antes da ADR-051, o mesmo comando passou de 11,8 GB e travou a VM.
 
-### 2.4 De pé — **não funcionou em 06/10/2026**
+### 2.4 De pé — o marco 2, em quatro grupos
 
-O comando seria:
+No WSL, um grupo de cada vez. `--wait` volta só quando os contêineres do grupo
+estão saudáveis pelo healthcheck — e falha se algum ficar `unhealthy`:
+
+```bash
+docker compose --profile marco2 up -d --wait --wait-timeout 300 postgres mongodb mongo-init rabbitmq   # 1
+docker compose --profile marco2 up -d --wait --wait-timeout 300 identity-service                      # 2
+docker compose --profile marco2 up -d --wait --wait-timeout 300 merchant-service catalog-service      # 3
+docker compose --profile marco2 up -d --wait --wait-timeout 300 gateway                               # 4
+```
+
+O `identity` sobe sozinho porque todos os outros validam token pelo JWKS dele:
+juntos, "não subiu" e "subiu e não achou o JWKS" chegam misturados.
+`merchant` e `catalog` são os dois lados do circuito do expediente.
+
+**Medido em 10/10/2026**, a partir da infraestrutura já de pé e com o `redis` e o
+`minio` parados. O total da VM foi lido do lado Windows, amostrado a cada 500 ms
+durante cada `up`:
+
+```powershell
+(Get-Process vmmemWSL).WorkingSet64 / 1MB                                        # a VM
+$o = Get-CimInstance Win32_OperatingSystem                                        # o commit
+($o.TotalVirtualMemorySize - $o.FreeVirtualMemory) / 1MB                          # GB comprometidos
+```
+
+| Grupo | Até saudável | Memória por contêiner | Pico do `vmmemWSL` | Commit do Windows |
+| --- | --- | --- | --- | --- |
+| antes de tudo | — | — | 2.253 MB | — |
+| 1 · infraestrutura (já de pé) | 12 s | rabbitmq 136 MiB, postgres 44 MiB, mongodb 484 MiB | 2.310 MB | — |
+| 2 · identity | **34 s** | identity 285 MiB de 512 | 2.629 MB | 44,4 de 50,1 GB |
+| 3 · merchant e catalog | **45 s** | merchant 279, catalog 233 MiB de 512 | 3.194 MB | 45,0 GB |
+| 4 · gateway | **21 s** | gateway 212 MiB de 512 | **3.403 MB** | 45,0 GB |
+
+**Os sete de pé ocupam 3,4 GB da VM.** Recriados de uma vez só — depois de uma
+troca de senha no `.env`, o compose recria o que mudou —, os sete voltaram
+saudáveis em **80 s**.
+
+#### Por que agora sobe: o limite de memória
+
+Os quatro serviços têm `mem_limit: 512m` e
+`JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=75`. Sem limite declarado, a JVM mede a
+**VM inteira** e escolhe o heap máximo como fração dela. Medido com
+`java -XX:+PrintFlagsFinal -version`, na imagem do `identity` e no `catalog` pelo
+compose:
+
+| Configuração | `MaxHeapSize` |
+| --- | --- |
+| sem limite, sem percentagem (como era) | **3.137.339.392** bytes — ¼ da VM de 12 GB |
+| `512m` e `MaxRAMPercentage=75` (como é) | **402.653.184** bytes — 384 MiB |
+| `512m`, sem percentagem | 134.217.728 bytes — 128 MiB, ¼ do limite: pouco |
+| `MaxRAMPercentage=75`, **sem** limite | **9.412.018.176** bytes — ¾ da VM |
+
+A última linha é a razão de os dois irem juntos: a percentagem sem o limite é
+pior que nada. Nove JVMs a 3 GB cada eram 27 GB de heap possível numa VM de 12.
+
+`restart: "on-failure:3"` nos quatro: o `unless-stopped` foi o que transformou a
+queda de 01/10 num laço (abaixo). Os cinco esqueletos ainda têm `unless-stopped`
+e nenhum limite — não sobem no `marco2`.
+
+#### O que aconteceu em 06/10/2026, com os quinze de uma vez
 
 ```bash
 docker compose --profile core --profile services up -d
-docker compose --profile core --profile services ps
 ```
 
-**O que aconteceu na única vez que ele rodou depois da ADR-051:** o `up -d`
-voltou com sucesso em 88 s, os quinze contêineres subiram ao mesmo tempo, e a
-VM do WSL caiu cerca de um minuto depois, com os nove serviços ainda no meio da
-partida — nenhum chegou a registrar `Started`. A queda levou junto a tarefa
-`WSL Ubuntu keepalive`, e a distribuição passou a reiniciar a cada comando
-`wsl`; a cada reinício, o `restart: unless-stopped` subia os quinze de novo, e a
-VM voltava a cair. **É um laço**, e ele não para sozinho.
+O `up -d` voltou com sucesso em 88 s, os quinze contêineres subiram ao mesmo
+tempo, e a VM do WSL caiu cerca de um minuto depois, com os nove serviços ainda
+no meio da partida — nenhum chegou a registrar `Started`. A queda levou junto a
+tarefa `WSL Ubuntu keepalive`, e a distribuição passou a reiniciar a cada
+comando `wsl`; a cada reinício, o `restart: unless-stopped` subia os quinze de
+novo, e a VM voltava a cair. **É um laço**, e ele não para sozinho.
 
-Para sair dele:
+Para sair dele, se os esqueletos ainda o armarem:
 
 ```bash
 docker compose --profile core --profile services stop \
@@ -194,21 +259,28 @@ Start-ScheduledTask -TaskName "WSL Ubuntu keepalive"
 ```
 
 `stop` é respeitado pelo `unless-stopped`: os nove ficam parados nos reinícios
-seguintes, e a infraestrutura continua de pé.
+seguintes, e a infraestrutura continua de pé. **O `profile services` inteiro não
+foi medido de novo** depois dos limites — os cinco esqueletos não os têm.
 
-**A causa não está medida.** O pico do `vmmemWSL` não foi registrado durante a
-subida, então não se sabe se foi a memória da VM, o limite de commit do Windows
-(o `CLAUDE.md` já viu esse em 30/08) ou outra coisa. **Gatilho escrito:** a
-próxima tentativa de subir a pilha mede o `vmmemWSL` e o commit do Windows
-durante o `up`, e sobe os serviços **em grupos**, não os nove de uma vez — e
-este parágrafo é reescrito com o que ela medir.
+### 2.5 A prova
 
-### 2.5 A prova, quando a 2.4 funcionar
+**Saúde não prova a pilha.** O healthcheck do contêiner fica `healthy` com o JWKS
+inalcançável — medido na I-B, com o `merchant` apontado para `localhost`. A prova
+que exercita a validação de token entre contêineres é uma rota protegida pelo
+gateway, com token emitido pelo `identity`:
 
-```bash
-curl -fsS http://127.0.0.1:8080/actuator/health
-curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8082/swagger-ui.html
-```
+1. `POST /api/v1/auth/verification-code` com um telefone E.164 → `202`;
+2. o código, lido da tabela (seção 4);
+3. `POST /api/v1/auth/signup` → `201`; `POST /api/v1/auth/login` → `200`;
+4. `GET /api/v1/me/estabelecimentos` com o `accessToken` → `200`, sem token → `401`.
+
+Tudo por `http://127.0.0.1:8080`. Em 10/10/2026: `202`, `201`, `200`, `200` em
+0,7–1,2 s com zero lojas, e `401` sem token. **Não cole token, senha nem corpo de
+login em lugar nenhum.**
+
+O Swagger em contêiner, medido na mesma data: `merchant` e `catalog` respondem
+`200` em `/swagger-ui.html` (com `-L`) e em `/v3/api-docs`; o `identity` responde
+`401`, porque não tem a flag da ADR-050.
 
 | Serviço | Porta | Documentação (ADR-050) |
 | --- | --- | --- |
@@ -223,7 +295,7 @@ curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8082/swagger-ui.html
 | conversation | 8088 | — |
 
 Todas publicadas em `127.0.0.1`, nunca em `0.0.0.0` — regra do `CLAUDE.md`,
-conferida no `docker-compose.yml` em 06/10/2026.
+conferida no `docker compose config` resolvido em 10/10/2026.
 
 Infraestrutura: postgres 5432, mongodb 27017, redis 6379, rabbitmq 5672 e 15672,
 minio 9000 e 9090 (o console; dentro do contêiner, 9001).
@@ -234,13 +306,14 @@ minio 9000 e 9090 (o console; dentro do contêiner, 9001).
 ./scripts/subir-local.sh
 ```
 
-Confere os jars (não os constrói — eles vêm da 2.2, no Windows), constrói as
-imagens, sobe, espera e prova, parando no primeiro erro. `--sem-build` pula a
-conferência e as imagens; `--so-infra` sobe só o `core`.
+Confere os jars dos quatro módulos (não os constrói — eles vêm da 2.2, no
+Windows) e a chave em `secrets/jwt-private.pem`, constrói as quatro imagens, sobe
+os quatro grupos da 2.4 com `--wait`, e mostra `ps`, a memória por contêiner, a
+saúde do gateway e o Swagger do `merchant`, parando no primeiro erro.
+`--sem-build` pula jars e imagens; `--so-infra` sobe só o grupo 1.
 
-**Ele ainda não rodou do começo ao fim**, porque a 2.4 não passou. As etapas
-dele foram rodadas uma a uma, com os mesmos comandos, e são as das tabelas
-acima.
+**Rodou do começo ao fim em 10/10/2026**, com a pilha já de pé. A prova da 2.5
+não está nele: ela cria um usuário a cada execução.
 
 ---
 
@@ -293,17 +366,20 @@ credenciais estão no `.env`.
 | --- | --- | --- |
 | `docker: The term 'docker' is not recognized` | você está no PowerShell | `wsl`, e trabalhe de dentro |
 | `java: command not found` no WSL | o Gradle roda no Windows | seção 0 |
-| `docker compose build` termina em segundos sem construir nada | faltaram os perfis | `--profile core --profile services` |
+| `docker compose build` termina em segundos sem construir nada | faltaram os perfis | `--profile marco2`, ou `--profile core --profile services` |
 | `service "…" depends on undefined service "postgres"` | `--profile services` sem o `core` | os dois perfis juntos |
 | `COPY failed: no source files were specified` | faltou o `bootJar` | seção 2.2. É o preço aceito na ADR-051 |
-| a VM cai e volta, e os contêineres sobem de novo a cada `wsl` | o laço da seção 2.4 | `stop` dos nove serviços e `Start-ScheduledTask` |
-| `vmmemWSL` acima de 10 GB, Docker sem responder | build pesado em paralelo | `wsl --shutdown` no PowerShell — o `systemctl enable docker` e o `restart: unless-stopped` trazem a infraestrutura de volta no primeiro `wsl` |
+| a VM cai e volta, e os contêineres sobem de novo a cada `wsl` | o laço da seção 2.4 — hoje só os cinco esqueletos o armam; os quatro do marco 2 desistem depois de três tentativas (`on-failure:3`) | `stop` dos serviços e `Start-ScheduledTask` |
+| `vmmemWSL` acima de 10 GB, Docker ou `wsl` sem responder — a VM travou | build pesado em paralelo, ou serviços sem `mem_limit` subindo juntos | `wsl --shutdown` no PowerShell, e **religue a tarefa**: `Start-ScheduledTask -TaskName "WSL Ubuntu keepalive"` — em 01/10 ela morreu junto, e foi isso que fechou o laço. O `systemctl enable docker` e o `restart: unless-stopped` da infraestrutura a trazem de volta no primeiro `wsl`; os serviços sobem pela 2.4 |
 | `Wsl/Service/0x8007274c` | o WSL não consegue mais iniciar a VM | `wsl --shutdown`, espere oito segundos, `wsl` |
 | depois do `--shutdown` ou de uma queda, o Ubuntu volta a parar sozinho | a tarefa `WSL Ubuntu keepalive` morreu junto | `Start-ScheduledTask -TaskName "WSL Ubuntu keepalive"`, e confirme `Running` com `Get-ScheduledTask` |
 | `127.0.0.1:2375` recusa a conexão logo depois de religar | a ponte do daemon para o lado Windows ainda está subindo | espere e repita. É o caminho que o Testcontainers usa |
 | `dial tcp [2600:...]:443: network is unreachable` | Docker Hub por IPv6 | repita o `docker pull` da seção 2.1 |
 | o `bootRun` não acha usuário do banco | o `.env` usa `POSTGRES_USER`, o serviço lê `DB_USERNAME` | a linha `export` da seção 1 |
 | o painel carrega e nada responde | CORS em 3000 | seção 3 |
+| o `catalog` não sobe, com `PRECONDITION_FAILED - inequivalent arg` no log | a fila `catalog.expediente-alterado` já existe no broker com outros argumentos — e **argumento de fila é imutável** | apague a fila e suba de novo: `docker compose --profile marco2 exec rabbitmq rabbitmqctl delete_queue catalog.expediente-alterado`. Mensagem que estava nela se perde — confira antes se há alguma (`rabbitmqctl list_queues name messages`). Não mude o nome da fila para contornar |
+| rota protegida dá `500` em contêiner, e o log diz `I/O error on GET request for "http://localhost:8081/.well-known/jwks.json"` | o serviço procura o JWKS em `localhost`, que dentro do contêiner é ele mesmo | `JWT_JWKS_URI` com `http://identity-service:8081/...` no `environment:` do serviço. Não é `401`: falha de busca do JWKS sai como `500` (medido na I-B) |
+| o `identity` não sobe, e `secrets/jwt-private.pem` virou diretório | o arquivo não existia quando o compose montou o volume, e o Docker criou um diretório com o nome, de `root` (medido em 10/10/2026) | apague o diretório, gere o par como diz o `.env.example`, e suba de novo |
 
 ---
 

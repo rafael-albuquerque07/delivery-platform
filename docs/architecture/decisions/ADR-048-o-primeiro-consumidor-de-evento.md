@@ -125,6 +125,15 @@ entre o YAML (2 s × 5) e a ADR (1/4/16) tem de ser resolvida, com a armadilha d
 > continua governando só a fábrica auto-configurada. E medido no jar nesta rodada: no
 > Boot 4.1.1 a propriedade é `max-retries`, e **`max-attempts` não existe** — o `5`
 > daquele bloco nunca foi lido. O `max-interval` padrão é de fato 10 s.
+>
+> **Removido do `catalog` em 10/10/2026 (I-B).** O bloco saiu do `application.yml` do
+> `catalog`, e o `acknowledge-mode: manual` ficou. Duas razões: a propriedade de
+> contagem que ele declarava não existia no Boot 4.1.1 e nunca foi lida; e a política
+> de retentativa deste serviço mora agora na fábrica do consumo (ADR-026, emenda de
+> 10/10/2026). Corrigir o nome para `max-retries` **ligaria** uma retentativa de 2 s
+> numa fábrica cujo único ouvinte confirma sempre — política que ninguém pediu.
+> **Nos outros seis serviços o bloco continua**, com o mesmo `max-attempts` que não é
+> lido; nenhum deles tem consumidor ainda.
 
 ### 4. A corrida entre a leitura e a invalidação, e o contador que a fecha
 
