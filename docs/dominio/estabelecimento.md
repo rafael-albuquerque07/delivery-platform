@@ -428,6 +428,30 @@ revogada continuando a valer, em silêncio.
 
 ## 4. Configuração de operação
 
+### Quem cria a loja, e com o quê
+
+Qualquer pessoa autenticada cria, por `POST /api/v1/me/estabelecimentos`, e nasce
+**fundadora** dela: `ADMINISTRADOR`, ativa, com todas as permissões — a loja nunca
+existe sem dono, e é para isso que a fábrica `Membro.fundador` existe (ADR-060).
+
+A loja nasce com **identificação, política de troco e operação**. A operação entra no
+cadastro porque a **M12** a exige: loja sem modalidade com forma de pagar é loja que não
+opera. Os **mínimos** e o **desconto de retirada** não são pedidos — nascem em zero por
+`Operacao.nova`, e zero tem significado escrito (*"sem mínimo"*), o que faz a **M17**
+passar por construção.
+
+A loja nasce **sem horário e sem área de entrega**. Não é cadastro incompleto:
+`Disponibilidade.semHorario()` é um estado nomeado, e significa *"nunca abre por
+horário"* — o estado de quem ainda não preencheu a tela. As áreas entram pela H1.3, e as
+M9 e M10 passam a valer quando houver duas.
+
+**E a assimetria é deliberada:** horário vazio **fecha** a loja, operação padrão a
+**abriria** — prometendo uma forma de pagar que o comerciante não escolheu, com dinheiro
+chegando à porta (P1).
+
+**Uma pessoa pode ter várias lojas, e não há unicidade de documento** — já estava
+decidido, e está no javadoc do `EstabelecimentoRepositorio`.
+
 ### Tipo de operação
 
 | Valor | Subestados de preparo liberados |
