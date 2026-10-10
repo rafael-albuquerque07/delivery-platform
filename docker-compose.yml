@@ -188,6 +188,8 @@ services:
       # JwtProperties recusa subir. O caminho é /run/segredos e não /run/secrets,
       # que é o de `secrets:` do Docker — este compose não usa aquela seção.
       JWT_PRIVATE_KEY_PATH: /run/segredos/jwt-private.pem
+      DELIVERY_SEMEADURA: ${DELIVERY_SEMEADURA:-false}
+      DELIVERY_SEMEADURA_SENHA: ${DELIVERY_SEMEADURA_SENHA:-}
     volumes:
       # O arquivo, e não a pasta, e somente leitura. A chave fica em secrets/,
       # gitignorada; gere com o comando do .env.example.

@@ -140,7 +140,39 @@ export async function marcarDisponibilidade(
 ): Promise<ProdutoDoContrato> {
   const caminho =
     `/api/v1/merchants/${estabelecimentoId}` + `/catalog/produtos/${produtoId}/disponibilidade`;
+  return enviarMarcacao(caminho, estado, token);
+}
 
+/**
+ * Marca **uma opção** — `PUT .../produtos/{produtoId}/grupos/{grupoId}/opcoes/{opcaoId}/disponibilidade`,
+ * a rota da G-C2, com tela pela primeira vez (W-D).
+ *
+ * Mesmas recusas e mesma tradução da marcação do produto: o `recusaDe` é um só.
+ *
+ * **Devolve o resumo, e não o produto inteiro.** O contrato declara
+ * `ProdutoResumoResponse`, que traz o `vendavel` recalculado e **não** traz os
+ * grupos — então quem chama não fica sabendo, pela resposta, o estado da opção que
+ * acabou de marcar. A tela da opção relê o produto inteiro depois de marcar.
+ */
+export async function marcarDisponibilidadeDaOpcao(
+  estabelecimentoId: string,
+  produtoId: string,
+  grupoId: string,
+  opcaoId: string,
+  estado: EstadoDeDisponibilidade,
+  token: string,
+): Promise<ProdutoDoContrato> {
+  const caminho =
+    `/api/v1/merchants/${estabelecimentoId}/catalog/produtos/${produtoId}` +
+    `/grupos/${grupoId}/opcoes/${opcaoId}/disponibilidade`;
+  return enviarMarcacao(caminho, estado, token);
+}
+
+async function enviarMarcacao(
+  caminho: string,
+  estado: EstadoDeDisponibilidade,
+  token: string,
+): Promise<ProdutoDoContrato> {
   try {
     return await chamar<ProdutoDoContrato>(caminho, { token, metodo: 'PUT', corpo: { estado } });
   } catch (erro) {

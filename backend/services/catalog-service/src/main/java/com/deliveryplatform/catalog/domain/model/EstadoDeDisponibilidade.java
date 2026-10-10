@@ -29,7 +29,7 @@ public enum EstadoDeDisponibilidade {
     ESGOTADO_INDETERMINADO;
 
     /**
-     * A segunda cláusula do vendável da §5: {@code disponibilidade ∈
+     * A segunda cláusula do vendável da §4: {@code disponibilidade ∈
      * {DISPONIVEL, ACABANDO}}.
      *
      * <p>Mora aqui, e não no {@link Produto}, para que exista <b>um</b> lugar

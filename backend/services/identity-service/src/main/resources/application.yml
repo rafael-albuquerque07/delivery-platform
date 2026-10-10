@@ -27,6 +27,11 @@ spring:
     locations: classpath:db/migration
 
 delivery:
+  # A fixture de desenvolvimento (ADR-059): o usuário que entra na loja da
+  # fixture. Falsa por padrão; ligada, exige a senha, que vem só do ambiente.
+  semeadura:
+    ligada: ${DELIVERY_SEMEADURA:false}
+    senha: ${DELIVERY_SEMEADURA_SENHA:}
   jwt:
     issuer: ${JWT_ISSUER:http://localhost:8081}
     audience: ${JWT_AUDIENCE:delivery-platform}

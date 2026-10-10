@@ -1,6 +1,8 @@
 package com.deliveryplatform.merchant.infrastructure.semeadura;
 
 import com.deliveryplatform.merchant.application.port.out.EstabelecimentoRepositorio;
+import com.deliveryplatform.merchant.application.port.out.MembroRepositorio;
+import com.deliveryplatform.merchant.application.usecase.GerenciarEquipeService;
 import com.deliveryplatform.merchant.config.SemeaduraProperties;
 import com.deliveryplatform.merchant.domain.model.AreaDeEntrega;
 import com.deliveryplatform.merchant.domain.model.Disponibilidade;
@@ -9,6 +11,7 @@ import com.deliveryplatform.merchant.domain.model.Estabelecimento;
 import com.deliveryplatform.merchant.domain.model.Faixa;
 import com.deliveryplatform.merchant.domain.model.FusoHorario;
 import com.deliveryplatform.merchant.domain.model.Identificacao;
+import com.deliveryplatform.merchant.domain.model.Membro;
 import com.deliveryplatform.merchant.domain.model.MetodoPagamento;
 import com.deliveryplatform.merchant.domain.model.Modalidade;
 import com.deliveryplatform.merchant.domain.model.Operacao;
@@ -32,15 +35,17 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * A loja da fixture de desenvolvimento — ADR-059. <b>Andaime, não fundação</b>:
+ * A loja da fixture de desenvolvimento, e o vínculo de quem entra nela — ADR-059. <b>Andaime, não fundação</b>:
  * sai do repositório na rodada que der ao {@code merchant} as rotas de escrita
  * ({@code como-subir-local.md} §6).
  *
- * <p>Atrás de {@code delivery.semeadura.ligada}, falsa por padrão, e idempotente
- * pelo id da {@link Fixture}: se a loja já existe, não faz nada. Roda em toda
- * subida com a bandeira ligada.
+ * <p>Atrás de {@code delivery.semeadura.ligada}, falsa por padrão. Roda em toda
+ * subida com a bandeira ligada, e cada metade é idempotente por si: a loja pelo id
+ * da {@link Fixture}, o vínculo pelo par usuário e loja. Uma loja semeada antes do
+ * vínculo existir (I-C) ganha o vínculo na subida seguinte, sem ressemear nada.
  *
  * <h2>Pelo agregado, e o id fixo por {@code reconstituir}</h2>
  *
@@ -63,7 +68,18 @@ import org.springframework.stereotype.Component;
  * ela tem de estar. O fim pode cair antes do início — a faixa cruza a
  * meia-noite, e o agregado sabe o que isso significa.
  *
- * <p><b>Não grava marca d'água e não publica nada.</b> Quem publica é a
+ * <h2>O vínculo, pelo mesmo caminho do aceite de convite (W-D)</h2>
+ *
+ * {@code Membro.fundador}: {@code ADMINISTRADOR}, ativo, com todas as permissões —
+ * a fábrica que existe para o primeiro vínculo de uma loja, que é o que este é.
+ * O usuário é o da {@code Fixture} do {@code identity}, pelo mesmo id. E o vínculo
+ * nascido vai ao outbox por {@code GerenciarEquipeService.registrarVinculoNascido},
+ * <b>na mesma transação</b> — sem isso, um {@code catalog} que guardou "sem
+ * vínculo" em cache não ficaria sabendo (invariante 7, ADR-043). O método exige
+ * transação aberta ({@code MANDATORY}); é por isso que {@link #run} é
+ * {@code @Transactional}.
+ *
+ * <p><b>Não grava marca d'água e não publica a abertura.</b> Quem publica é a
  * varredura, sozinha — é isso que a fixture existe para deixar ver.
  */
 @Component
@@ -83,26 +99,44 @@ public class SemeaduraDoMerchant implements ApplicationRunner {
 
     private final SemeaduraProperties propriedades;
     private final EstabelecimentoRepositorio estabelecimentos;
+    private final MembroRepositorio membros;
+    private final GerenciarEquipeService equipes;
     private final Clock relogio;
 
     public SemeaduraDoMerchant(SemeaduraProperties propriedades,
                                EstabelecimentoRepositorio estabelecimentos,
+                               MembroRepositorio membros,
+                               GerenciarEquipeService equipes,
                                Clock relogio) {
         this.propriedades = propriedades;
         this.estabelecimentos = estabelecimentos;
+        this.membros = membros;
+        this.equipes = equipes;
         this.relogio = relogio;
     }
 
     @Override
+    @Transactional
     public void run(ApplicationArguments argumentos) {
         if (!propriedades.ligada()) {
             return;
         }
-        if (estabelecimentos.buscarPorId(Fixture.LOJA).isPresent()) {
-            log.info("semeadura: a loja da fixture já existe — nada a fazer");
-            return;
-        }
         Instant agora = relogio.instant();
+        if (estabelecimentos.buscarPorId(Fixture.LOJA).isPresent()) {
+            log.info("semeadura: a loja da fixture já existe");
+        } else {
+            semearLoja(agora);
+        }
+        if (membros.buscarPorUsuarioELoja(Fixture.USUARIO, Fixture.LOJA).isPresent()) {
+            log.info("semeadura: o vínculo da fixture já existe");
+        } else {
+            Membro dono = membros.salvar(Membro.fundador(Fixture.USUARIO, Fixture.LOJA, agora));
+            equipes.registrarVinculoNascido(dono, agora);
+            log.info("semeadura: vínculo de {} com a loja {} gravado", Fixture.USUARIO, Fixture.LOJA);
+        }
+    }
+
+    private void semearLoja(Instant agora) {
         ZonedDateTime inicio = agora.plus(ADIANTAMENTO).atZone(FUSO.zona()).truncatedTo(ChronoUnit.MINUTES);
         ZonedDateTime fim = inicio.plus(DURACAO);
         Faixa faixa = new Faixa(inicio.toLocalTime(), fim.toLocalTime());

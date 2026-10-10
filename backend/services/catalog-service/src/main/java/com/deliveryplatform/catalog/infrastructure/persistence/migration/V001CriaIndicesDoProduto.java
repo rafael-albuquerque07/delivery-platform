@@ -24,7 +24,7 @@ import org.springframework.data.mongodb.core.index.Index;
  * documentos de todo mundo para responder sobre um.
  *
  * <p><b>Por que o {@code vendavel} não tem índice.</b> Porque ele não é campo
- * (§5, e {@code Produto.vendavel()}). "Só os vendáveis" é filtro de aplicação
+ * (§4, e {@code Produto.vendavel()}). "Só os vendáveis" é filtro de aplicação
  * sobre o resultado do primeiro índice. O dia em que o cardápio de uma loja não
  * couber em memória, a saída é projeção com dono e invalidação escritos — não
  * um booleano solto que cinco caminhos de escrita têm de manter em dia.

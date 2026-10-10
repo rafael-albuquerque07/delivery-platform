@@ -117,7 +117,7 @@ public record GrupoDeOpcoes(
     }
 
     /**
-     * A terceira cláusula do vendável da §5, para <b>este</b> grupo.
+     * A terceira cláusula do vendável da §4, para <b>este</b> grupo.
      *
      * <p>Grupo opcional não impede venda nem quando está inteiro esgotado: o
      * consumidor simplesmente não escolhe adicional.

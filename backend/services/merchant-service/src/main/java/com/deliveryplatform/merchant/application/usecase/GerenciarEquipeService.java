@@ -150,6 +150,9 @@ public class GerenciarEquipeService {
      * {@code Convite}. Em vez de duplicar o funil, o
      * {@code AceitarConviteService} chama este método <b>dentro da mesma
      * transação</b> em que gravou o {@code Membro}.
+     *
+     * <p>O segundo chamador é a semeadura de desenvolvimento (ADR-059), que grava o
+     * fundador da loja da fixture pelo mesmo caminho — e nunca um terceiro funil.
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public void registrarVinculoNascido(Membro novo, Instant agora) {

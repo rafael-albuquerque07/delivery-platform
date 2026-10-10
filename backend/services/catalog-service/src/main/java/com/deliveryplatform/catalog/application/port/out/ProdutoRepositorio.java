@@ -37,7 +37,7 @@ public interface ProdutoRepositorio {
      * §7 existe para servir.
      *
      * <p>Devolve os {@code ATIVO}, e não os <i>vendáveis</i>: vendável é
-     * derivado (§5) e não é campo, então filtrar por ele é trabalho de quem
+     * derivado (§4) e não é campo, então filtrar por ele é trabalho de quem
      * chamou, sobre o que voltou daqui.
      *
      * <p><b>Ganhou {@code Pageable} na G-B3, e devia ter nascido com ele.</b> O

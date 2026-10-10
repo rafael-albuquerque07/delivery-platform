@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { ErroDaApi } from '../api/cliente';
@@ -130,5 +130,34 @@ describe('ListaDeProdutos', () => {
     montar('p1');
 
     expect(await screen.findByText(/Mostrando 1 de 37/)).toBeInTheDocument();
+  });
+
+  // W-D: o nome abre o produto inteiro, e voltar relê a lista — marcar uma opção
+  // pode ter mudado o vendável de quem está nela.
+  it('o nome abre o produto, e voltar relê a lista', async () => {
+    chamarFalso.mockImplementation((caminho: string) =>
+      Promise.resolve(
+        caminho.includes('?page=')
+          ? pagina([{ id: 'x9', nome: 'Pizza margherita', precoBase: 49.9, vendavel: true }])
+          : {
+              id: 'x9',
+              nome: 'Pizza margherita',
+              precoBase: 49.9,
+              vendavel: true,
+              gruposDeOpcoes: [],
+            },
+      ),
+    );
+
+    montar('p1');
+    fireEvent.click(await screen.findByRole('button', { name: 'Pizza margherita' }));
+
+    expect(await screen.findByRole('heading', { name: 'Pizza margherita' })).toBeInTheDocument();
+    expect(chamarFalso.mock.calls.at(-1)?.[0]).toBe('/api/v1/merchants/p1/catalog/produtos/x9');
+
+    fireEvent.click(screen.getByRole('button', { name: /voltar à lista/i }));
+
+    expect(await screen.findByRole('button', { name: 'Pizza margherita' })).toBeInTheDocument();
+    expect(chamarFalso.mock.calls.filter(([c]) => String(c).includes('?page='))).toHaveLength(2);
   });
 });

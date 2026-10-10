@@ -52,6 +52,40 @@ export function MarcarDisponibilidade({
   aoMarcar: (produto: ProdutoDoContrato) => void;
   aoRecarregar: () => void;
 }) {
+  return (
+    <MarcarEstado
+      nome={produto.nome}
+      atual={produto.disponibilidade}
+      enviar={(estado, token) =>
+        marcarDisponibilidade(estabelecimentoId, produto.id, estado, token)
+      }
+      aoMarcar={aoMarcar}
+      aoRecarregar={aoRecarregar}
+      rotuloDoRecarregar="Recarregar a lista"
+    />
+  );
+}
+
+/**
+ * Os quatro botões e a recusa, sem saber **o que** está sendo marcado — o produto
+ * (W-C) ou uma opção dele (W-D). Quem sabe é o `enviar`; a tradução da recusa é a
+ * mesma, porque as duas rotas recusam pelas mesmas razões (G-C2).
+ */
+export function MarcarEstado({
+  nome,
+  atual,
+  enviar,
+  aoMarcar,
+  aoRecarregar,
+  rotuloDoRecarregar,
+}: {
+  nome: string;
+  atual: EstadoDeDisponibilidade | null;
+  enviar: (estado: EstadoDeDisponibilidade, token: string) => Promise<ProdutoDoContrato>;
+  aoMarcar: (produto: ProdutoDoContrato) => void;
+  aoRecarregar: () => void;
+  rotuloDoRecarregar: string;
+}) {
   const token = useSessao().sessao?.token;
   const [enviando, definirEnviando] = useState(false);
   const [recusa, definirRecusa] = useState<Recusa | null>(null);
@@ -61,7 +95,7 @@ export function MarcarDisponibilidade({
     definirEnviando(true);
     definirRecusa(null);
     try {
-      aoMarcar(await marcarDisponibilidade(estabelecimentoId, produto.id, estado, token));
+      aoMarcar(await enviar(estado, token));
     } catch (erro) {
       if (erro instanceof MarcacaoRecusada) {
         definirRecusa(erro.recusa);
@@ -75,22 +109,18 @@ export function MarcarDisponibilidade({
 
   return (
     <div className="mt-2">
-      <div
-        role="group"
-        aria-label={`Disponibilidade de ${produto.nome}`}
-        className="flex flex-wrap gap-1"
-      >
+      <div role="group" aria-label={`Disponibilidade de ${nome}`} className="flex flex-wrap gap-1">
         {ESTADOS.map((estado) => (
           <button
             key={estado}
             type="button"
             disabled={enviando}
-            aria-pressed={produto.disponibilidade === estado}
+            aria-pressed={atual === estado}
             onClick={() => void marcar(estado)}
             className={[
               'rounded px-2 py-1 text-xs font-medium',
               'disabled:cursor-not-allowed disabled:opacity-60',
-              produto.disponibilidade === estado
+              atual === estado
                 ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
                 : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
             ].join(' ')}
@@ -100,7 +130,7 @@ export function MarcarDisponibilidade({
         ))}
       </div>
 
-      {produto.disponibilidade === null && (
+      {atual === null && (
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           Estado atual não reconhecido por esta tela.
         </p>
@@ -111,7 +141,7 @@ export function MarcarDisponibilidade({
           <p>{recusa.detail ?? recusa.mensagem}</p>
           {recusa.ofereceRecarregar && (
             <Botao variante="discreto" onClick={aoRecarregar}>
-              Recarregar a lista
+              {rotuloDoRecarregar}
             </Botao>
           )}
           {recusa.contextoVelho && (

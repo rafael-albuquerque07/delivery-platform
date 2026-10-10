@@ -17,7 +17,7 @@ import java.util.UUID;
  * pede o produto — e essa rota nasce quando alguém precisar dela.
  *
  * <p><b>Mas o {@code vendavel} vem</b>, e ele é a razão de o resumo não ser só
- * nome e preço. Ele é derivado (§5) e o cliente <b>não consegue recalculá-lo</b>
+ * nome e preço. Ele é derivado (§4) e o cliente <b>não consegue recalculá-lo</b>
  * sem os grupos: um produto {@code DISPONIVEL} cujo grupo obrigatório "Tamanho"
  * está inteiro esgotado não é vendável, e nada no resumo diria isso. Omiti-lo
  * obrigaria a tela a mostrar como disponível o que não dá para vender.
