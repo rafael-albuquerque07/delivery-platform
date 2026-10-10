@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 #
-# Sobe o ambiente local na ordem da ADR-051: o jar primeiro, a imagem depois.
+# Sobe o marco 2 na ordem da ADR-051 — o jar primeiro, a imagem depois — e em
+# quatro grupos, cada um esperando o anterior ficar saudável (I-B).
 # Rode de dentro do WSL, da raiz do repositório, DEPOIS do bootJar no Windows.
 #
-#   ./scripts/subir-local.sh              # confere jars, imagens, infraestrutura, serviços
+#   ./scripts/subir-local.sh              # confere jars, imagens, e os quatro grupos
 #   ./scripts/subir-local.sh --sem-build  # só sobe; usa as imagens que já existem
-#   ./scripts/subir-local.sh --so-infra   # só postgres, mongo, redis, rabbit, minio
+#   ./scripts/subir-local.sh --so-infra   # só o grupo 1: postgres, mongodb, rabbitmq
 #
 # Este script não lê e não imprime o .env. Quem lê o .env é o compose.
 
@@ -17,17 +18,19 @@ BASE_JRE="eclipse-temurin:21-jre-alpine"
 COM_BUILD=1
 SO_INFRA=0
 
-# Sem perfil, o compose não enxerga serviço nenhum — todos têm `profiles:`. E
-# `services` sozinho é projeto inválido: os serviços dependem do postgres, que
-# é do `core`. Os dois perfis vão juntos em todo comando.
-CORE="--profile core"
-TUDO="--profile core --profile services"
+# O perfil `marco2` é o que o marco 2 usa de verdade: postgres, mongodb, rabbitmq
+# e os quatro serviços da prova. Os cinco esqueletos, e o redis e o minio, que
+# nada usa, ficam de fora — os quinze juntos derrubaram a VM em 01/10
+# (docs/como-subir-local.md §2.4).
+PERFIL="--profile marco2"
+# Os quatro módulos do marco 2: três em services/ e o gateway em infra/.
+MODULOS="backend/infra/gateway/ backend/services/identity-service/ backend/services/merchant-service/ backend/services/catalog-service/"
 
 for arg in "$@"; do
   case "$arg" in
     --sem-build) COM_BUILD=0 ;;
     --so-infra)  SO_INFRA=1 ;;
-    -h|--help)   sed -n '3,10p' "$0"; exit 0 ;;
+    -h|--help)   sed -n '3,11p' "$0"; exit 0 ;;
     *) echo "argumento desconhecido: $arg" >&2; exit 2 ;;
   esac
 done
@@ -49,6 +52,13 @@ fi
 
 if [ ! -f .env ]; then
   erro ".env não existe. Copie o .env.example e preencha."
+  exit 1
+fi
+
+if [ "$SO_INFRA" -eq 0 ] && [ ! -f secrets/jwt-private.pem ]; then
+  # O compose monta este arquivo no identity, somente-leitura. Sem ele o Docker
+  # cria um DIRETÓRIO com esse nome no lugar, e o identity não sobe.
+  erro "secrets/jwt-private.pem não existe. O .env.example diz como gerar o par."
   exit 1
 fi
 
@@ -75,9 +85,8 @@ fi
 if [ "$COM_BUILD" -eq 1 ] && [ "$SO_INFRA" -eq 0 ]; then
   passo "conferindo os jars (ADR-051: a imagem carrega o jar)"
 
-  # Os nove módulos executáveis: oito em services/ e o gateway em infra/.
   faltando=0
-  for d in backend/services/*/ backend/infra/gateway/; do
+  for d in $MODULOS; do
     modulo="$(basename "$d")"
     if [ ! -f "${d}build/libs/app.jar" ]; then
       erro "${modulo}: build/libs/app.jar não existe — rode o bootJar no PowerShell (ver acima)"
@@ -96,55 +105,50 @@ fi
 
 if [ "$COM_BUILD" -eq 1 ] && [ "$SO_INFRA" -eq 0 ]; then
   passo "construindo as imagens"
-  docker compose $TUDO build
+  docker compose $PERFIL build
 fi
 
 # ------------------------------------------------------------------- 4. de pé
 
-if [ "$SO_INFRA" -eq 1 ]; then
-  passo "subindo a infraestrutura"
-  docker compose $CORE up -d
-  PERFIS="$CORE"
-else
-  passo "subindo infraestrutura e serviços"
-  docker compose $TUDO up -d
-  PERFIS="$TUDO"
-fi
-
-# -------------------------------------------------------------- 5. a espera
-
-passo "esperando ficar saudável"
-limite=$(( $(date +%s) + 240 ))
-while :; do
-  # Separador explícito: contêiner sem HEALTHCHECK tem Health vazio, e com
-  # espaço como separador as colunas escorregariam.
-  estado="$(docker compose $PERFIS ps --format '{{.Service}}|{{.Health}}|{{.State}}')"
-  pendentes="$(printf '%s\n' "$estado" | awk -F'|' '$2=="starting" || $3=="restarting" {print $1}')"
-  quebrados="$(printf '%s\n' "$estado" | awk -F'|' '$2=="unhealthy" {print $1}')"
-
-  if [ -n "$quebrados" ]; then
-    erro "não subiu: $(printf '%s' "$quebrados" | tr '\n' ' ')"
-    for s in $quebrados; do
+# `--wait` espera o healthcheck de cada contêiner do grupo, e falha se algum
+# ficar `unhealthy` ou se o prazo vencer. Substitui o laço que estava aqui, que
+# tratava `Health` vazio como saudável — um "subiu" falso para quem não tem
+# healthcheck. O `mongo-init`, que roda uma vez e sai com 0, passa pelo `--wait`
+# (medido em 10/10/2026).
+grupo() {
+  local nome="$1"; shift
+  passo "$nome"
+  local inicio; inicio=$(date +%s)
+  if ! docker compose $PERFIL up -d --wait --wait-timeout 300 "$@"; then
+    erro "não ficou saudável: $*"
+    docker compose $PERFIL ps
+    for s in "$@"; do
       printf '\n--- %s ---\n' "$s"
-      docker compose $PERFIS logs --tail=40 "$s"
+      docker compose $PERFIL logs --tail=40 "$s"
     done
     exit 1
   fi
+  echo "saudável em $(( $(date +%s) - inicio )) s"
+}
 
-  [ -z "$pendentes" ] && break
+# 1. a infraestrutura que o marco 2 usa
+grupo "grupo 1 · infraestrutura" postgres mongodb mongo-init rabbitmq
 
-  if [ "$(date +%s)" -gt "$limite" ]; then
-    erro "tempo esgotado esperando: $(printf '%s' "$pendentes" | tr '\n' ' ')"
-    docker compose $PERFIS ps
-    exit 1
-  fi
-  sleep 3
-done
+if [ "$SO_INFRA" -eq 0 ]; then
+  # 2. o identity sozinho: todos os outros validam token pelo JWKS dele, e subir
+  #    junto mistura "não subiu" com "subiu e não achou o JWKS"
+  grupo "grupo 2 · identity" identity-service
+  # 3. os dois lados do circuito do expediente
+  grupo "grupo 3 · merchant e catalog" merchant-service catalog-service
+  # 4. a porta de entrada
+  grupo "grupo 4 · gateway" gateway
+fi
 
-# --------------------------------------------------------------- 6. a prova
+# --------------------------------------------------------------- 5. a prova
 
 passo "a prova"
-docker compose $PERFIS ps
+docker compose $PERFIL ps
+docker stats --no-stream --format '{{.Name}}\t{{.MemUsage}}'
 
 if [ "$SO_INFRA" -eq 0 ]; then
   if curl -fsS -o /dev/null http://127.0.0.1:8080/actuator/health; then
@@ -165,8 +169,10 @@ fi
 
 cat <<'FIM'
 
-Pronto. O roteiro inteiro, com os tempos medidos e o que fazer quando der
-errado, está em docs/como-subir-local.md.
+Pronto. Saúde não exercita o JWKS entre contêineres: a prova que exercita é uma
+rota protegida pelo gateway com token emitido pelo identity —
+docs/como-subir-local.md §2.5. O roteiro inteiro, com os tempos medidos e o que
+fazer quando der errado, está lá.
 
 O front: cd frontend && npm run dev — em http://localhost:5173, e
 CORS_ALLOWED_ORIGINS no .env precisa incluir essa porta.

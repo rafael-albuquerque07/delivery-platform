@@ -1,6 +1,9 @@
 # Perfis:
 #   core           infraestrutura (bancos, brokers, storage)
 #   services       gateway e microsserviços
+#   marco2         só o que o marco 2 usa: postgres, mongodb, rabbitmq, e identity,
+#                  merchant, catalog e gateway. É o perfil para subir a pilha — em
+#                  grupos, como diz o docs/como-subir-local.md (I-B)
 #   full           tudo
 #
 # No dia a dia você não sobe os nove aplicativos. Sobe `core` e roda pelo IDE
@@ -18,7 +21,7 @@ services:
   # ─────────────────────────────────────────────────────── core
   postgres:
     restart: unless-stopped
-    profiles: ["core", "full"]
+    profiles: ["core", "marco2", "full"]
     image: postgres:17-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -45,7 +48,7 @@ services:
   # do desenvolvedor, isto vira decisão de novo — e aí é ADR.
   mongodb:
     restart: unless-stopped
-    profiles: ["core", "full"]
+    profiles: ["core", "marco2", "full"]
     image: mongo:8
     # Replica set de nó único: sem ele não há transação multi-documento,
     # e sem transação não há Outbox — ADR-008/ADR-017.
@@ -64,7 +67,7 @@ services:
   # com 0 — é de um tiro só. Com unless-stopped ele reiniciaria para sempre,
   # reexecutando o rs.initiate() a cada volta.
   mongo-init:
-    profiles: ["core", "full"]
+    profiles: ["core", "marco2", "full"]
     image: mongo:8
     depends_on:
       mongodb:
@@ -92,7 +95,7 @@ services:
 
   rabbitmq:
     restart: unless-stopped
-    profiles: ["core", "full"]
+    profiles: ["core", "marco2", "full"]
     image: rabbitmq:4-management-alpine
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
@@ -130,11 +133,14 @@ services:
   # ───────────────────────────────────────────────── aplicações
 
   gateway:
-    profiles: ["services", "full"]
+    profiles: ["services", "marco2", "full"]
     build:
       context: ./backend
       dockerfile: infra/gateway/Dockerfile
     environment:
+      # O JVM dimensiona o heap pelo limite do contêiner (mem_limit), e não pela
+      # VM inteira: sem o limite, cada um escolhia 1/4 da VM, ~2,9 GB (medido, I-B).
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
       SERVER_PORT: "8080"
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
       # Emissor e audiência: a MESMA expressão no identity (que assina), no
@@ -154,14 +160,20 @@ services:
       SERVICE_CONVERSATION_URI: http://conversation-service:8088
     ports:
       - "127.0.0.1:8080:8080"
-    restart: unless-stopped
+    # Três tentativas e para. Com unless-stopped, a queda da VM em 01/10 virou laço:
+    # ela religava as JVMs que tinham acabado de derrubá-la (I-B).
+    restart: "on-failure:3"
+    mem_limit: 512m
 
   identity-service:
-    profiles: ["services", "full"]
+    profiles: ["services", "marco2", "full"]
     build:
       context: ./backend
       dockerfile: services/identity-service/Dockerfile
     environment:
+      # O JVM dimensiona o heap pelo limite do contêiner (mem_limit), e não pela
+      # VM inteira: sem o limite, cada um escolhia 1/4 da VM, ~2,9 GB (medido, I-B).
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
       SERVER_PORT: "8081"
       DB_URL: jdbc:postgresql://postgres:5432/identity_db
       DB_USERNAME: ${POSTGRES_USER}
@@ -172,6 +184,14 @@ services:
       JWT_JWKS_URI: http://identity-service:8081/.well-known/jwks.json
       JWT_ISSUER: ${JWT_ISSUER:-http://localhost:8081}
       JWT_AUDIENCE: ${JWT_AUDIENCE:-delivery-platform}
+      # A chave privada (ADR-037 §2: caminho de arquivo vindo do ambiente). Sem ela o
+      # JwtProperties recusa subir. O caminho é /run/segredos e não /run/secrets,
+      # que é o de `secrets:` do Docker — este compose não usa aquela seção.
+      JWT_PRIVATE_KEY_PATH: /run/segredos/jwt-private.pem
+    volumes:
+      # O arquivo, e não a pasta, e somente leitura. A chave fica em secrets/,
+      # gitignorada; gere com o comando do .env.example.
+      - ./secrets/jwt-private.pem:/run/segredos/jwt-private.pem:ro
     ports:
       - "127.0.0.1:8081:8081"
     depends_on:
@@ -179,14 +199,20 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    restart: unless-stopped
+    # Três tentativas e para. Com unless-stopped, a queda da VM em 01/10 virou laço:
+    # ela religava as JVMs que tinham acabado de derrubá-la (I-B).
+    restart: "on-failure:3"
+    mem_limit: 512m
 
   merchant-service:
-    profiles: ["services", "full"]
+    profiles: ["services", "marco2", "full"]
     build:
       context: ./backend
       dockerfile: services/merchant-service/Dockerfile
     environment:
+      # O JVM dimensiona o heap pelo limite do contêiner (mem_limit), e não pela
+      # VM inteira: sem o limite, cada um escolhia 1/4 da VM, ~2,9 GB (medido, I-B).
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
       DELIVERY_DOCS_ABERTAS: ${DELIVERY_DOCS_ABERTAS:-false}
       SERVER_PORT: "8082"
       DB_URL: jdbc:postgresql://postgres:5432/merchant_db
@@ -205,14 +231,20 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    restart: unless-stopped
+    # Três tentativas e para. Com unless-stopped, a queda da VM em 01/10 virou laço:
+    # ela religava as JVMs que tinham acabado de derrubá-la (I-B).
+    restart: "on-failure:3"
+    mem_limit: 512m
 
   catalog-service:
-    profiles: ["services", "full"]
+    profiles: ["services", "marco2", "full"]
     build:
       context: ./backend
       dockerfile: services/catalog-service/Dockerfile
     environment:
+      # O JVM dimensiona o heap pelo limite do contêiner (mem_limit), e não pela
+      # VM inteira: sem o limite, cada um escolhia 1/4 da VM, ~2,9 GB (medido, I-B).
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
       DELIVERY_DOCS_ABERTAS: ${DELIVERY_DOCS_ABERTAS:-false}
       SERVER_PORT: "8083"
       MONGO_URI: mongodb://mongodb:27017/catalog_db?replicaSet=rs0
@@ -232,7 +264,10 @@ services:
         condition: service_completed_successfully
       rabbitmq:
         condition: service_healthy
-    restart: unless-stopped
+    # Três tentativas e para. Com unless-stopped, a queda da VM em 01/10 virou laço:
+    # ela religava as JVMs que tinham acabado de derrubá-la (I-B).
+    restart: "on-failure:3"
+    mem_limit: 512m
 
   settlement-service:
     profiles: ["services", "full"]

@@ -34,13 +34,13 @@ spring:
     password: ${RABBITMQ_PASSWORD}
     publisher-confirm-type: correlated
     publisher-returns: true
+    # Esta é a fábrica auto-configurada, a do OuvinteDeVinculoAlterado, que confirma
+    # à mão. Não há bloco `retry` aqui, de propósito (I-B): o que existia declarava
+    # `max-attempts`, que não existe no Boot 4.1.1 e nunca foi lido; e o consumo que
+    # retenta tem a própria fábrica, com a ADR-026 (ConfiguracaoDoConsumoDeExpediente).
     listener:
       simple:
         acknowledge-mode: manual
-        retry:
-          enabled: true
-          initial-interval: 2s
-          max-attempts: 5
 
   security:
     oauth2:
