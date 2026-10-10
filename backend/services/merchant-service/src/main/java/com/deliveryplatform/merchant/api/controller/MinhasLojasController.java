@@ -1,17 +1,24 @@
 package com.deliveryplatform.merchant.api.controller;
 
+import com.deliveryplatform.merchant.api.dto.CriarEstabelecimentoRequest;
 import com.deliveryplatform.merchant.api.seguranca.SujeitoDoToken;
 import com.deliveryplatform.merchant.application.port.in.ConsultarMinhasLojas;
+import com.deliveryplatform.merchant.application.port.in.CriarEstabelecimento;
 import com.deliveryplatform.merchant.application.port.in.LojaDoUsuario;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
@@ -62,9 +69,11 @@ import java.util.List;
 public class MinhasLojasController {
 
     private final ConsultarMinhasLojas lojas;
+    private final CriarEstabelecimento criacao;
 
-    public MinhasLojasController(ConsultarMinhasLojas lojas) {
+    public MinhasLojasController(ConsultarMinhasLojas lojas, CriarEstabelecimento criacao) {
         this.lojas = lojas;
+        this.criacao = criacao;
     }
 
     /**
@@ -86,5 +95,31 @@ public class MinhasLojasController {
                     + "Lista vazia quando não há vínculo ativo em nenhuma loja.")
     public List<LojaDoUsuario> minhasLojas(@AuthenticationPrincipal Jwt token) {
         return lojas.de(SujeitoDoToken.de(token));
+    }
+
+    /**
+     * Cria uma loja, e o portador nasce fundador dela (ADR-060).
+     *
+     * <p>Mora aqui, e não num controlador novo, porque é a mesma coleção: a loja criada
+     * entra exatamente no que o {@code GET} acima devolve, e a resposta tem a forma dele.
+     *
+     * <p><b>Sem autorização contra vínculo</b> — o vínculo é o que a rota cria (§1). E
+     * <b>sem {@code Location}</b> (§5): o predicado do gateway para esta coleção é exato,
+     * {@code /{id}} iria ao {@code identity}, e não há GET de loja por id.
+     */
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "A loja criada, e o portador é o fundador dela"),
+            @ApiResponse(responseCode = "400", description = "Corpo que o agregado recusa", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content)
+    })
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Cria uma loja, e o portador do token passa a ser o fundador dela",
+            description = "O corpo traz identificação, política de troco, tipo de operação e "
+                    + "métodos por modalidade. A loja nasce sem horário e sem área de entrega; "
+                    + "pedido mínimo e desconto de retirada nascem em zero.")
+    public LojaDoUsuario criar(@AuthenticationPrincipal Jwt token,
+                               @Valid @RequestBody CriarEstabelecimentoRequest pedido) {
+        return criacao.criar(SujeitoDoToken.de(token), pedido.paraComando());
     }
 }

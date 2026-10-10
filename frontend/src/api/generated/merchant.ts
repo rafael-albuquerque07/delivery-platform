@@ -4,6 +4,30 @@
  */
 
 export interface paths {
+    "/api/v1/me/estabelecimentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * As lojas de que o portador do token faz parte
+         * @description Só vínculos ATIVOS. Traz papel e permissões de cada uma, para o front montar o seletor de loja e o menu numa chamada só. Lista vazia quando não há vínculo ativo em nenhuma loja.
+         */
+        get: operations["minhasLojas"];
+        put?: never;
+        /**
+         * Cria uma loja, e o portador do token passa a ser o fundador dela
+         * @description O corpo traz identificação, política de troco, tipo de operação e métodos por modalidade. A loja nasce sem horário e sem área de entrega; pedido mínimo e desconto de retirada nascem em zero.
+         */
+        post: operations["criar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internal/merchants/{estabelecimentoId}/me/contexto-de-acesso": {
         parameters: {
             query?: never;
@@ -64,30 +88,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/me/estabelecimentos": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * As lojas de que o portador do token faz parte
-         * @description Só vínculos ATIVOS. Traz papel e permissões de cada uma, para o front montar o seletor de loja e o menu numa chamada só. Lista vazia quando não há vínculo ativo em nenhuma loja.
-         */
-        get: operations["minhasLojas"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        CriarEstabelecimentoRequest: {
+            identificacao: components["schemas"]["IdentificacaoRequest"];
+            politicaDeTroco: components["schemas"]["PoliticaDeTrocoRequest"];
+            /** @enum {string} */
+            tipoDeOperacao: "PRODUCAO" | "SEPARACAO" | "MISTA";
+            metodosPorModalidade: {
+                [key: string]: ("DINHEIRO" | "CARTAO" | "PIX")[];
+            };
+        };
+        IdentificacaoRequest: {
+            nome: string;
+            documento: string;
+            telefone: string;
+            enderecoTextual: string;
+            bairro: string;
+            fusoHorario: string;
+        };
+        PoliticaDeTrocoRequest: {
+            fundoMaximoDeTroco: number;
+            aceitaPedidoSemTrocoDisponivel?: boolean;
+        };
+        LojaDoUsuario: {
+            /** Format: uuid */
+            estabelecimentoId?: string;
+            nome?: string;
+            /** @enum {string} */
+            papel?: "ADMINISTRADOR" | "COLABORADOR";
+            permissoes?: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA")[];
+        };
         ContextoDeAcesso: {
             /** Format: uuid */
             usuarioId?: string;
@@ -129,14 +162,6 @@ export interface components {
             /** Format: date-time */
             desde: string;
         };
-        LojaDoUsuario: {
-            /** Format: uuid */
-            estabelecimentoId?: string;
-            nome?: string;
-            /** @enum {string} */
-            papel?: "ADMINISTRADOR" | "COLABORADOR";
-            permissoes?: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA")[];
-        };
     };
     responses: never;
     parameters: never;
@@ -146,6 +171,71 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    minhasLojas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description As lojas em que o portador tem vínculo ativo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LojaDoUsuario"][];
+                };
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    criar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CriarEstabelecimentoRequest"];
+            };
+        };
+        responses: {
+            /** @description A loja criada, e o portador é o fundador dela */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LojaDoUsuario"];
+                };
+            };
+            /** @description Corpo que o agregado recusa */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     doPortador: {
         parameters: {
             query?: never;
@@ -275,33 +365,6 @@ export interface operations {
             };
             /** @description Sem vínculo, sem GERENCIAR_EQUIPE ou loja inexistente — a mesma recusa */
             403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    minhasLojas: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description As lojas em que o portador tem vínculo ativo */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LojaDoUsuario"][];
-                };
-            };
-            /** @description Sem token, ou token inválido */
-            401: {
                 headers: {
                     [name: string]: unknown;
                 };

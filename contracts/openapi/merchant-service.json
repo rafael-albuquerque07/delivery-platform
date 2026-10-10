@@ -16,6 +16,66 @@
     "description" : "Consumido por outro serviço, com o token de quem pediu encaminhado. Não roteado pelo gateway — ADR-045."
   } ],
   "paths" : {
+    "/api/v1/me/estabelecimentos" : {
+      "get" : {
+        "tags" : [ "eu" ],
+        "summary" : "As lojas de que o portador do token faz parte",
+        "description" : "Só vínculos ATIVOS. Traz papel e permissões de cada uma, para o front montar o seletor de loja e o menu numa chamada só. Lista vazia quando não há vínculo ativo em nenhuma loja.",
+        "operationId" : "minhasLojas",
+        "responses" : {
+          "200" : {
+            "description" : "As lojas em que o portador tem vínculo ativo",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/LojaDoUsuario"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "eu" ],
+        "summary" : "Cria uma loja, e o portador do token passa a ser o fundador dela",
+        "description" : "O corpo traz identificação, política de troco, tipo de operação e métodos por modalidade. A loja nasce sem horário e sem área de entrega; pedido mínimo e desconto de retirada nascem em zero.",
+        "operationId" : "criar",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CriarEstabelecimentoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "A loja criada, e o portador é o fundador dela",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LojaDoUsuario"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Corpo que o agregado recusa"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          }
+        }
+      }
+    },
     "/internal/merchants/{estabelecimentoId}/me/contexto-de-acesso" : {
       "get" : {
         "tags" : [ "interno" ],
@@ -132,36 +192,103 @@
           }
         }
       }
-    },
-    "/api/v1/me/estabelecimentos" : {
-      "get" : {
-        "tags" : [ "eu" ],
-        "summary" : "As lojas de que o portador do token faz parte",
-        "description" : "Só vínculos ATIVOS. Traz papel e permissões de cada uma, para o front montar o seletor de loja e o menu numa chamada só. Lista vazia quando não há vínculo ativo em nenhuma loja.",
-        "operationId" : "minhasLojas",
-        "responses" : {
-          "200" : {
-            "description" : "As lojas em que o portador tem vínculo ativo",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/LojaDoUsuario"
-                  }
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Sem token, ou token inválido"
-          }
-        }
-      }
     }
   },
   "components" : {
     "schemas" : {
+      "CriarEstabelecimentoRequest" : {
+        "type" : "object",
+        "properties" : {
+          "identificacao" : {
+            "$ref" : "#/components/schemas/IdentificacaoRequest"
+          },
+          "politicaDeTroco" : {
+            "$ref" : "#/components/schemas/PoliticaDeTrocoRequest"
+          },
+          "tipoDeOperacao" : {
+            "type" : "string",
+            "enum" : [ "PRODUCAO", "SEPARACAO", "MISTA" ]
+          },
+          "metodosPorModalidade" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string",
+                "enum" : [ "DINHEIRO", "CARTAO", "PIX" ]
+              },
+              "uniqueItems" : true
+            },
+            "minProperties" : 1
+          }
+        },
+        "required" : [ "identificacao", "metodosPorModalidade", "politicaDeTroco", "tipoDeOperacao" ]
+      },
+      "IdentificacaoRequest" : {
+        "type" : "object",
+        "properties" : {
+          "nome" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "documento" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "telefone" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "enderecoTextual" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "bairro" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "fusoHorario" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "bairro", "documento", "enderecoTextual", "fusoHorario", "nome", "telefone" ]
+      },
+      "PoliticaDeTrocoRequest" : {
+        "type" : "object",
+        "properties" : {
+          "fundoMaximoDeTroco" : {
+            "type" : "number"
+          },
+          "aceitaPedidoSemTrocoDisponivel" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "fundoMaximoDeTroco" ]
+      },
+      "LojaDoUsuario" : {
+        "type" : "object",
+        "properties" : {
+          "estabelecimentoId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "nome" : {
+            "type" : "string"
+          },
+          "papel" : {
+            "type" : "string",
+            "enum" : [ "ADMINISTRADOR", "COLABORADOR" ]
+          },
+          "permissoes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA" ]
+            }
+          }
+        }
+      },
       "ContextoDeAcesso" : {
         "type" : "object",
         "properties" : {
@@ -253,29 +380,6 @@
           }
         },
         "required" : [ "desde", "estado", "id", "papel", "permissoes", "usuarioId" ]
-      },
-      "LojaDoUsuario" : {
-        "type" : "object",
-        "properties" : {
-          "estabelecimentoId" : {
-            "type" : "string",
-            "format" : "uuid"
-          },
-          "nome" : {
-            "type" : "string"
-          },
-          "papel" : {
-            "type" : "string",
-            "enum" : [ "ADMINISTRADOR", "COLABORADOR" ]
-          },
-          "permissoes" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string",
-              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA" ]
-            }
-          }
-        }
       }
     },
     "securitySchemes" : {

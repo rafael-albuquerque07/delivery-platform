@@ -81,6 +81,33 @@ public record Operacao(
         pedidoMinimoPorModalidade = Map.copyOf(pedidoMinimoPorModalidade);
     }
 
+    /**
+     * A operação de uma loja recém-cadastrada: o que o comerciante escolheu, e zero no
+     * resto (ADR-060 §2).
+     *
+     * <p><b>Os mínimos saem das chaves dos métodos</b>, e por isso a M17 passa por
+     * construção — é impossível um cliente desalinhar os dois mapas, porque ele só manda
+     * um. Zero não é dado inventado: é o valor que esta classe já documenta como
+     * <i>"sem mínimo"</i>, e loja que acabou de nascer não tem mínimo.
+     *
+     * <p><b>Por que a operação vem do corpo e o horário não</b> (ADR-060 §3): horário
+     * vazio fecha a loja, e o pior que faz é não vender. Operação padrão a abriria,
+     * prometendo ao consumidor uma modalidade e uma forma de pagar que o comerciante não
+     * escolheu — com dinheiro chegando à porta, pela P1. <b>Estado derivado só quando o
+     * erro dele é recusar.</b>
+     *
+     * <p>Não afrouxa nada: delega ao construtor canônico, que continua cobrando M12, M15
+     * e M17. Mapa vazio é recusado aqui também, pela M12.
+     */
+    public static Operacao nova(
+            TipoDeOperacao tipoDeOperacao,
+            Map<Modalidade, Set<MetodoPagamento>> metodosPorModalidade) {
+        Objects.requireNonNull(metodosPorModalidade, "metodosPorModalidade");
+        Map<Modalidade, Money> semMinimo = new EnumMap<>(Modalidade.class);
+        metodosPorModalidade.keySet().forEach(modalidade -> semMinimo.put(modalidade, Money.ZERO));
+        return new Operacao(tipoDeOperacao, metodosPorModalidade, Money.ZERO, semMinimo);
+    }
+
     /** Derivado, não campo. É {@code metodosPorModalidade.keySet()}, e essa é a decisão. */
     public Set<Modalidade> modalidadesAceitas() {
         return metodosPorModalidade.keySet();

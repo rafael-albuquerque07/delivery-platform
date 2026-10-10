@@ -22,6 +22,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.nio.file.Files;
@@ -92,47 +93,55 @@ class ContratoDeErrosIT extends Infraestrutura {
 
     // ── as provocações ──────────────────────────────────────────────────────
 
-    record Provocacao(String caminho, int codigo, String como, IntSupplier chamada) {
+    record Provocacao(String metodo, String caminho, int codigo, String como, IntSupplier chamada) {
         String chave() {
-            return "GET " + caminho + " " + codigo;
+            return metodo + " " + caminho + " " + codigo;
         }
     }
 
     private List<Provocacao> provocacoes() {
         return List.of(
-                new Provocacao(CONTEXTO, 400, "identificador da loja que não é UUID",
+                new Provocacao("GET", CONTEXTO, 400, "identificador da loja que não é UUID",
                         () -> get("/internal/merchants/nao-e-uuid/me/contexto-de-acesso", estranho())),
-                new Provocacao(CONTEXTO, 401, "sem token",
+                new Provocacao("GET", CONTEXTO, 401, "sem token",
                         () -> get("/internal/merchants/" + UUID.randomUUID() + "/me/contexto-de-acesso", null)),
-                new Provocacao(CONTEXTO, 403, "sem vínculo com a loja",
+                new Provocacao("GET", CONTEXTO, 403, "sem vínculo com a loja",
                         () -> get("/internal/merchants/" + loja() + "/me/contexto-de-acesso", estranho())),
 
-                new Provocacao(EXPEDIENTE, 400, "identificador da loja que não é UUID",
+                new Provocacao("GET", EXPEDIENTE, 400, "identificador da loja que não é UUID",
                         () -> get("/internal/merchants/nao-e-uuid/expediente-corrente", estranho())),
-                new Provocacao(EXPEDIENTE, 401, "sem token",
+                new Provocacao("GET", EXPEDIENTE, 401, "sem token",
                         () -> get("/internal/merchants/" + UUID.randomUUID() + "/expediente-corrente", null)),
-                new Provocacao(EXPEDIENTE, 403, "sem vínculo com a loja",
+                new Provocacao("GET", EXPEDIENTE, 403, "sem vínculo com a loja",
                         () -> get("/internal/merchants/" + loja() + "/expediente-corrente", estranho())),
-                new Provocacao(EXPEDIENTE, 409, "loja que não abre por horário (ADR-049 §5)",
+                new Provocacao("GET", EXPEDIENTE, 409, "loja que não abre por horário (ADR-049 §5)",
                         () -> {
                             UUID semHorario = lojas.salvar(LojaDeTeste.semHorario()).getId();
                             String token = IDENTITY.tokenDe(vinculado(semHorario, Permissao.VER_PRODUTO));
                             return get("/internal/merchants/" + semHorario + "/expediente-corrente", token);
                         }),
 
-                new Provocacao(EQUIPE, 400, "identificador da loja que não é UUID",
+                new Provocacao("GET", EQUIPE, 400, "identificador da loja que não é UUID",
                         () -> get("/api/v1/merchants/nao-e-uuid/team", estranho())),
-                new Provocacao(EQUIPE, 401, "sem token",
+                new Provocacao("GET", EQUIPE, 401, "sem token",
                         () -> get("/api/v1/merchants/" + UUID.randomUUID() + "/team", null)),
-                new Provocacao(EQUIPE, 403, "vínculo sem GERENCIAR_EQUIPE",
+                new Provocacao("GET", EQUIPE, 403, "vínculo sem GERENCIAR_EQUIPE",
                         () -> {
                             UUID loja = loja();
                             String token = IDENTITY.tokenDe(vinculado(loja, Permissao.VER_PRODUTO));
                             return get("/api/v1/merchants/" + loja + "/team", token);
                         }),
 
-                new Provocacao(MINHAS_LOJAS, 401, "sem token",
-                        () -> get("/api/v1/me/estabelecimentos", null)));
+                new Provocacao("GET", MINHAS_LOJAS, 401, "sem token",
+                        () -> get("/api/v1/me/estabelecimentos", null)),
+
+                // A primeira escrita do merchant (ADR-060): 201, 400 e 401, e mais nada.
+                new Provocacao("POST", MINHAS_LOJAS, 400, "documento que o agregado recusa",
+                        () -> post("/api/v1/me/estabelecimentos",
+                                CriarEstabelecimentoIT.CORPO.formatted("Loja", "123"), estranho())),
+                new Provocacao("POST", MINHAS_LOJAS, 401, "sem token",
+                        () -> post("/api/v1/me/estabelecimentos",
+                                CriarEstabelecimentoIT.CORPO.formatted("Loja", "123.456.789-09"), null)));
     }
 
     // ── as duas direções ────────────────────────────────────────────────────
@@ -146,8 +155,8 @@ class ContratoDeErrosIT extends Infraestrutura {
                     assertThat(p.chamada().getAsInt())
                             .as("a rota devolveu outro código para: %s", p.como())
                             .isEqualTo(p.codigo());
-                    assertThat(codigosDeclarados(p.caminho()))
-                            .as("o contrato não declara %s em GET %s", p.codigo(), p.caminho())
+                    assertThat(codigosDeclarados(p.metodo(), p.caminho()))
+                            .as("o contrato não declara %s em %s %s", p.codigo(), p.metodo(), p.caminho())
                             .contains(String.valueOf(p.codigo()));
                 }));
     }
@@ -231,9 +240,20 @@ class ContratoDeErrosIT extends Infraestrutura {
         return requisicao.exchange().returnResult(String.class).getStatus().value();
     }
 
-    private static Set<String> codigosDeclarados(String caminho) throws Exception {
+    private int post(String uri, String corpo, String token) {
+        var requisicao = RestTestClient.bindToServer().baseUrl("http://localhost:" + porta).build()
+                .post().uri(uri)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(corpo);
+        if (token != null) {
+            requisicao = requisicao.header("Authorization", "Bearer " + token);
+        }
+        return requisicao.exchange().returnResult(String.class).getStatus().value();
+    }
+
+    private static Set<String> codigosDeclarados(String metodo, String caminho) throws Exception {
         Set<String> codigos = new TreeSet<>();
-        contrato().path("paths").path(caminho).path("get")
+        contrato().path("paths").path(caminho).path(metodo.toLowerCase())
                 .path("responses").fieldNames().forEachRemaining(codigos::add);
         return codigos;
     }

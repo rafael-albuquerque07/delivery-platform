@@ -1,6 +1,7 @@
 package com.deliveryplatform.merchant.api.error;
 
 import com.deliveryplatform.merchant.application.exception.AcessoNegado;
+import com.deliveryplatform.merchant.application.exception.CadastroDeLojaRecusado;
 import com.deliveryplatform.merchant.application.exception.SemExpedientePorHorario;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -55,5 +56,18 @@ public class TratadorDeErros {
     public ProblemDetail semExpedientePorHorario(SemExpedientePorHorario excecao) {
         return ProblemDetail.forStatusAndDetail(
                 HttpStatus.CONFLICT, "a loja não abre por horário");
+    }
+
+    /**
+     * 400 para a loja que o agregado recusa (ADR-060). Nasce de um ponto só — a
+     * construção no {@code CriarEstabelecimentoService} —, e por isso é tipo próprio e
+     * não {@code IllegalArgumentException}: um tratador desse tipo transformaria em 400
+     * todo defeito que o lançasse.
+     *
+     * <p>O {@code detail} é a frase do agregado, e a tela a mostra como veio (ADR-055).
+     */
+    @ExceptionHandler(CadastroDeLojaRecusado.class)
+    public ProblemDetail cadastroDeLojaRecusado(CadastroDeLojaRecusado excecao) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, excecao.getMessage());
     }
 }
