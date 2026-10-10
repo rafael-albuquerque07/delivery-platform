@@ -122,11 +122,11 @@ public class TratadorDeErros {
      * loja, para quem já passou pela autorização —, e nenhuma nomeia host, caminho
      * ou identificador técnico (conferido na G-E).
      *
-     * <p><b>Um caso que este tratador classifica errado, e fica escrito:</b> a
-     * mesma exceção sai do {@code Produto.reconstituir} quando um documento
-     * gravado está corrompido ("produto sem id"). Isso é defeito do servidor e
-     * sairia como 400. Só acontece com o banco estragado; o {@code DocumentoIlegivel}
-     * do mapeador, que cobre o caso comum, continua 500.
+     * <p><b>O documento corrompido não passa mais por aqui</b> (G-C3b). Até então a
+     * mesma exceção saía do {@code Produto.reconstituir} quando um documento gravado
+     * estava corrompido, e este tratador a respondia como 400. O {@code ProdutoMapper}
+     * agora a converte em {@code DocumentoIlegivel}, que não tem tratador e sai como 500 —
+     * ninguém de fora pode consertar dado inválido no banco.
      */
     @ExceptionHandler(RegraDoCatalogoViolada.class)
     public ProblemDetail regraViolada(RegraDoCatalogoViolada excecao) {
