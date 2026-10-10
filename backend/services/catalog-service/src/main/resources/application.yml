@@ -57,6 +57,11 @@ spring:
         max-page-size: 100
 
 delivery:
+  # A fixture de desenvolvimento (ADR-059): uma loja e um produto gravados pelo
+  # agregado na subida. Falsa por padrão — ligada fora da máquina de quem
+  # desenvolve, é dado inventado em produção. Andaime: sai com as rotas de escrita.
+  semeadura:
+    ligada: ${DELIVERY_SEMEADURA:false}
   # A documentação viva (Swagger UI e /v3/api-docs) sem token — ADR-050. O
   # padrão é false, e é assim que o serviço sobe em qualquer lugar que não seja
   # o seu computador: esquecer fecha.

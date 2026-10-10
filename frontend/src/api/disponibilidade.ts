@@ -81,6 +81,10 @@ const MENSAGEM_POR_CODIGO: Record<number, string> = {
   403: 'Você não tem mais permissão para alterar este produto.',
   404: 'Este produto não está mais nesta loja.',
   409: 'O produto mudou enquanto você marcava.',
+  // O 500 da cadeia de segurança sai pelo /error do Boot, sem `detail` (medido
+  // na I-B), e cai na linha "sem detail" da ADR-055. Antes desta entrada ele
+  // caía na mensagem padrão, sem oferecer tentar de novo. Emenda de 10/10/2026.
+  500: 'Algo quebrou do nosso lado. Tente de novo em instantes.',
   503: 'Não foi possível consultar o expediente da loja agora.',
 };
 
@@ -105,10 +109,11 @@ export function recusaDe(status: number, detalhe: string | undefined): Recusa {
     mensagem: MENSAGEM_POR_CODIGO[status] ?? MENSAGEM_PADRAO,
     // 409: conflito de versão se resolve recarregando, e na loja sem horário
     // recarregar não atrapalha — ADR-055 §2, a desambiguação vem do pedido.
-    // 503 e sem resposta: o outro lado pode ter voltado.
+    // 500, 503 e sem resposta: o outro lado pode ter voltado.
     // 404 (ADR-056): o produto pode ter sido despublicado ou removido, e é na
     // lista que isso se vê. O 403 continua pedindo o painel, e só ele.
-    ofereceRecarregar: status === 404 || status === 409 || status === 503 || status === 0,
+    ofereceRecarregar:
+      status === 404 || status === 409 || status === 500 || status === 503 || status === 0,
     contextoVelho,
   };
 }

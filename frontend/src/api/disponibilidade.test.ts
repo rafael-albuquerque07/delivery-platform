@@ -93,6 +93,19 @@ describe('recusaDe', () => {
     expect(r.ofereceRecarregar).toBe(true);
   });
 
+  // ADR-055, emenda de 10/10/2026: o 500 não traz `detail`, então a tela
+  // mostra a mensagem fixa — e ela não é a do 403, porque um erro nosso não
+  // diz nada sobre a permissão de quem marcou.
+  it('o 500 mostra a mensagem fixa, não a do 403, e oferece tentar de novo', () => {
+    const r = recusaDe(500, undefined);
+
+    expect(r.mensagem).toBe('Algo quebrou do nosso lado. Tente de novo em instantes.');
+    expect(r.mensagem).not.toBe(recusaDe(403, undefined).mensagem);
+    expect(r.detail).toBeNull();
+    expect(r.contextoVelho).toBe(false);
+    expect(r.ofereceRecarregar).toBe(true);
+  });
+
   it('código que o contrato não declara ainda produz uma recusa utilizável', () => {
     const r = recusaDe(418, undefined);
 

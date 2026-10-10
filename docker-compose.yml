@@ -214,6 +214,7 @@ services:
       # VM inteira: sem o limite, cada um escolhia 1/4 da VM, ~2,9 GB (medido, I-B).
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
       DELIVERY_DOCS_ABERTAS: ${DELIVERY_DOCS_ABERTAS:-false}
+      DELIVERY_SEMEADURA: ${DELIVERY_SEMEADURA:-false}
       SERVER_PORT: "8082"
       DB_URL: jdbc:postgresql://postgres:5432/merchant_db
       DB_USERNAME: ${POSTGRES_USER}
@@ -246,6 +247,7 @@ services:
       # VM inteira: sem o limite, cada um escolhia 1/4 da VM, ~2,9 GB (medido, I-B).
       JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
       DELIVERY_DOCS_ABERTAS: ${DELIVERY_DOCS_ABERTAS:-false}
+      DELIVERY_SEMEADURA: ${DELIVERY_SEMEADURA:-false}
       SERVER_PORT: "8083"
       MONGO_URI: mongodb://mongodb:27017/catalog_db?replicaSet=rs0
       RABBITMQ_ADDRESSES: rabbitmq:5672
