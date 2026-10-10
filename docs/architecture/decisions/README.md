@@ -27,7 +27,7 @@
 | 023 | Fronteira `order` × `payment`: pedido é dono do registro | ✅ aceita |
 | 024 | Desconto de retirada, não preço por modalidade | ✅ aceita · **emendada** (07/10/2026: o `cotar` é marco 3, e o prazo desta decisão vai com ele) |
 | 025 | Fuso horário do estabelecimento e o dia operacional | ✅ aceita · **emendada** (26/09/2026: um evento de abertura por dia operacional — ADR-046) |
-| 026 | Fila morta, retentativa e reprocessamento | ✅ aceita · **emendada** (29/09/2026: consumidor de invalidação não tem retentativa nem fila morta) |
+| 026 | Fila morta, retentativa e reprocessamento | ✅ aceita · **emendada** (29/09/2026: consumidor de invalidação não tem retentativa nem fila morta) · **emendada** (10/10/2026: recusa definitiva vai à fila morta na primeira entrega) |
 | 027 | O que conta como mudança compatível num evento | ✅ aceita |
 | 028 | Pedido mínimo por modalidade, sobre o subtotal dos itens | ✅ aceita |
 | 029 | Recuperação do administrador único | ✅ aceita |
@@ -49,7 +49,7 @@
 | 045 | A credencial entre serviços é o token de quem pediu | ✅ aceita · **emenda a 011** · **emendada** (28/09/2026: o primeiro caminho `/internal/`, e 403 contra 5xx no consumidor) · **emendada** (07/10/2026: o gatilho disparou falso, e a ADR-054 o substitui por dois) |
 | 046 | Quem observa a abertura do expediente | ✅ aceita · **emenda a 025** · **emendada** (26/09/2026: o expediente é o do início da faixa; o evento significa "um expediente começou") · **emendada** (30/09/2026: a `OperacaoDoEstabelecimentoPort` não existia, e o §6 ganhou rota) |
 | 047 | Onde o token do painel mora no navegador | ✅ aceita |
-| 048 | O primeiro consumidor de evento: topologia, idempotência e falha | ✅ aceita · **emenda a 011, 026 e 043** |
+| 048 | O primeiro consumidor de evento: topologia, idempotência e falha | ✅ aceita · **emenda a 011, 026 e 043** · **emendada** (10/10/2026: o critério não exclui todos os outros consumidores; gatilhos rearmados) |
 | 049 | O carimbo com a loja fechada | ✅ aceita · **emenda a 046** · **emendada** (06/10/2026: o que a marcação faz com o 409) |
 | 050 | A documentação viva, e só no seu computador | ✅ aceita |
 | 051 | A imagem carrega o jar, não o compilador | ✅ aceita |
@@ -58,8 +58,9 @@
 | 054 | O gatilho da identidade de serviço não disparou | ✅ aceita · **emenda a 045** |
 | 055 | O que o cliente mostra quando o servidor recusa | ✅ aceita |
 | 056 | Recurso de outra loja é 404, e o 403 fica com um significado só | ✅ aceita |
+| 057 | A idempotência natural por chave de domínio, e a segunda exceção à invariante 7 | ✅ aceita · **emenda a 048** |
 
-**Cinquenta e quatro escritas, duas sem objeto — estas com registro próprio desde
+**Cinquenta e cinco escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

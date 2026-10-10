@@ -193,6 +193,12 @@ sem a versão:
    `CLAUDE.md` só tem a exceção da ADR-048, para efeito em memória, e este
    consumidor escreve em banco. Decide-se com o consumidor, na rodada que o
    escrever.
+   **Fechada em 10/10/2026 para este consumo (ADR-057, G-C3b):** o
+   `OuvinteDeExpedienteAlterado` **não** registra a mensagem, porque o efeito dele é
+   comparar o `expedienteDeReferencia` que vem no corpo com o carimbo gravado em cada
+   produto. O `ConsumoDeExpedienteIT` reentrega a mesma abertura e afirma que o estado
+   — e a versão do documento — não mudam. A pergunta continua aberta **para o próximo
+   consumidor**, e o gatilho está na ADR-057.
 4. **`motivo` desconhecido é ignorado, não é erro** — e isto é uma escolha
    **deste** consumidor, não uma regra geral. A ADR-027 §2 decide que valor novo
    em enum é **incompatível por padrão**, *"salvo se todos os consumidores

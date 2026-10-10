@@ -198,6 +198,13 @@ mundo que mudou — por isso 400 e não 409, seguindo a distinção que a §5 fa
 cotação. O mesmo vale para marcar uma opção que não é daquele produto. Até a G-E
 isso era 500, porque a `RegraDoCatalogoViolada` não tinha tratador (ADR-053).
 
+**E o que não é pedido malformado:** documento gravado que não volta a ser `Produto`
+(G-C3b). Isso não é erro de quem pediu — é dado inválido no banco, e responder 400
+mandaria a pessoa corrigir o que ela não escreveu. O `ProdutoMapper` converte essa
+falha em `DocumentoIlegivel`, que não tem tratador e sai como **500** — ninguém de fora
+pode consertar isto. No consumo da reativação, a mesma exceção vai direto para a fila
+morta, sem as quatro tentativas: reler o mesmo documento inválido não o conserta.
+
 ### Ler um produto inteiro, e por que a listagem não basta
 
 `GET /api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}` — exige

@@ -227,3 +227,31 @@ declarar nada.
 precisa desta política de verdade, e é aí que a divergência se resolve — não
 antes, porque resolvê-la agora seria escolher entre dois números que nenhum
 código usa.
+
+## Emenda de 10/10/2026 — a recusa definitiva não tem quatro tentativas (G-C3b)
+
+Do primeiro consumidor a usar esta política: o `OuvinteDeExpedienteAlterado`, no
+`catalog`.
+
+As quatro tentativas são para **falha transitória** — broker instável, Mongo ocupado,
+conflito de escrita. **Corpo que não corresponde ao contrato vai para a fila morta na
+primeira entrega**, sem espera nenhuma: quatro leituras do mesmo JSON inválido são quatro
+leituras do mesmo JSON inválido, e as três esperas só atrasam a hora em que alguém olha.
+No código isso são duas exceções excluídas da política — `EventoIlegivel` (o corpo) e
+`DocumentoIlegivel` (o documento gravado que não reconstitui) —, e o
+`ConsumoComFalhaIT` as mede contando entregas: **uma** para as duas, **quatro** para a
+transitória.
+
+**Onde a política mora.** Numa segunda fábrica de contêineres, só deste consumidor, com
+os números em `delivery.consumo-de-eventos.*` — e não no
+`spring.rabbitmq.listener.simple.retry`, que vale para a fábrica inteira, inclusive para
+o ouvinte de invalidação, que não quer retentativa (ADR-048 §3). Medido no jar do Boot
+4.1.1: o `max-interval` daquele bloco tem **10 s** de padrão, que cortaria os 16 s desta
+ADR; e a propriedade de contagem é `max-retries` — o `max-attempts` que o YAML declara
+**não existe** e nunca foi lido.
+
+**E a retentativa é a do Spring Framework 7** (`org.springframework.core.retry`), que o
+Spring AMQP 4.1.1 recebe; o `spring-retry` não está no classpath. Nela, `maxRetries`
+conta **repetições**: as quatro tentativas desta ADR são `maxRetries = 3`. Há um teste que
+lê os padrões (`ConsumoDeEventosPropertiesTest`), porque o teste de integração os
+sobrescreve para milissegundos.
