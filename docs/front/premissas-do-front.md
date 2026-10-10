@@ -97,7 +97,7 @@ Três consequências que o código tem de respeitar:
 
 ---
 
-## 3 · Dinheiro
+## 3 · Dinheiro, e regra de domínio
 
 > ADR-009: `BigDecimal`, escala 2, `HALF_UP`.
 
@@ -112,6 +112,24 @@ com `Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })`.
 
 O protótipo fazia `Number(item.price) * Number(item.qty)` no navegador e somava
 uma taxa fixa de R$ 5 — que, além de ser float, contraria P5.
+
+**E o front não deriva regra de domínio** (R-1, 10/10/2026). O `vendavel` é o caso
+que trouxe isto à tona (W-D): a tela do produto aberto tem **todos** os dados para
+recalculá-lo — os grupos, o mínimo de cada um, o estado de cada opção — e mostra o
+que o servidor mandou. A regra mora no `catalogo.md` §4 ("Vendabilidade derivada") e
+é derivada no `catalog`; derivá-la outra vez aqui seria um segundo lugar onde ela
+está escrita, e no dia em que ela mudar a tela passaria a mentir **sem nada ficar
+vermelho**.
+
+O argumento é o mesmo que a ADR-059 usou contra semear por SQL, aplicado à borda de
+cima em vez da de baixo: **não duplicar a regra — chamar quem a tem.**
+
+**O que prova isto é um dublê que mente.** Um produto com uma opção esgotada e
+`vendavel: true` não distingue as duas implementações: se o grupo ainda tem opção
+suficiente, a regra aplicada certo também dá `true` — medido na W-D, recalcular pela
+§4 deixou esse caso verde. O caso que distingue manda `vendavel: false` num produto
+que a regra daria como vendável: um estado que ela nunca produziria, e que só uma tela
+que lê o servidor mostra.
 
 ---
 
@@ -208,4 +226,5 @@ interpolação é, por si, a razão: no dia em que o nome do produto vier da API
 | A tela mostra o `detail`, e só texto não vazio vira `detail` | testes `corpo sem detail textual não vira detalhe` (cliente) e `3 · a recusa mostra o detail do servidor, como veio` |
 | No 403 o texto do servidor não vai à tela | testes `no 403 descarta o detail…` e `5 · no 403, não mostra o texto do servidor…` |
 | Estado de enum desconhecido não concede nada | testes `estado que o front não conhece vira null…` e `estado que o front não conhece não aparece como "Disponível"` |
+| O front não deriva regra de domínio | teste `3b · e quando o servidor diz que não é vendável, a tela diz também` |
 | As seis premissas | **ninguém, e é por isso que este documento existe.** Nenhuma máquina confere que uma tela não foi desenhada. |
