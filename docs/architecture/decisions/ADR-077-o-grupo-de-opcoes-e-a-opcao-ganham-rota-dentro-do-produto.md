@@ -1,6 +1,6 @@
 # ADR-077 — O grupo de opções e a opção ganham rota, dentro do produto
 
-- **Status:** aceita
+- **Status:** aceita · **emendada em 08/11/2026**: o caminho de volta tem rota
 - **Data:** 08/11/2026
 - **Rodada:** E-6
 - **Relacionada:** ADR-065 (o produto nasce por rota), ADR-056 (o id de outra loja é 404),
@@ -105,3 +105,14 @@ num produto publicado.
 
 **A primeira pessoa que pedir para tirar uma opção do cardápio para sempre**, em vez de marcá-la
 esgotada. Aí nasce a rota de remover, e a recobrança decide quando a remoção é recusada.
+
+## Emenda de 08/11/2026 — o caminho de volta tem rota
+
+A Consequências diz que *"a rota de tirar do ar é o gatilho da linha 62 do razão"*, e que a
+sugestão *"acrescente opções"* da frase da C4 *"nesse caso não é alcançável"*. **As duas
+deixaram de valer na E-7**, e o corpo fica como está.
+
+A rota é `DELETE .../produtos/{produtoId}/publicacao` (ADR-078). Num produto publicado, o
+grupo novo entra assim: tirar do ar, criar o grupo, criar as opções, publicar — e a publicação
+recusa pela C4 enquanto o grupo estiver vazio. A sugestão da frase passa a ser alcançável por
+esse caminho; a frase não foi reescrita.

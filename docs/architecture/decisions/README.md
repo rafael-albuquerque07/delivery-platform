@@ -65,7 +65,7 @@
 | 061 | A loja escolhida mora na URL | ✅ aceita |
 | 063 | O erro do catálogo diz de quem é a culpa | ✅ aceita |
 | 064 | A categoria ganha persistência, e só criar e listar | ✅ aceita |
-| 065 | O produto nasce por rota, e o cardápio é publicado por quem o monta | ✅ aceita |
+| 065 | O produto nasce por rota, e o cardápio é publicado por quem o monta | ✅ aceita · **emendada** (08/11/2026: a rota de tirar do ar nasce sem tela — ADR-078) |
 | 066 | A referência do corpo que não resolve é pedido inválido | ✅ aceita |
 | 067 | O cardápio ganha escrita, e a seção passa a significar alguma coisa | ✅ aceita |
 | 068 | A listagem mostra o rascunho, porque quem a chama é o painel | ✅ aceita |
@@ -77,9 +77,10 @@
 | 074 | A tela do horário, e a tela que não valida o que o domínio decide | ✅ aceita · **emendada** (19/10/2026: marcar o que acabou não espera a varredura) |
 | 075 | O pedido nasce no canal, e o 7a vem antes do marco 3 | ✅ aceita |
 | 076 | O convite aceita antes de entrar | ✅ aceita |
-| 077 | O grupo de opções e a opção ganham rota, dentro do produto | ✅ aceita |
+| 077 | O grupo de opções e a opção ganham rota, dentro do produto | ✅ aceita · **emendada** (08/11/2026: o caminho de volta tem rota — ADR-078) |
+| 078 | O produto sai do cardápio, sob a permissão que já existia | ✅ aceita |
 
-**Setenta e quatro escritas, duas sem objeto — estas com registro próprio desde
+**Setenta e cinco escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

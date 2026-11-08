@@ -1,6 +1,6 @@
 # ADR-065 — O produto nasce por rota, e o cardápio é publicado por quem o monta
 
-- **Status:** aceita
+- **Status:** aceita · **emendada em 08/11/2026**: a rota de tirar do ar nasce sem tela
 - **Data:** 11/10/2026
 - **Rodada:** E-3c
 - **Relacionada:** ADR-053 (o contrato declara), ADR-055 (corpo de erro), ADR-056
@@ -170,3 +170,13 @@ confere:** a listagem de produtos **é paginada** desde a G-B3 (`PaginaResponse`
 `@PageableDefault(size = 20)`, e o teto em `spring.data.web.pageable.max-page-size`). Sem
 paginação estão a de categorias (ADR-064) e a de lojas do `merchant`, e o gatilho da primeira
 já está na ADR-064.
+
+## Emenda de 08/11/2026 — a rota de tirar do ar nasce sem tela
+
+A seção de gatilhos diz da despublicação: *"O agregado tem o caminho; a rota não nasce sem
+chamador."* **A rota nasceu na E-7 sem tela que a chame**, e o corpo fica como está.
+
+Ela nasceu pelo beco que a ADR-077 deixou: no produto publicado, grupo novo não entra, e a saída
+do agregado — o `INATIVO`, que não é recobrado — não tinha rota. Quem a chama é o caminho da
+composição: tirar do ar, montar, publicar. A decisão, a permissão e a forma estão na ADR-078; a
+linha 62 do `dividas.md` registra o pagamento antes da condição.
