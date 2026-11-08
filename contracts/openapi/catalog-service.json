@@ -319,6 +319,132 @@
         }
       }
     },
+    "/api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}/grupos" : {
+      "post" : {
+        "tags" : [ "produto-controller" ],
+        "summary" : "Cria um grupo de opções no produto",
+        "description" : "Exige ALTERAR_PRODUTO. O grupo nasce vazio. Com o produto já publicado, as invariantes da publicação são recobradas, e um grupo vazio é recusado (C4). Devolve o produto inteiro.",
+        "operationId" : "criarGrupo",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "produtoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GrupoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "O produto, com o grupo novo",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProdutoResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Corpo malformado, limites do grupo (C3), ou, com o produto publicado, a recusa da publicação recobrada (C4); ou identificador malformado"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa"
+          },
+          "404" : {
+            "description" : "O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056)"
+          }
+        }
+      }
+    },
+    "/api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}/grupos/{grupoId}/opcoes" : {
+      "post" : {
+        "tags" : [ "produto-controller" ],
+        "summary" : "Acrescenta uma opção a um grupo do produto",
+        "description" : "Exige ALTERAR_PRODUTO. A opção nasce disponível, e o acréscimo aceita zero e negativo. Com o produto já publicado, as invariantes da publicação são recobradas. Devolve o produto inteiro.",
+        "operationId" : "criarOpcao",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "produtoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "grupoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/OpcaoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "O produto, com a opção nova",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProdutoResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Corpo malformado, ou, com o produto publicado, a recusa da publicação recobrada (C2); ou identificador malformado"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa"
+          },
+          "404" : {
+            "description" : "O produto não existe nesta loja (ADR-056), ou o grupo não existe neste produto"
+          }
+        }
+      }
+    },
     "/api/v1/merchants/{estabelecimentoId}/catalog/categorias" : {
       "get" : {
         "tags" : [ "categoria-controller" ],
@@ -644,6 +770,61 @@
           }
         },
         "required" : [ "categoriaId", "modoDeControle", "nome", "ordem", "precoBase" ]
+      },
+      "GrupoRequest" : {
+        "type" : "object",
+        "description" : "Um grupo de opções novo, vazio. As opções entram uma a uma.",
+        "properties" : {
+          "nome" : {
+            "type" : "string",
+            "description" : "A pergunta, como o cliente a lê.",
+            "example" : "Tamanho",
+            "minLength" : 1
+          },
+          "minEscolhas" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Quantas o cliente tem de escolher. Zero é grupo opcional.",
+            "example" : 1
+          },
+          "maxEscolhas" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Quantas o cliente pode escolher, no máximo. Pelo menos 1, e nunca menor que o mínimo.",
+            "example" : 1
+          },
+          "ordem" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "A posição do grupo no produto.",
+            "example" : 0
+          }
+        },
+        "required" : [ "maxEscolhas", "minEscolhas", "nome", "ordem" ]
+      },
+      "OpcaoRequest" : {
+        "type" : "object",
+        "description" : "Uma opção nova no grupo. Nasce disponível.",
+        "properties" : {
+          "nome" : {
+            "type" : "string",
+            "description" : "O nome como o cliente o lê.",
+            "example" : "Grande",
+            "minLength" : 1
+          },
+          "acrescimo" : {
+            "type" : "number",
+            "description" : "Em reais, duas casas. Zero e negativo são aceitos.",
+            "example" : 8.0
+          },
+          "ordem" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "A posição da opção no grupo.",
+            "example" : 0
+          }
+        },
+        "required" : [ "acrescimo", "nome", "ordem" ]
       },
       "CategoriaRequest" : {
         "type" : "object",

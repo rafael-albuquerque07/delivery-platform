@@ -5,6 +5,7 @@ import com.deliveryplatform.catalog.application.exception.LojaSemExpediente;
 import com.deliveryplatform.catalog.application.exception.ProdutoNaoEncontrado;
 import com.deliveryplatform.catalog.application.port.out.AutorizacaoIndisponivel;
 import com.deliveryplatform.catalog.application.port.out.ExpedienteIndisponivel;
+import com.deliveryplatform.catalog.domain.exception.GrupoNaoEncontrado;
 import com.deliveryplatform.catalog.domain.exception.OpcaoNaoEncontrada;
 import com.deliveryplatform.catalog.domain.exception.RegraDoCatalogoViolada;
 import com.deliveryplatform.catalog.domain.model.EstadoDeDisponibilidade;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Oito tratadores, e cada um devolve o código que monta no {@code ProblemDetail}:
+ * Nove tratadores, e cada um devolve o código que monta no {@code ProblemDetail}:
  *
  * <ul>
  *   <li>{@code AcessoNegado} e {@code AutorizacaoIndisponivel} → 403;</li>
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  *       {@code INTEGRIDADE} (G-E; a separação desde a E-3b, ADR-063);</li>
  *   <li>{@code ProdutoNaoEncontrado} → 404 (G-F; a marcação desde a G-G, ADR-056);</li>
  *   <li>{@code OpcaoNaoEncontrada} → 404 (E-3b, ADR-063 §4);</li>
+ *   <li>{@code GrupoNaoEncontrado} → 404 (E-6, ADR-077);</li>
  *   <li>{@code LojaSemExpediente} → 409 (G-C2);</li>
  *   <li>{@code OptimisticLockingFailureException} → 409 (G-C3a, ADR-052);</li>
  *   <li>{@code ExpedienteIndisponivel} → 503 (G-C2).</li>
@@ -121,6 +123,16 @@ public class TratadorDeErros {
     public ProblemDetail opcaoNaoEncontrada(OpcaoNaoEncontrada excecao) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND,
                 "esta opção não existe mais neste produto; recarregue o produto");
+    }
+
+    /**
+     * 404: o grupo onde a opção nova entraria não é deste produto (ADR-077). A frase é
+     * escrita aqui, e é fixa.
+     */
+    @ExceptionHandler(GrupoNaoEncontrado.class)
+    public ProblemDetail grupoNaoEncontrado(GrupoNaoEncontrado excecao) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND,
+                "este grupo não existe mais neste produto; recarregue o produto");
     }
 
     /**

@@ -23,8 +23,8 @@ import java.util.UUID;
  * <p><b>O preço é decimal</b>, como o {@code precoBase} do {@code ProdutoResponse} — a
  * mesma forma de dinheiro nos dois sentidos do contrato.
  *
- * <p><b>Sem grupos</b>: acrescentar opção não tem método na raiz, e grupos entram na
- * E-3d (ADR-065 §2).
+ * <p><b>Sem grupos</b>: o grupo e a opção têm rota própria, depois de o produto existir
+ * (ADR-077).
  */
 @Schema(description = "Um produto novo. Nasce rascunho; vai ao cardápio pela publicação.")
 public record ProdutoRequest(

@@ -1,6 +1,8 @@
 package com.deliveryplatform.catalog.api.controller;
 
+import com.deliveryplatform.catalog.api.dto.GrupoRequest;
 import com.deliveryplatform.catalog.api.dto.MarcacaoRequest;
+import com.deliveryplatform.catalog.api.dto.OpcaoRequest;
 import com.deliveryplatform.catalog.api.dto.PaginaResponse;
 import com.deliveryplatform.catalog.api.dto.ProdutoRequest;
 import com.deliveryplatform.catalog.api.dto.ProdutoResponse;
@@ -9,6 +11,7 @@ import com.deliveryplatform.catalog.application.port.in.ConsultarProduto;
 import com.deliveryplatform.catalog.application.port.in.CriarProduto;
 import com.deliveryplatform.catalog.application.port.in.ListarProdutos;
 import com.deliveryplatform.catalog.application.port.in.MarcarDisponibilidade;
+import com.deliveryplatform.catalog.application.port.in.MontarOpcoes;
 import com.deliveryplatform.catalog.application.port.in.PublicarProduto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -70,15 +73,91 @@ public class ProdutoController {
     private final MarcarDisponibilidade marcacoes;
     private final CriarProduto criacao;
     private final PublicarProduto publicacao;
+    private final MontarOpcoes montagem;
 
     public ProdutoController(ListarProdutos produtos, ConsultarProduto consultas,
                              MarcarDisponibilidade marcacoes, CriarProduto criacao,
-                             PublicarProduto publicacao) {
+                             PublicarProduto publicacao, MontarOpcoes montagem) {
         this.produtos = produtos;
         this.consultas = consultas;
         this.marcacoes = marcacoes;
         this.criacao = criacao;
         this.publicacao = publicacao;
+        this.montagem = montagem;
+    }
+
+    /**
+     * O comerciante cria um grupo de opções no produto, vazio (ADR-077).
+     *
+     * <p><b>201 sem {@code Location}</b>: não há {@code GET} de grupo, e a regra é
+     * <i>"nunca prometer rota que não existe"</i> (ADR-065 §3). O corpo é o produto
+     * inteiro — o grupo novo vem nele, com o id que a rota da opção vai citar.
+     *
+     * <p>O 400 é corpo malformado, C3 ({@code minEscolhas} e {@code maxEscolhas}), ou,
+     * com o produto já no cardápio, a recusa da publicação recobrada: um grupo vazio
+     * não alcança o próprio teto (C4). <b>Sem 409 declarado</b>, como na publicação: a
+     * gravação concorrente ainda pode dar o do {@code @Version} (ADR-052), e provocá-lo
+     * exigiria costura no código de produção.
+     */
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "O produto, com o grupo novo"),
+            @ApiResponse(responseCode = "400", description = "Corpo malformado, limites do grupo (C3), ou, com o produto publicado, a recusa da publicação recobrada (C4); ou identificador malformado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa", content = @Content),
+            @ApiResponse(responseCode = "404", description = "O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056)", content = @Content)
+    })
+    @PostMapping(path = "/{produtoId}/grupos",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Cria um grupo de opções no produto",
+            description = "Exige ALTERAR_PRODUTO. O grupo nasce vazio. Com o produto já "
+                    + "publicado, as invariantes da publicação são recobradas, e um grupo "
+                    + "vazio é recusado (C4). Devolve o produto inteiro.")
+    public ResponseEntity<ProdutoResponse> criarGrupo(
+            @PathVariable UUID estabelecimentoId,
+            @PathVariable UUID produtoId,
+            @Valid @RequestBody GrupoRequest pedido) {
+
+        var produto = montagem.acrescentarGrupo(estabelecimentoId, produtoId,
+                new MontarOpcoes.NovoGrupo(pedido.nome(), pedido.minEscolhas(),
+                        pedido.maxEscolhas(), pedido.ordem()));
+
+        return ResponseEntity.status(201).body(ProdutoResponse.de(produto));
+    }
+
+    /**
+     * O comerciante acrescenta uma opção a um grupo do produto (ADR-077). Mesma forma
+     * da de cima: 201, sem {@code Location}, com o produto inteiro.
+     *
+     * <p>O 404 cobre o produto que não é desta loja e o grupo que não é deste produto.
+     * Com o produto publicado, o 400 costuma ser a C2: um acréscimo negativo que faz
+     * existir uma combinação de graça.
+     */
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "O produto, com a opção nova"),
+            @ApiResponse(responseCode = "400", description = "Corpo malformado, ou, com o produto publicado, a recusa da publicação recobrada (C2); ou identificador malformado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa", content = @Content),
+            @ApiResponse(responseCode = "404", description = "O produto não existe nesta loja (ADR-056), ou o grupo não existe neste produto", content = @Content)
+    })
+    @PostMapping(path = "/{produtoId}/grupos/{grupoId}/opcoes",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Acrescenta uma opção a um grupo do produto",
+            description = "Exige ALTERAR_PRODUTO. A opção nasce disponível, e o acréscimo "
+                    + "aceita zero e negativo. Com o produto já publicado, as invariantes da "
+                    + "publicação são recobradas. Devolve o produto inteiro.")
+    public ResponseEntity<ProdutoResponse> criarOpcao(
+            @PathVariable UUID estabelecimentoId,
+            @PathVariable UUID produtoId,
+            @PathVariable UUID grupoId,
+            @Valid @RequestBody OpcaoRequest pedido) {
+
+        var produto = montagem.acrescentarOpcao(estabelecimentoId, produtoId, grupoId,
+                new MontarOpcoes.NovaOpcao(pedido.nome(), Money.de(pedido.acrescimo()),
+                        pedido.ordem()));
+
+        return ResponseEntity.status(201).body(ProdutoResponse.de(produto));
     }
 
     /**

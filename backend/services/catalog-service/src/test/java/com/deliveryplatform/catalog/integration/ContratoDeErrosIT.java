@@ -91,6 +91,8 @@ class ContratoDeErrosIT extends Infraestrutura {
     private static final String MARCAR_OPCAO =
             BASE + "/{produtoId}/grupos/{grupoId}/opcoes/{opcaoId}/disponibilidade";
     private static final String PUBLICAR = BASE + "/{produtoId}/publicacao";
+    private static final String CRIAR_GRUPO = BASE + "/{produtoId}/grupos";
+    private static final String CRIAR_OPCAO = BASE + "/{produtoId}/grupos/{grupoId}/opcoes";
     private static final String CATEGORIAS = "/api/v1/merchants/{estabelecimentoId}/catalog/categorias";
 
     /**
@@ -287,6 +289,58 @@ class ContratoDeErrosIT extends Infraestrutura {
                             return publicar(c, UUID.randomUUID().toString());
                         }),
 
+                new Provocacao("POST", CRIAR_GRUPO, 400,
+                        "grupo vazio num produto publicado — a C4 recobrada (ADR-077)",
+                        () -> {
+                            Cena c = cena("ALTERAR_PRODUTO");
+                            return criarGrupo(c, c.pizza().getId().toString());
+                        }),
+                new Provocacao("POST", CRIAR_GRUPO, 401, "sem token",
+                        () -> {
+                            Cena c = cena("ALTERAR_PRODUTO");
+                            return criarGrupo(c.semToken(), c.pizza().getId().toString());
+                        }),
+                new Provocacao("POST", CRIAR_GRUPO, 403, "vínculo sem ALTERAR_PRODUTO",
+                        () -> {
+                            Cena c = cena("VER_PRODUTO");
+                            return criarGrupo(c, c.pizza().getId().toString());
+                        }),
+                new Provocacao("POST", CRIAR_GRUPO, 404,
+                        "produto que não existe nesta loja — ADR-056; o de outra loja dá o mesmo",
+                        () -> {
+                            Cena c = cena("ALTERAR_PRODUTO");
+                            return criarGrupo(c, UUID.randomUUID().toString());
+                        }),
+
+                new Provocacao("POST", CRIAR_OPCAO, 400,
+                        "acréscimo que deixa a pizza publicada de graça — a C2 recobrada (ADR-077)",
+                        () -> {
+                            Cena c = cena("ALTERAR_PRODUTO");
+                            return criarOpcao(c, c.pizza().getId(), c.tamanho().id(), "-60.00");
+                        }),
+                new Provocacao("POST", CRIAR_OPCAO, 401, "sem token",
+                        () -> {
+                            Cena c = cena("ALTERAR_PRODUTO");
+                            return criarOpcao(c.semToken(), c.pizza().getId(), c.tamanho().id(), "4.00");
+                        }),
+                new Provocacao("POST", CRIAR_OPCAO, 403, "vínculo sem ALTERAR_PRODUTO",
+                        () -> {
+                            Cena c = cena("VER_PRODUTO");
+                            return criarOpcao(c, c.pizza().getId(), c.tamanho().id(), "4.00");
+                        }),
+                new Provocacao("POST", CRIAR_OPCAO, 404,
+                        "produto que não existe nesta loja — ADR-056",
+                        () -> {
+                            Cena c = cena("ALTERAR_PRODUTO");
+                            return criarOpcao(c, UUID.randomUUID(), c.tamanho().id(), "4.00");
+                        }),
+                new Provocacao("POST", CRIAR_OPCAO, 404,
+                        "grupo que não existe neste produto — GrupoNaoEncontrado, ADR-077",
+                        () -> {
+                            Cena c = cena("ALTERAR_PRODUTO");
+                            return criarOpcao(c, c.pizza().getId(), UUID.randomUUID(), "4.00");
+                        }),
+
                 new Provocacao("POST", LISTAR, 400,
                         "seção de outra loja no corpo — ADR-066; a inexistente dá a mesma",
                         () -> {
@@ -462,6 +516,18 @@ class ContratoDeErrosIT extends Infraestrutura {
             requisicao = requisicao.header("Authorization", "Bearer " + c.token());
         }
         return requisicao.exchange().returnResult(String.class).getStatus().value();
+    }
+
+    private int criarGrupo(Cena c, String produtoId) {
+        return criarCategoriaOuProduto("/api/v1/merchants/" + c.loja() + "/catalog/produtos/"
+                        + produtoId + "/grupos", c.token(),
+                "{\"nome\":\"Bebida\",\"minEscolhas\":0,\"maxEscolhas\":1,\"ordem\":5}");
+    }
+
+    private int criarOpcao(Cena c, UUID produtoId, UUID grupoId, String acrescimo) {
+        return criarCategoriaOuProduto("/api/v1/merchants/" + c.loja() + "/catalog/produtos/"
+                        + produtoId + "/grupos/" + grupoId + "/opcoes", c.token(),
+                "{\"nome\":\"Família\",\"acrescimo\":" + acrescimo + ",\"ordem\":3}");
     }
 
     private int criarProduto(String loja, String token, UUID categoriaId) {

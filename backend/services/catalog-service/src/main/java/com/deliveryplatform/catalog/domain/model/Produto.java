@@ -1,5 +1,6 @@
 package com.deliveryplatform.catalog.domain.model;
 
+import com.deliveryplatform.catalog.domain.exception.GrupoNaoEncontrado;
 import com.deliveryplatform.catalog.domain.exception.OpcaoNaoEncontrada;
 import com.deliveryplatform.catalog.domain.exception.RegraDoCatalogoViolada;
 import com.deliveryplatform.valuetypes.Money;
@@ -193,6 +194,15 @@ public final class Produto {
         if (estadoDePublicacao == EstadoDePublicacao.ATIVO) {
             return;
         }
+        cobrarInvariantesDaPublicacao();
+        estadoDePublicacao = EstadoDePublicacao.ATIVO;
+    }
+
+    /**
+     * C1, C5, C4 e C2, nesta ordem — o que {@link #publicar()} cobra, e o que a
+     * composição recobra quando o produto já está no cardápio (ADR-077).
+     */
+    private void cobrarInvariantesDaPublicacao() {
         if (precoBase.ehZero()) {
             throw new RegraDoCatalogoViolada(RegraDoCatalogoViolada.Motivo.PUBLICACAO_SEM_PRECO,
                     "C1: preço base zero impede a publicação de " + nome
@@ -225,7 +235,6 @@ public final class Produto {
                             + "mínimo possível " + minimo.valor(),
                     minimo.valor().toPlainString());
         }
-        estadoDePublicacao = EstadoDePublicacao.ATIVO;
     }
 
     /**
@@ -268,6 +277,79 @@ public final class Produto {
         gruposDeOpcoes.clear();
         if (grupos != null) {
             grupos.forEach(this::acrescentarGrupo);
+        }
+    }
+
+    /**
+     * O comerciante cria um grupo, vazio — a escrita que a rota do grupo chama
+     * (ADR-077).
+     *
+     * <p>C3 é cobrada pelo próprio {@link GrupoDeOpcoes}, em qualquer estado. Em
+     * rascunho, mais nada: o grupo nasce antes das opções ({@code catalogo.md} §2).
+     * <b>No produto {@code ATIVO}, as invariantes da publicação são recobradas</b>,
+     * e um grupo vazio cai na C4 — o teto dele é pelo menos 1, e zero opções não o
+     * alcançam. A regra é a mesma da publicação, e o cardápio não exibe uma
+     * pergunta sem resposta: num produto publicado, grupo novo não entra por esta
+     * escrita — a ADR-077 registra o custo.
+     *
+     * @return o grupo criado, com o id que a próxima escrita vai citar
+     */
+    public GrupoDeOpcoes criarGrupo(String nome, int minEscolhas, int maxEscolhas, int ordem) {
+        GrupoDeOpcoes grupo = GrupoDeOpcoes.novo(nome, minEscolhas, maxEscolhas, ordem, List.of());
+        alterarGrupos(() -> acrescentarGrupo(grupo));
+        return grupo;
+    }
+
+    /**
+     * O comerciante acrescenta uma opção a um grupo que já existe (ADR-077).
+     *
+     * <p>Grupo desconhecido estoura com {@link GrupoNaoEncontrado}, pelo mesmo
+     * motivo do {@link #marcarOpcao}. No produto {@code ATIVO}, a C2 é a que
+     * costuma recusar: uma opção com acréscimo negativo grande pode fazer existir
+     * uma combinação de graça.
+     *
+     * @return a opção criada, com o id que a marcação vai citar
+     */
+    public Opcao criarOpcao(UUID grupoId, String nome, Money acrescimo, int ordem) {
+        int indice = indiceDoGrupo(grupoId);
+        Opcao opcao = Opcao.nova(nome, acrescimo, ordem);
+        alterarGrupos(() -> {
+            GrupoDeOpcoes g = gruposDeOpcoes.get(indice);
+            List<Opcao> opcoes = new ArrayList<>(g.opcoes());
+            opcoes.add(opcao);
+            gruposDeOpcoes.set(indice, new GrupoDeOpcoes(
+                    g.id(), g.nome(), g.minEscolhas(), g.maxEscolhas(), g.ordem(), opcoes));
+        });
+        return opcao;
+    }
+
+    private int indiceDoGrupo(UUID grupoId) {
+        for (int i = 0; i < gruposDeOpcoes.size(); i++) {
+            if (gruposDeOpcoes.get(i).id().equals(grupoId)) {
+                return i;
+            }
+        }
+        throw new GrupoNaoEncontrado();
+    }
+
+    /**
+     * Aplica uma mudança de composição e, no produto {@code ATIVO}, recobra as
+     * invariantes da publicação. Se a recobrança recusar, a lista volta a ser a
+     * de antes: o agregado não fica num estado que a regra acabou de recusar,
+     * mesmo que ninguém o grave.
+     */
+    private void alterarGrupos(Runnable mudanca) {
+        List<GrupoDeOpcoes> antes = List.copyOf(gruposDeOpcoes);
+        mudanca.run();
+        if (estadoDePublicacao != EstadoDePublicacao.ATIVO) {
+            return;
+        }
+        try {
+            cobrarInvariantesDaPublicacao();
+        } catch (RegraDoCatalogoViolada recusa) {
+            gruposDeOpcoes.clear();
+            gruposDeOpcoes.addAll(antes);
+            throw recusa;
         }
     }
 

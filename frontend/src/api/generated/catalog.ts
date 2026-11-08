@@ -88,6 +88,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}/grupos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cria um grupo de opções no produto
+         * @description Exige ALTERAR_PRODUTO. O grupo nasce vazio. Com o produto já publicado, as invariantes da publicação são recobradas, e um grupo vazio é recusado (C4). Devolve o produto inteiro.
+         */
+        post: operations["criarGrupo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}/grupos/{grupoId}/opcoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Acrescenta uma opção a um grupo do produto
+         * @description Exige ALTERAR_PRODUTO. A opção nasce disponível, e o acréscimo aceita zero e negativo. Com o produto já publicado, as invariantes da publicação são recobradas. Devolve o produto inteiro.
+         */
+        post: operations["criarOpcao"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/merchants/{estabelecimentoId}/catalog/categorias": {
         parameters: {
             query?: never;
@@ -232,6 +272,51 @@ export interface components {
             /**
              * Format: int32
              * @description A posição do produto na seção.
+             * @example 0
+             */
+            ordem: number;
+        };
+        /** @description Um grupo de opções novo, vazio. As opções entram uma a uma. */
+        GrupoRequest: {
+            /**
+             * @description A pergunta, como o cliente a lê.
+             * @example Tamanho
+             */
+            nome: string;
+            /**
+             * Format: int32
+             * @description Quantas o cliente tem de escolher. Zero é grupo opcional.
+             * @example 1
+             */
+            minEscolhas: number;
+            /**
+             * Format: int32
+             * @description Quantas o cliente pode escolher, no máximo. Pelo menos 1, e nunca menor que o mínimo.
+             * @example 1
+             */
+            maxEscolhas: number;
+            /**
+             * Format: int32
+             * @description A posição do grupo no produto.
+             * @example 0
+             */
+            ordem: number;
+        };
+        /** @description Uma opção nova no grupo. Nasce disponível. */
+        OpcaoRequest: {
+            /**
+             * @description O nome como o cliente o lê.
+             * @example Grande
+             */
+            nome: string;
+            /**
+             * @description Em reais, duas casas. Zero e negativo são aceitos.
+             * @example 8
+             */
+            acrescimo: number;
+            /**
+             * Format: int32
+             * @description A posição da opção no grupo.
              * @example 0
              */
             ordem: number;
@@ -557,6 +642,117 @@ export interface operations {
             };
             /** @description Sem vínculo, sem CRIAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    criarGrupo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+                produtoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GrupoRequest"];
+            };
+        };
+        responses: {
+            /** @description O produto, com o grupo novo */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProdutoResponse"];
+                };
+            };
+            /** @description Corpo malformado, limites do grupo (C3), ou, com o produto publicado, a recusa da publicação recobrada (C4); ou identificador malformado */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    criarOpcao: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+                produtoId: string;
+                grupoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpcaoRequest"];
+            };
+        };
+        responses: {
+            /** @description O produto, com a opção nova */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProdutoResponse"];
+                };
+            };
+            /** @description Corpo malformado, ou, com o produto publicado, a recusa da publicação recobrada (C2); ou identificador malformado */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description O produto não existe nesta loja (ADR-056), ou o grupo não existe neste produto */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
