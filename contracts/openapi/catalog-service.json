@@ -56,6 +56,53 @@
             "description" : "O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056)"
           }
         }
+      },
+      "delete" : {
+        "tags" : [ "produto-controller" ],
+        "summary" : "Tira o produto do cardápio",
+        "description" : "Exige DESATIVAR_PRODUTO. O produto fica INATIVO e não é apagado. Idempotente: tirar do ar o que já saiu responde 200. Rascunho é recusado.",
+        "operationId" : "despublicar",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "produtoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "O produto, fora do cardápio — também quando já estava",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProdutoResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "O produto é rascunho e nunca apareceu no cardápio; ou identificador malformado"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem DESATIVAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa"
+          },
+          "404" : {
+            "description" : "O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056)"
+          }
+        }
       }
     },
     "/api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}/grupos/{grupoId}/opcoes/{opcaoId}/disponibilidade" : {

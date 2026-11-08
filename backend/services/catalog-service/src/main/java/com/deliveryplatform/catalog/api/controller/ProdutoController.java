@@ -9,6 +9,7 @@ import com.deliveryplatform.catalog.api.dto.ProdutoResponse;
 import com.deliveryplatform.catalog.api.dto.ProdutoResumoResponse;
 import com.deliveryplatform.catalog.application.port.in.ConsultarProduto;
 import com.deliveryplatform.catalog.application.port.in.CriarProduto;
+import com.deliveryplatform.catalog.application.port.in.DespublicarProduto;
 import com.deliveryplatform.catalog.application.port.in.ListarProdutos;
 import com.deliveryplatform.catalog.application.port.in.MarcarDisponibilidade;
 import com.deliveryplatform.catalog.application.port.in.MontarOpcoes;
@@ -24,6 +25,7 @@ import org.springframework.data.web.PageableDefault;
 import com.deliveryplatform.valuetypes.Money;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -74,16 +76,19 @@ public class ProdutoController {
     private final CriarProduto criacao;
     private final PublicarProduto publicacao;
     private final MontarOpcoes montagem;
+    private final DespublicarProduto despublicacao;
 
     public ProdutoController(ListarProdutos produtos, ConsultarProduto consultas,
                              MarcarDisponibilidade marcacoes, CriarProduto criacao,
-                             PublicarProduto publicacao, MontarOpcoes montagem) {
+                             PublicarProduto publicacao, MontarOpcoes montagem,
+                             DespublicarProduto despublicacao) {
         this.produtos = produtos;
         this.consultas = consultas;
         this.marcacoes = marcacoes;
         this.criacao = criacao;
         this.publicacao = publicacao;
         this.montagem = montagem;
+        this.despublicacao = despublicacao;
     }
 
     /**
@@ -190,6 +195,36 @@ public class ProdutoController {
             @PathVariable UUID produtoId) {
 
         return ProdutoResponse.de(publicacao.publicar(estabelecimentoId, produtoId));
+    }
+
+    /**
+     * Tira o produto do cardápio (ADR-078): o par da de cima. O {@code PUT} põe a
+     * publicação, o {@code DELETE} a retira — <b>o produto não é apagado</b> (C9); ele
+     * fica {@code INATIVO}, fora do cardápio, com o histórico preservado.
+     *
+     * <p>Exige {@code DESATIVAR_PRODUTO}, que o {@code merchant} publica desde o primeiro
+     * enum. Repetir é inofensivo, como na publicação: 200 com o estado que vale.
+     *
+     * <p>O 400 é o rascunho, que nunca apareceu e não tem o que tirar (a ADR-063 o conta
+     * entre as regras), ou identificador malformado. <b>Sem 409 declarado</b>, pelo mesmo
+     * motivo da publicação.
+     */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "O produto, fora do cardápio — também quando já estava"),
+            @ApiResponse(responseCode = "400", description = "O produto é rascunho e nunca apareceu no cardápio; ou identificador malformado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem DESATIVAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa", content = @Content),
+            @ApiResponse(responseCode = "404", description = "O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056)", content = @Content)
+    })
+    @DeleteMapping(path = "/{produtoId}/publicacao", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Tira o produto do cardápio",
+            description = "Exige DESATIVAR_PRODUTO. O produto fica INATIVO e não é apagado. "
+                    + "Idempotente: tirar do ar o que já saiu responde 200. Rascunho é recusado.")
+    public ProdutoResponse despublicar(
+            @PathVariable UUID estabelecimentoId,
+            @PathVariable UUID produtoId) {
+
+        return ProdutoResponse.de(despublicacao.despublicar(estabelecimentoId, produtoId));
     }
 
     /**

@@ -18,7 +18,11 @@ export interface paths {
          */
         put: operations["publicar"];
         post?: never;
-        delete?: never;
+        /**
+         * Tira o produto do cardápio
+         * @description Exige DESATIVAR_PRODUTO. O produto fica INATIVO e não é apagado. Idempotente: tirar do ar o que já saiu responde 200. Rascunho é recusado.
+         */
+        delete: operations["despublicar"];
         options?: never;
         head?: never;
         patch?: never;
@@ -397,6 +401,57 @@ export interface operations {
                 content?: never;
             };
             /** @description Sem vínculo, sem ALTERAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    despublicar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+                produtoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description O produto, fora do cardápio — também quando já estava */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProdutoResponse"];
+                };
+            };
+            /** @description O produto é rascunho e nunca apareceu no cardápio; ou identificador malformado */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem DESATIVAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa */
             403: {
                 headers: {
                     [name: string]: unknown;

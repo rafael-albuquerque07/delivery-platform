@@ -245,6 +245,11 @@ public final class Produto {
      * {@code INATIVO} significarem a mesma coisa, e a lista do que o
      * comerciante está montando desapareceria dentro da lista do que ele tirou
      * do ar.
+     *
+     * <p>Inativar o que já está {@code INATIVO} não faz nada, como publicar o que
+     * já está publicado. É o caminho de volta da composição (ADR-078): um produto
+     * fora do ar não tem as invariantes da publicação recobradas a cada grupo, e
+     * volta ao cardápio pelo {@link #publicar()}, que cobra tudo.
      */
     public void inativar() {
         if (estadoDePublicacao == EstadoDePublicacao.RASCUNHO) {
@@ -290,7 +295,8 @@ public final class Produto {
      * e um grupo vazio cai na C4 — o teto dele é pelo menos 1, e zero opções não o
      * alcançam. A regra é a mesma da publicação, e o cardápio não exibe uma
      * pergunta sem resposta: num produto publicado, grupo novo não entra por esta
-     * escrita — a ADR-077 registra o custo.
+     * escrita — a ADR-077 registra o custo. O caminho é tirar o produto do ar,
+     * montar o grupo com as opções, e publicar de novo (ADR-078).
      *
      * @return o grupo criado, com o id que a próxima escrita vai citar
      */

@@ -289,6 +289,33 @@ class ContratoDeErrosIT extends Infraestrutura {
                             return publicar(c, UUID.randomUUID().toString());
                         }),
 
+                new Provocacao("DELETE", PUBLICAR, 400,
+                        "rascunho, que nunca apareceu no cardápio — RASCUNHO_NAO_SE_INATIVA (ADR-078)",
+                        () -> {
+                            Cena c = cena("DESATIVAR_PRODUTO");
+                            Produto rascunho = produtos.salvar(Produto.rascunho(c.loja(),
+                                    ProdutoDeTeste.CATEGORIA, "Rascunho", Precos.reais("10.00"),
+                                    ModoDeControle.SEM_CONTROLE, 1));
+                            return despublicar(c, rascunho.getId().toString());
+                        }),
+                new Provocacao("DELETE", PUBLICAR, 401, "sem token",
+                        () -> {
+                            Cena c = cena("DESATIVAR_PRODUTO");
+                            return despublicar(c.semToken(), c.pizza().getId().toString());
+                        }),
+                new Provocacao("DELETE", PUBLICAR, 403,
+                        "vínculo com ALTERAR_PRODUTO e sem DESATIVAR_PRODUTO",
+                        () -> {
+                            Cena c = cena("ALTERAR_PRODUTO");
+                            return despublicar(c, c.pizza().getId().toString());
+                        }),
+                new Provocacao("DELETE", PUBLICAR, 404,
+                        "produto que não existe nesta loja — ADR-056; o de outra loja dá o mesmo",
+                        () -> {
+                            Cena c = cena("DESATIVAR_PRODUTO");
+                            return despublicar(c, UUID.randomUUID().toString());
+                        }),
+
                 new Provocacao("POST", CRIAR_GRUPO, 400,
                         "grupo vazio num produto publicado — a C4 recobrada (ADR-077)",
                         () -> {
@@ -511,6 +538,15 @@ class ContratoDeErrosIT extends Infraestrutura {
 
     private int publicar(Cena c, String produtoId) {
         var requisicao = cliente().put()
+                .uri("/api/v1/merchants/" + c.loja() + "/catalog/produtos/" + produtoId + "/publicacao");
+        if (c.token() != null) {
+            requisicao = requisicao.header("Authorization", "Bearer " + c.token());
+        }
+        return requisicao.exchange().returnResult(String.class).getStatus().value();
+    }
+
+    private int despublicar(Cena c, String produtoId) {
+        var requisicao = cliente().delete()
                 .uri("/api/v1/merchants/" + c.loja() + "/catalog/produtos/" + produtoId + "/publicacao");
         if (c.token() != null) {
             requisicao = requisicao.header("Authorization", "Bearer " + c.token());
