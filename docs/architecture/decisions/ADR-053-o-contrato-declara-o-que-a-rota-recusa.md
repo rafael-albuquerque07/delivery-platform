@@ -1,6 +1,6 @@
 # ADR-053 — O contrato declara o que a rota recusa, e um teste prova
 
-- **Status:** aceita
+- **Status:** aceita · **emendada em 10/11/2026**: um motivo desta classe responde 409
 - **Data:** 06/10/2026
 - **Rodada:** G-E
 - **Emenda a:** ADR-039 (o contrato é gerado do código e congelado)
@@ -153,3 +153,17 @@ errado é como ela nasceria errada.
 O primeiro serviço **sem** rota autenticada, ou com um esquema de erro diferente —
 o `conversation`, que recebe webhook com assinatura no corpo e não token. A
 pergunta de lá é outra, e esta ADR não a responde.
+
+## Emenda de 10/11/2026 — um motivo desta classe responde 409
+
+A §2 mapeia a `RegraDoCatalogoViolada` inteira para **400**, *"seguindo a distinção que o
+`catalogo.md` §5 escreveu para a cotação — 400 para pedido malformado, 409 para o estado do
+mundo que mudou"*. **O mapeamento por classe decidiu, sem régua, o código de um caso que não é
+erro do chamador:** tirar do ar um produto em rascunho é **recusa de estado**, e a §3 desta mesma
+ADR põe *"estado do mundo (409)"* entre os códigos de uma rota. **O motivo
+`RASCUNHO_NAO_SE_INATIVA` passa a 409** (E-8); os outros nove motivos de regra continuam 400, e o
+`INTEGRIDADE` continua 500.
+
+*O que isto ensina sobre a §2: um tratador por classe escolhe o status pelo **tipo** da exceção,
+e o tipo não sabe se o caso é do chamador ou do mundo. **O motivo sabe** — e é por isso que ele
+existe desde a ADR-063.*

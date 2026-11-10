@@ -1,6 +1,6 @@
 # O razão das dívidas
 
-**Gerado em 10/10/2026 na rodada R-1, sobre o commit `6fb73e6`; refeito na E-1, sobre `d7dbcc4` mais a ADR-060, na W-E, sobre `398d828` mais a ADR-061, na E-3b, sobre `9fbcee1` mais a ADR-064, na E-3c, sobre `cbd633c` mais as ADRs 065 e 066 e o `PublicarProdutoService`, na E-3d, sobre `a3ffe07` mais a ADR-068, na W-F, sobre `ec89666` mais a ADR-067, na E-2, sobre `ef82bc9` mais a ADR-069, na W-G, sobre `92e8099` mais a ADR-070, na R-2, sobre `e43d227` mais a emenda de 16/10/2026 à ADR-012, na R-3, sobre `0e545c0` mais as emendas às ADRs 024 e 038 e as frases trocadas no lugar, na R-4, sobre `4904159` mais a ADR-072 e a emenda de 16/10/2026 à ADR-071, na R-5, sobre `ab18956` mais as emendas de 16/10/2026 às ADRs 071 e 072, na R-6, sobre `2b57cc9` mais a emenda de 16/10/2026 à ADR-059, na R-7, sobre `60eb66b`, com a terceira passada, na E-4, sobre `23e99a4` mais a ADR-073 e as emendas de 17/10/2026 às ADRs 011, 027 e 059, na E-5, sobre `c384446` mais a emenda de 17/10/2026 à ADR-073, na W-H, sobre `d61668f` mais a ADR-074, na R-8, sobre `10bc48f` mais a armadilha estendida do `CLAUDE.md`, e na P-1, sobre `09e08ae` mais a ADR-075, e na W-I, sobre `ebc0793` mais a ADR-076, e na E-6, sobre `3e4254c` mais a ADR-077, e na E-7, sobre `2b6e909` mais a ADR-078 e as emendas de 08/11/2026 às ADRs 065 e 077. Este arquivo é
+**Gerado em 10/10/2026 na rodada R-1, sobre o commit `6fb73e6`; refeito na E-1, sobre `d7dbcc4` mais a ADR-060, na W-E, sobre `398d828` mais a ADR-061, na E-3b, sobre `9fbcee1` mais a ADR-064, na E-3c, sobre `cbd633c` mais as ADRs 065 e 066 e o `PublicarProdutoService`, na E-3d, sobre `a3ffe07` mais a ADR-068, na W-F, sobre `ec89666` mais a ADR-067, na E-2, sobre `ef82bc9` mais a ADR-069, na W-G, sobre `92e8099` mais a ADR-070, na R-2, sobre `e43d227` mais a emenda de 16/10/2026 à ADR-012, na R-3, sobre `0e545c0` mais as emendas às ADRs 024 e 038 e as frases trocadas no lugar, na R-4, sobre `4904159` mais a ADR-072 e a emenda de 16/10/2026 à ADR-071, na R-5, sobre `ab18956` mais as emendas de 16/10/2026 às ADRs 071 e 072, na R-6, sobre `2b57cc9` mais a emenda de 16/10/2026 à ADR-059, na R-7, sobre `60eb66b`, com a terceira passada, na E-4, sobre `23e99a4` mais a ADR-073 e as emendas de 17/10/2026 às ADRs 011, 027 e 059, na E-5, sobre `c384446` mais a emenda de 17/10/2026 à ADR-073, na W-H, sobre `d61668f` mais a ADR-074, na R-8, sobre `10bc48f` mais a armadilha estendida do `CLAUDE.md`, e na P-1, sobre `09e08ae` mais a ADR-075, e na W-I, sobre `ebc0793` mais a ADR-076, e na E-6, sobre `3e4254c` mais a ADR-077, e na E-7, sobre `2b6e909` mais a ADR-078 e as emendas de 08/11/2026 às ADRs 065 e 077, e na E-8, sobre `76b63b1` mais as emendas de 10/11/2026 às ADRs 053 e 078. Este arquivo é
 derivado e envelhece:** toda ADR, documento ou javadoc que escrever um gatilho novo o
 torna incompleto. Refaça-o com os comandos abaixo antes de confiar nele.
 
@@ -62,7 +62,7 @@ Triado na R-2 e na R-3.
 
 **Os comandos produzem candidatos; a tabela é a leitura deles.** Uma menção a
 "gatilho" pode ser a definição de um, a citação de um que já está na tabela, ou o
-relato de um que disparou. A conta, em 08/11/2026, na E-7:
+relato de um que disparou. A conta, em 10/11/2026, na E-8:
 
 | | linhas |
 | --- | --- |
@@ -244,6 +244,7 @@ Achadas nas rodadas, sem condição que as reabra. **Sem gatilho, ninguém olha.
 | A ADR-041 atribui à ADR-037 uma frase entre aspas que ela não tem — *"decidir quando o segundo consumidor existir"*; a ADR-037:210 diz *"Quando o segundo chegar, a pergunta chega junto, com evidência"* | medido na R-1 |
 | As modalidades não estão no contrato: o mapa `metodosPorModalidade` é declarado com chave `string`, e o formulário da W-E nomeia `ENTREGA` e `RETIRADA` numa constante — a única lista dele sem o contrato atrás. Uma divergência com o domínio vira 400 sem `detail` | medido na W-E |
 | A correção do Mongo no `conversation`, que nenhum teste exerce | `CLAUDE.md`, armadilha do MongoDB no Boot 4 |
+| O `EstadoDePublicacao` é máquina de estados e não tem tabela de transições, que o `CLAUDE.md` (Convenções de código) manda ter. O `pedido.md`:14 registra o mesmo descompasso no pedido | R-11; E-8 |
 
 ---
 

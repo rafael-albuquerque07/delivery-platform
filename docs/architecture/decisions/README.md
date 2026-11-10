@@ -54,7 +54,7 @@
 | 050 | A documentação viva, e só no seu computador | ✅ aceita |
 | 051 | A imagem carrega o jar, não o compilador | ✅ aceita |
 | 052 | A versão no documento, e o 409 que ela cria | ✅ aceita |
-| 053 | O contrato declara o que a rota recusa, e um teste prova | ✅ aceita · **emenda a 039** |
+| 053 | O contrato declara o que a rota recusa, e um teste prova | ✅ aceita · **emenda a 039** · **emendada** (10/11/2026: um motivo desta classe responde 409) |
 | 054 | O gatilho da identidade de serviço não disparou | ✅ aceita · **emenda a 045** |
 | 055 | O que o cliente mostra quando o servidor recusa | ✅ aceita |
 | 056 | Recurso de outra loja é 404, e o 403 fica com um significado só | ✅ aceita |
@@ -78,7 +78,7 @@
 | 075 | O pedido nasce no canal, e o 7a vem antes do marco 3 | ✅ aceita |
 | 076 | O convite aceita antes de entrar | ✅ aceita |
 | 077 | O grupo de opções e a opção ganham rota, dentro do produto | ✅ aceita · **emendada** (08/11/2026: o caminho de volta tem rota — ADR-078) |
-| 078 | O produto sai do cardápio, sob a permissão que já existia | ✅ aceita |
+| 078 | O produto sai do cardápio, sob a permissão que já existia | ✅ aceita · **emendada** (10/11/2026: o rascunho responde 409, e a atribuição estava errada) |
 
 **Setenta e cinco escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**

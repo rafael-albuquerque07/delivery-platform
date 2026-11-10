@@ -1,6 +1,6 @@
 # ADR-078 — O produto sai do cardápio, sob a permissão que já existia
 
-- **Status:** aceita
+- **Status:** aceita · **emendada em 10/11/2026**: o rascunho responde 409, e a atribuição estava errada
 - **Data:** 08/11/2026
 - **Rodada:** E-7
 - **Relacionada:** ADR-077 (o grupo de opções ganha rota — emendada por esta), ADR-065 (o
@@ -100,3 +100,16 @@ publicada de uma vez.
 **A primeira pergunta de por que um produto tirado do ar voltou com uma marcação que ninguém
 lembra.** Aí o `catalogo.md` escreve o que tirar do ar faz com a disponibilidade, e esta ADR
 ganha emenda.
+
+## Emenda de 10/11/2026 — o rascunho responde 409, e a atribuição estava errada
+
+Esta ADR dizia que *"a ADR-063 conta o rascunho que não se inativa entre as regras que o
+comerciante pode causar"*. **A ADR-063 não decidiu isso:** ela cita o rascunho no Contexto,
+numa lista, e a Decisão dela não trata de transição. **Quem levou o rascunho a 400 foi a ADR-053
+§2, pelo mapeamento da classe inteira** — sem régua sobre o caso. E a frase *"regra é 400 no
+`catalog`"* desta ADR não tinha outro apoio.
+
+**Medido na R-10 e de novo na E-8:** das recusas puras de estado deste repositório, 5 respondem
+409 e só esta respondia 400. **O rascunho passa a 409** (E-8), pela §3 da ADR-053, pela
+convenção do `CLAUDE.md` e pela linha *"produto não `ATIVO`"* da §5 do `catalogo.md`. A frase
+do tratador não mudou, e o 400 desta rota fica só para identificador malformado.
