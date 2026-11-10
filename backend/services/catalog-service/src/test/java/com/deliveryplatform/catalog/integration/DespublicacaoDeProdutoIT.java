@@ -105,12 +105,12 @@ class DespublicacaoDeProdutoIT extends Infraestrutura {
     }
 
     @Test
-    @DisplayName("rascunho é 400 com a frase do rascunho, e continua rascunho")
-    void rascunho_e_400() {
+    @DisplayName("rascunho é 409 — recusa de estado — com a frase do rascunho, e continua rascunho")
+    void rascunho_e_409() {
         Produto rascunho = produtos.salvar(ProdutoDeTeste.margherita());
 
         ProblemDetail recusa = despublicar(rascunho.getId())
-                .expectStatus().isBadRequest()
+                .expectStatus().isEqualTo(409)
                 .expectBody(ProblemDetail.class).returnResult().getResponseBody();
 
         assertThat(recusa.getDetail()).isEqualTo(

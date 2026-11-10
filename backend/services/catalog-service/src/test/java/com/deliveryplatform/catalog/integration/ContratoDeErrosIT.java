@@ -289,8 +289,13 @@ class ContratoDeErrosIT extends Infraestrutura {
                             return publicar(c, UUID.randomUUID().toString());
                         }),
 
-                new Provocacao("DELETE", PUBLICAR, 400,
-                        "rascunho, que nunca apareceu no cardápio — RASCUNHO_NAO_SE_INATIVA (ADR-078)",
+                new Provocacao("DELETE", PUBLICAR, 400, "identificador do produto que não é UUID",
+                        () -> {
+                            Cena c = cena("DESATIVAR_PRODUTO");
+                            return despublicar(c, "nao-e-uuid");
+                        }),
+                new Provocacao("DELETE", PUBLICAR, 409,
+                        "rascunho, que nunca apareceu no cardápio — recusa de estado (E-8)",
                         () -> {
                             Cena c = cena("DESATIVAR_PRODUTO");
                             Produto rascunho = produtos.salvar(Produto.rascunho(c.loja(),

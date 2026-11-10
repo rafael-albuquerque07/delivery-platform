@@ -205,13 +205,14 @@ public class ProdutoController {
      * <p>Exige {@code DESATIVAR_PRODUTO}, que o {@code merchant} publica desde o primeiro
      * enum. Repetir é inofensivo, como na publicação: 200 com o estado que vale.
      *
-     * <p>O 400 é o rascunho, que nunca apareceu e não tem o que tirar (a ADR-063 o conta
-     * entre as regras), ou identificador malformado. <b>Sem 409 declarado</b>, pelo mesmo
-     * motivo da publicação.
+     * <p>O <b>409</b> é o rascunho, que nunca apareceu e não tem o que tirar: o pedido está
+     * bem formado e o estado do produto o proíbe (E-8, ADR-053 emendada). O 400 é só
+     * identificador malformado.
      */
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "O produto, fora do cardápio — também quando já estava"),
-            @ApiResponse(responseCode = "400", description = "O produto é rascunho e nunca apareceu no cardápio; ou identificador malformado", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Identificador malformado", content = @Content),
+            @ApiResponse(responseCode = "409", description = "O produto é rascunho e nunca apareceu no cardápio — recusa de estado", content = @Content),
             @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
             @ApiResponse(responseCode = "403", description = "Sem vínculo, sem DESATIVAR_PRODUTO, loja inexistente ou merchant indisponível — a mesma recusa", content = @Content),
             @ApiResponse(responseCode = "404", description = "O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056)", content = @Content)

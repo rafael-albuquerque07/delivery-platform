@@ -437,7 +437,7 @@ export interface operations {
                     "application/json": components["schemas"]["ProdutoResponse"];
                 };
             };
-            /** @description O produto é rascunho e nunca apareceu no cardápio; ou identificador malformado */
+            /** @description Identificador malformado */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -460,6 +460,13 @@ export interface operations {
             };
             /** @description O produto não existe nesta loja — inexistente ou de outra loja, a mesma resposta (ADR-056) */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description O produto é rascunho e nunca apareceu no cardápio — recusa de estado */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

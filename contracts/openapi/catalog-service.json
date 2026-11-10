@@ -91,7 +91,10 @@
             }
           },
           "400" : {
-            "description" : "O produto é rascunho e nunca apareceu no cardápio; ou identificador malformado"
+            "description" : "Identificador malformado"
+          },
+          "409" : {
+            "description" : "O produto é rascunho e nunca apareceu no cardápio — recusa de estado"
           },
           "401" : {
             "description" : "Sem token, ou token inválido"

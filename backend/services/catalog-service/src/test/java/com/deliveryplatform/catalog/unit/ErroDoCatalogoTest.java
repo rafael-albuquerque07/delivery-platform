@@ -24,7 +24,8 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
  * O erro diz de quem é a culpa (ADR-063): regra do comerciante é 400 com a frase
- * escrita pelo tratador; defeito nosso é 500, e não conta nada.
+ * escrita pelo tratador; defeito nosso é 500, e não conta nada. A recusa de estado —
+ * o rascunho que não se inativa — é 409 desde a E-8 (ADR-053 emendada).
  *
  * <p><b>Cada exceção daqui sai do domínio de verdade</b> — um produto montado com o
  * defeito, um {@code publicar()} que recusa —, e não de um {@code new} no teste. Um
@@ -97,12 +98,41 @@ class ErroDoCatalogoTest {
                         + "e o preço precisa ser maior que zero; ajuste os acréscimos negativos");
     }
 
+    /**
+     * O único motivo desta classe que é recusa de estado: o pedido está bem formado, e é o
+     * estado do produto que o proíbe. 409 desde a E-8 (ADR-053 emendada); a frase é a mesma.
+     */
     @Test
-    @DisplayName("RASCUNHO_NAO_SE_INATIVA")
+    @DisplayName("RASCUNHO_NAO_SE_INATIVA: 409, com a mesma frase")
     void rascunho_nao_se_inativa() {
-        assertThat(detalheDe(pizza()::inativar, Motivo.RASCUNHO_NAO_SE_INATIVA))
+        assertThat(detalheDe(pizza()::inativar, Motivo.RASCUNHO_NAO_SE_INATIVA, 409))
                 .isEqualTo("este produto ainda é rascunho e nunca apareceu no cardápio; "
                         + "não há o que tirar do ar");
+    }
+
+    /**
+     * O que impede o 409 do rascunho de virar troca da classe inteira: <b>todo outro motivo
+     * de regra continua 400</b>. Percorre o enum, e não uma lista escrita à mão — um motivo
+     * novo entra aqui sozinho, e quem o quiser em 409 tem de dizê-lo no tratador.
+     *
+     * <p>A exceção é montada com {@code new}, ao contrário do resto desta classe: o que se
+     * afirma aqui é o mapa do tratador, motivo por motivo, e não o que o agregado lança.
+     */
+    @Test
+    @DisplayName("todo outro motivo de regra continua 400 — o 409 é de um motivo, não da classe")
+    void os_outros_motivos_continuam_400() {
+        List<Motivo> deRegra = java.util.Arrays.stream(Motivo.values())
+                .filter(m -> m != Motivo.INTEGRIDADE && m != Motivo.RASCUNHO_NAO_SE_INATIVA)
+                .toList();
+
+        assertThat(deRegra).as("os nove motivos de regra além do rascunho").hasSize(9);
+        for (Motivo motivo : deRegra) {
+            RegraDoCatalogoViolada violada =
+                    new RegraDoCatalogoViolada(motivo, "teste", "ESGOTADO_HOJE", "Pizza");
+            assertThat(tratador.regraViolada(violada).getStatus())
+                    .as("%s", motivo)
+                    .isEqualTo(400);
+        }
     }
 
     @Test
@@ -192,11 +222,16 @@ class ErroDoCatalogoTest {
 
     /** Provoca no domínio, confere o motivo, e devolve o detail de um 400. */
     private String detalheDe(Executable ato, Motivo esperado) {
+        return detalheDe(ato, esperado, 400);
+    }
+
+    /** O mesmo, com o status esperado — 409 só para a recusa de estado (E-8). */
+    private String detalheDe(Executable ato, Motivo esperado, int status) {
         RegraDoCatalogoViolada violada = lancada(ato);
         assertThat(violada).as("o domínio não recusou").isNotNull();
         assertThat(violada.motivo()).isEqualTo(esperado);
         ProblemDetail resposta = tratador.regraViolada(violada);
-        assertThat(resposta.getStatus()).isEqualTo(400);
+        assertThat(resposta.getStatus()).isEqualTo(status);
         return resposta.getDetail();
     }
 }

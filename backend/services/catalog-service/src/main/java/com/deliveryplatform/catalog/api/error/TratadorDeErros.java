@@ -24,7 +24,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * <ul>
  *   <li>{@code AcessoNegado} e {@code AutorizacaoIndisponivel} → 403;</li>
  *   <li>{@code RegraDoCatalogoViolada} → 400 quando o motivo é regra, 500 quando é
- *       {@code INTEGRIDADE} (G-E; a separação desde a E-3b, ADR-063);</li>
+ *       {@code INTEGRIDADE} (G-E; a separação desde a E-3b, ADR-063), e 409 para
+ *       {@code RASCUNHO_NAO_SE_INATIVA}, que é recusa de estado (E-8, ADR-053 emendada);</li>
  *   <li>{@code ProdutoNaoEncontrado} → 404 (G-F; a marcação desde a G-G, ADR-056);</li>
  *   <li>{@code OpcaoNaoEncontrada} → 404 (E-3b, ADR-063 §4);</li>
  *   <li>{@code GrupoNaoEncontrado} → 404 (E-6, ADR-077);</li>
@@ -148,6 +149,12 @@ public class TratadorDeErros {
      * modelo se chama por dentro. Até a E-3b estes dezoito pontos saíam 400 — a figura
      * que o {@code CLAUDE.md} recusa para o tratador de {@code IllegalArgumentException}.
      *
+     * <p><b>{@code RASCUNHO_NAO_SE_INATIVA} → 409</b> (E-8). Tirar do ar um rascunho é um
+     * pedido bem formado que o estado do produto proíbe — estado do mundo, pela §3 da
+     * ADR-053, e transição fora da tabela, pela convenção do {@code CLAUDE.md}. Até a E-8 ele
+     * saía 400 só por ser desta classe: o status vinha do <b>tipo</b> da exceção, e o tipo
+     * não sabe se o caso é do chamador ou do mundo. O motivo sabe. A frase não mudou.
+     *
      * <p><b>O documento corrompido não passa por aqui</b> (G-C3b): o
      * {@code ProdutoMapper} converte a exceção em {@code DocumentoIlegivel}, que não tem
      * tratador e sai como 500.
@@ -159,7 +166,14 @@ public class TratadorDeErros {
             return ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR,
                     "não foi possível completar a operação");
         }
-        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, fraseDe(excecao));
+        return ProblemDetail.forStatusAndDetail(statusDe(excecao.motivo()), fraseDe(excecao));
+    }
+
+    /** O status de cada motivo de regra: 400, menos a recusa de estado, que é 409. */
+    static HttpStatus statusDe(RegraDoCatalogoViolada.Motivo motivo) {
+        return motivo == RegraDoCatalogoViolada.Motivo.RASCUNHO_NAO_SE_INATIVA
+                ? HttpStatus.CONFLICT
+                : HttpStatus.BAD_REQUEST;
     }
 
     /**
