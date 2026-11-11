@@ -481,6 +481,13 @@ M9 e M10 passam a valer quando houver duas.
 inteiro e preserva a pausa; o mapa vazio devolve a loja ao `semHorario()`, que é o mesmo estado
 nomeado, e não um caso especial.
 
+**Os mínimos e o desconto de retirada saem do zero pelos irmãos da mesma rota** (E-9,
+ADR-080): `PUT .../settings/pedido-minimo` e `PUT .../settings/desconto-retirada`, cada um com o
+seu `GET`, sob `CONFIGURAR_LOJA`. `Estabelecimento.comPedidoMinimo` substitui o mapa inteiro e
+`Estabelecimento.comDescontoDeRetirada` troca o valor; os dois passam pelo construtor do
+`Operacao`, que recobra a M17 e a M15. O zero entra como entrada; a modalidade omitida é
+recusada, e não lida como zero.
+
 **E a assimetria é deliberada:** horário vazio **fecha** a loja, operação padrão a
 **abriria** — prometendo uma forma de pagar que o comerciante não escolheu, com dinheiro
 chegando à porta (P1).
