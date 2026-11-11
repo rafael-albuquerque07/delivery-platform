@@ -3,7 +3,8 @@ import type { components } from './generated/catalog';
 
 /**
  * A escrita do cardápio (ADR-067): criar seção, criar produto, publicar. As três rotas
- * vêm da E-3b e da E-3c, e esta é a primeira tela que as chama.
+ * vêm da E-3b e da E-3c, e esta é a primeira tela que as chama. Desde a W-J (ADR-079),
+ * também tirar do ar (E-7), criar grupo e criar opção (E-6).
  *
  * Os corpos são os tipos **gerados** do contrato, e a resposta também. A recusa chega
  * como `ErroDaApi` com o `detail` em `detalhe`, ou `SemResposta` — e quem a transforma
@@ -47,6 +48,51 @@ export function publicarProduto(
   return chamar<ProdutoCriado>(
     `/api/v1/merchants/${estabelecimentoId}/catalog/produtos/${produtoId}/publicacao`,
     { metodo: 'PUT', token },
+  );
+}
+
+/**
+ * `DELETE` no mesmo sub-recurso (E-7, ADR-078): o produto fica `INATIVO`, e não é apagado.
+ * Idempotente como a publicação; o rascunho é recusado com 409.
+ */
+export function despublicarProduto(
+  estabelecimentoId: string,
+  produtoId: string,
+  token: string,
+): Promise<ProdutoCriado> {
+  return chamar<ProdutoCriado>(
+    `/api/v1/merchants/${estabelecimentoId}/catalog/produtos/${produtoId}/publicacao`,
+    { metodo: 'DELETE', token },
+  );
+}
+
+export type NovoGrupo = components['schemas']['GrupoRequest'];
+export type NovaOpcao = components['schemas']['OpcaoRequest'];
+
+/** O grupo nasce vazio (E-6, ADR-077). Devolve o produto inteiro. */
+export function criarGrupo(
+  estabelecimentoId: string,
+  produtoId: string,
+  corpo: NovoGrupo,
+  token: string,
+): Promise<ProdutoCriado> {
+  return chamar<ProdutoCriado>(
+    `/api/v1/merchants/${estabelecimentoId}/catalog/produtos/${produtoId}/grupos`,
+    { metodo: 'POST', corpo, token },
+  );
+}
+
+/** A opção nasce disponível, e o acréscimo aceita zero e negativo. Devolve o produto inteiro. */
+export function criarOpcao(
+  estabelecimentoId: string,
+  produtoId: string,
+  grupoId: string,
+  corpo: NovaOpcao,
+  token: string,
+): Promise<ProdutoCriado> {
+  return chamar<ProdutoCriado>(
+    `/api/v1/merchants/${estabelecimentoId}/catalog/produtos/${produtoId}/grupos/${grupoId}/opcoes`,
+    { metodo: 'POST', corpo, token },
   );
 }
 

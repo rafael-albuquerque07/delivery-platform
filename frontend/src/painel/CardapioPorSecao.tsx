@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 
-import { criarSecao, fraseDaRecusa, publicarProduto } from '../api/cardapio';
+import { criarSecao, despublicarProduto, fraseDaRecusa, publicarProduto } from '../api/cardapio';
 import { ErroDaApi } from '../api/cliente';
 import { useRecurso } from '../api/useRecurso';
 import { useSessao } from '../auth/useSessao';
@@ -43,12 +43,14 @@ import {
  * - **A seção nasce em linha**, num campo desta tela: dar nome a uma coisa, ao lado da
  *   coisa. A lista se refaz depois do `POST`.
  * - **O produto tem rota própria** — o botão leva a ela.
- * - **Publicar é um botão no rascunho**, e a recusa aparece **ao lado daquele produto**,
- *   com a frase do servidor (ADR-063). O publicado não tem botão de volta: não há rota de
- *   despublicar.
+ * - **Publicar é um botão no rascunho e no que está fora do ar**, e a recusa aparece **ao
+ *   lado daquele produto**, com a frase do servidor (ADR-063).
+ * - **Tirar do ar é o botão do publicado**, no mesmo lugar (W-J, ADR-079): a rota é o
+ *   `DELETE` da E-7, e o produto volta como `INATIVO` — com o botão de publicar de novo.
  *
  * Os botões aparecem por permissão — `CRIAR_PRODUTO` para criar, `ALTERAR_PRODUTO` para
- * publicar —, pelo mesmo critério do menu: conveniência, não segurança (premissas §2.2).
+ * publicar, `DESATIVAR_PRODUTO` para tirar do ar —, pelo mesmo critério do menu:
+ * conveniência, não segurança (premissas §2.2).
  *
  * ## A página
  *
@@ -60,12 +62,14 @@ export function CardapioPorSecao({
   aoAbrir,
   podeCriar = false,
   podePublicar = false,
+  podeTirarDoAr = false,
   aoNovoProduto,
 }: {
   estabelecimentoId: string;
   aoAbrir?: (produtoId: string) => void;
   podeCriar?: boolean;
   podePublicar?: boolean;
+  podeTirarDoAr?: boolean;
   aoNovoProduto?: () => void;
 }) {
   // Recarregar é remontar, como na ListaDeProdutos: o useRecurso de dentro busca de novo.
@@ -77,6 +81,7 @@ export function CardapioPorSecao({
       aoAbrir={aoAbrir}
       podeCriar={podeCriar}
       podePublicar={podePublicar}
+      podeTirarDoAr={podeTirarDoAr}
       aoNovoProduto={aoNovoProduto}
       aoRecarregar={() => definirGeracao((atual) => atual + 1)}
     />
@@ -88,6 +93,7 @@ function CardapioCarregado({
   aoAbrir,
   podeCriar,
   podePublicar,
+  podeTirarDoAr,
   aoNovoProduto,
   aoRecarregar,
 }: {
@@ -95,6 +101,7 @@ function CardapioCarregado({
   aoAbrir: ((produtoId: string) => void) | undefined;
   podeCriar: boolean;
   podePublicar: boolean;
+  podeTirarDoAr: boolean;
   aoNovoProduto: (() => void) | undefined;
   aoRecarregar: () => void;
 }) {
@@ -156,6 +163,7 @@ function CardapioCarregado({
             estabelecimentoId={estabelecimentoId}
             aoAbrir={aoAbrir}
             podePublicar={podePublicar}
+            podeTirarDoAr={podeTirarDoAr}
             aoPublicado={(produto) =>
               definirDevolvidos((atual) => new Map(atual).set(produto.id, produto))
             }
@@ -240,12 +248,14 @@ function GrupoDaTela({
   estabelecimentoId,
   aoAbrir,
   podePublicar,
+  podeTirarDoAr,
   aoPublicado,
 }: {
   grupo: GrupoDoCardapio;
   estabelecimentoId: string;
   aoAbrir: ((produtoId: string) => void) | undefined;
   podePublicar: boolean;
+  podeTirarDoAr: boolean;
   aoPublicado: (produto: Produto) => void;
 }) {
   const titulo = grupo.secao?.nome ?? 'Sem seção';
@@ -267,6 +277,7 @@ function GrupoDaTela({
               estabelecimentoId={estabelecimentoId}
               aoAbrir={aoAbrir}
               podePublicar={podePublicar}
+              podeTirarDoAr={podeTirarDoAr}
               aoPublicado={aoPublicado}
             />
           ))}
@@ -281,12 +292,14 @@ function LinhaDoProduto({
   estabelecimentoId,
   aoAbrir,
   podePublicar,
+  podeTirarDoAr,
   aoPublicado,
 }: {
   produto: Produto;
   estabelecimentoId: string;
   aoAbrir: ((produtoId: string) => void) | undefined;
   podePublicar: boolean;
+  podeTirarDoAr: boolean;
   aoPublicado: (produto: Produto) => void;
 }) {
   const token = useSessao().sessao?.token;
@@ -294,21 +307,29 @@ function LinhaDoProduto({
   const [recusa, definirRecusa] = useState<string | null>(null);
   const estado = rotuloDaPublicacao(produto.publicacao);
 
-  async function publicar() {
+  // Publicar e tirar do ar são PUT e DELETE no mesmo sub-recurso, `/publicacao`, e o
+  // produto que volta substitui o da lista.
+  async function alternar(ato: 'publicar' | 'tirar') {
     if (token === undefined) return;
     definirPublicando(true);
     definirRecusa(null);
     try {
-      aoPublicado(produtoParaTela(await publicarProduto(estabelecimentoId, produto.id, token)));
+      const rota = ato === 'publicar' ? publicarProduto : despublicarProduto;
+      aoPublicado(produtoParaTela(await rota(estabelecimentoId, produto.id, token)));
     } catch (falha) {
       definirRecusa(
         fraseDaRecusa(
           falha,
           {
-            403: 'Você não tem permissão para publicar nesta loja.',
+            403:
+              ato === 'publicar'
+                ? 'Você não tem permissão para publicar nesta loja.'
+                : 'Você não tem permissão para tirar produto do ar nesta loja.',
             404: 'Este produto não está mais nesta loja.',
           },
-          'Não foi possível publicar agora.',
+          ato === 'publicar'
+            ? 'Não foi possível publicar agora.'
+            : 'Não foi possível tirar do ar agora.',
         ),
       );
     } finally {
@@ -340,14 +361,25 @@ function LinhaDoProduto({
             </span>
           )}
           <span className="tabular-nums text-slate-700 dark:text-slate-300">{produto.preco}</span>
-          {podePublicar && produto.publicacao === 'RASCUNHO' && (
+          {podePublicar &&
+            (produto.publicacao === 'RASCUNHO' || produto.publicacao === 'INATIVO') && (
+              <Botao
+                type="button"
+                variante="discreto"
+                ocupado={publicando}
+                onClick={() => void alternar('publicar')}
+              >
+                Publicar
+              </Botao>
+            )}
+          {podeTirarDoAr && produto.publicacao === 'ATIVO' && (
             <Botao
               type="button"
               variante="discreto"
               ocupado={publicando}
-              onClick={() => void publicar()}
+              onClick={() => void alternar('tirar')}
             >
-              Publicar
+              Tirar do ar
             </Botao>
           )}
         </span>

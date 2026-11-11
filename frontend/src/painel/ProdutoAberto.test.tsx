@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 
 import { ErroDaApi } from '../api/cliente';
@@ -269,5 +270,169 @@ describe('ProdutoAberto', () => {
     await screen.findByRole('heading', { name: 'Pizza margherita' });
 
     expect(screen.queryByRole('group')).toBeNull();
+  });
+});
+
+// ── a montagem dos grupos e das opções (W-J, ADR-079) ───────────────────────
+
+type ChamadaDeMontagem = [string, { metodo?: string; corpo?: unknown } | undefined];
+
+/**
+ * O dublê com estado: o GET devolve o produto como ele está, o DELETE da publicação o
+ * deixa INATIVO, e os POSTs fazem o que o caso mandar — a tela relê depois de cada um.
+ */
+function servidorDeMontagem(
+  inicial: Record<string, unknown>,
+  aoCriar: (caminho: string) => Promise<unknown> = () => Promise.resolve({}),
+) {
+  let atual = { ...inicial };
+  chamarFalso.mockImplementation((caminho: string, opcoes?: { metodo?: string }) => {
+    if (opcoes?.metodo === 'DELETE' && caminho.endsWith('/publicacao')) {
+      atual = { ...atual, estadoDePublicacao: 'INATIVO' };
+      return Promise.resolve(atual);
+    }
+    if (opcoes?.metodo === 'POST') return aoCriar(caminho);
+    return Promise.resolve(atual);
+  });
+}
+
+function escritas(metodo: string): ChamadaDeMontagem[] {
+  return (chamarFalso.mock.calls as ChamadaDeMontagem[]).filter(
+    ([, opcoes]) => opcoes?.metodo === metodo,
+  );
+}
+
+/** Só os GETs — o `leituras()` de cima conta tudo que não é PUT, e o POST entraria. */
+function gets(): number {
+  return (chamarFalso.mock.calls as ChamadaDeMontagem[]).filter(
+    ([, opcoes]) => opcoes?.metodo === undefined,
+  ).length;
+}
+
+function montarParaMontar({ podeMontar = true, podeTirarDoAr = true } = {}) {
+  render(
+    <SessaoProvider>
+      <ProdutoAberto
+        estabelecimentoId="loja-1"
+        produtoId="p-1"
+        podeMarcar={false}
+        podeMontar={podeMontar}
+        podeTirarDoAr={podeTirarDoAr}
+        aoVoltar={() => {}}
+      />
+    </SessaoProvider>,
+  );
+}
+
+describe('ProdutoAberto — montar grupos e opções', () => {
+  it('M1 · produto em rascunho: criar grupo manda o POST com a ordem derivada, e relê', async () => {
+    servidorDeMontagem(produtoInteiro({ estadoDePublicacao: 'RASCUNHO' }));
+
+    montarParaMontar();
+    await screen.findByRole('heading', { name: 'Pizza margherita' });
+    const lidasAntes = gets();
+    await userEvent.type(screen.getByLabelText('Nome do grupo'), 'Borda');
+    await userEvent.type(screen.getByLabelText(/Mínimo de escolhas/), '0');
+    await userEvent.type(screen.getByLabelText(/Máximo de escolhas/), '1');
+    await userEvent.click(screen.getByRole('button', { name: 'Criar grupo' }));
+
+    await waitFor(() => expect(escritas('POST')).toHaveLength(1));
+    const [caminho, opcoes] = escritas('POST')[0] as ChamadaDeMontagem;
+    expect(caminho).toBe('/api/v1/merchants/loja-1/catalog/produtos/p-1/grupos');
+    // Os grupos do dublê têm ordem 0 e 1: o novo é o 2.
+    expect(opcoes?.corpo).toEqual({ nome: 'Borda', minEscolhas: 0, maxEscolhas: 1, ordem: 2 });
+    await waitFor(() => expect(gets()).toBe(lidasAntes + 1));
+  });
+
+  it('M2 · criar opção num grupo: o POST vai ao grupo certo, com o acréscimo negativo e a ordem derivada', async () => {
+    servidorDeMontagem(produtoInteiro({ estadoDePublicacao: 'RASCUNHO' }));
+
+    montarParaMontar();
+    const tamanho = await screen.findByRole('region', { name: 'Tamanho' });
+    const acrescimo = within(tamanho).getByLabelText(/Acréscimo/);
+    await userEvent.type(within(tamanho).getByLabelText('Nome da opção'), 'Brotinho');
+    await userEvent.clear(acrescimo);
+    await userEvent.type(acrescimo, '-2,50');
+    await userEvent.click(within(tamanho).getByRole('button', { name: 'Acrescentar opção' }));
+
+    await waitFor(() => expect(escritas('POST')).toHaveLength(1));
+    const [caminho, opcoes] = escritas('POST')[0] as ChamadaDeMontagem;
+    expect(caminho).toBe('/api/v1/merchants/loja-1/catalog/produtos/p-1/grupos/g-tamanho/opcoes');
+    // As opções do Tamanho têm ordem 0, 1 e 2: a nova é a 3.
+    expect(opcoes?.corpo).toEqual({ nome: 'Brotinho', acrescimo: -2.5, ordem: 3 });
+  });
+
+  it('M3 · a recusa do servidor aparece como veio, e a tela não reescreve a frase', async () => {
+    const frase = 'O grupo «Borda» pede no máximo 0 escolhas, e o máximo é pelo menos 1.';
+    servidorDeMontagem(produtoInteiro({ estadoDePublicacao: 'RASCUNHO' }), () =>
+      Promise.reject(new ErroDaApi(400, frase)),
+    );
+
+    montarParaMontar();
+    await screen.findByRole('heading', { name: 'Pizza margherita' });
+    await userEvent.type(screen.getByLabelText('Nome do grupo'), 'Borda');
+    await userEvent.click(screen.getByRole('button', { name: 'Criar grupo' }));
+
+    expect((await screen.findByRole('alert')).textContent).toBe(frase);
+  });
+
+  it('M4 · produto no ar: a frase e a saída no lugar do criar grupo — e a opção continua', async () => {
+    servidorDeMontagem(produtoInteiro({ estadoDePublicacao: 'ATIVO' }));
+
+    montarParaMontar();
+    await screen.findByRole('heading', { name: 'Pizza margherita' });
+
+    expect(screen.getByText('Para mudar os grupos, tire o produto do ar.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tirar do ar' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Criar grupo' })).toBeNull();
+    // O servidor aceita opção num produto publicado (só a C2 a recusaria): o formulário fica.
+    const tamanho = screen.getByRole('region', { name: 'Tamanho' });
+    expect(within(tamanho).getByRole('button', { name: 'Acrescentar opção' })).toBeInTheDocument();
+  });
+
+  it('M5 · tirar do ar manda o DELETE, relê, e a seção volta a aceitar grupo', async () => {
+    servidorDeMontagem(produtoInteiro({ estadoDePublicacao: 'ATIVO' }));
+
+    montarParaMontar();
+    await userEvent.click(await screen.findByRole('button', { name: 'Tirar do ar' }));
+
+    expect(await screen.findByRole('button', { name: 'Criar grupo' })).toBeInTheDocument();
+    expect(screen.queryByText('Para mudar os grupos, tire o produto do ar.')).toBeNull();
+    expect(escritas('DELETE').map(([caminho]) => caminho)).toEqual([
+      '/api/v1/merchants/loja-1/catalog/produtos/p-1/publicacao',
+    ]);
+  });
+
+  it('M6 · sem ALTERAR_PRODUTO, nem formulário nem frase — como o cardápio sem as permissões', async () => {
+    servidorDeMontagem(produtoInteiro({ estadoDePublicacao: 'ATIVO' }));
+
+    montarParaMontar({ podeMontar: false });
+    await screen.findByRole('heading', { name: 'Pizza margherita' });
+
+    expect(screen.queryByRole('button', { name: 'Criar grupo' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Acrescentar opção' })).toBeNull();
+    expect(screen.queryByText(/tire o produto do ar/)).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Tirar do ar' })).toBeNull();
+  });
+
+  it('M6b · sem DESATIVAR_PRODUTO, no ar: a frase fica, o botão não', async () => {
+    servidorDeMontagem(produtoInteiro({ estadoDePublicacao: 'ATIVO' }));
+
+    montarParaMontar({ podeTirarDoAr: false });
+    await screen.findByRole('heading', { name: 'Pizza margherita' });
+
+    expect(screen.getByText('Para mudar os grupos, tire o produto do ar.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Tirar do ar' })).toBeNull();
+  });
+
+  it('estado de publicação desconhecido não abre escrita nenhuma', async () => {
+    servidorDeMontagem(produtoInteiro({ estadoDePublicacao: 'ARQUIVADO' }));
+
+    montarParaMontar();
+    await screen.findByRole('heading', { name: 'Pizza margherita' });
+
+    expect(screen.queryByRole('button', { name: 'Criar grupo' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Acrescentar opção' })).toBeNull();
+    expect(screen.queryByText(/tire o produto do ar/)).toBeNull();
   });
 });

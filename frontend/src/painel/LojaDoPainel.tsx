@@ -117,6 +117,7 @@ function CardapioDaLoja({
       aoAbrir={aoAbrir}
       podeCriar={permissoes.includes('CRIAR_PRODUTO')}
       podePublicar={permissoes.includes('ALTERAR_PRODUTO')}
+      podeTirarDoAr={permissoes.includes('DESATIVAR_PRODUTO')}
       aoNovoProduto={() => void navegar(caminhoDoNovoProduto(estabelecimentoId))}
     />
   );
@@ -142,14 +143,25 @@ export function EquipeDaLoja() {
   return <ConvidarParaEquipe estabelecimentoId={estabelecimentoId} minhasPermissoes={permissoes} />;
 }
 
+/**
+ * O produto aberto. A montagem dos grupos e das opções é do **cardápio**, como a marcação
+ * é da disponibilidade (W-J, ADR-079) — e, dentro dele, por permissão: `ALTERAR_PRODUTO`
+ * para montar, `DESATIVAR_PRODUTO` para tirar do ar. Conveniência, não segurança.
+ */
 export function ProdutoDaSecao({ secao }: { secao: Secao }) {
   const { estabelecimentoId = '', produtoId = '' } = useParams();
   const navegar = useNavigate();
+  const { lojas } = useContextoDoPainel();
+  const permissoes =
+    lojas.find((uma) => uma.estabelecimentoId === estabelecimentoId)?.permissoes ?? [];
+  const noCardapio = secao === 'cardapio';
   return (
     <ProdutoAberto
       estabelecimentoId={estabelecimentoId}
       produtoId={produtoId}
       podeMarcar={MARCA[secao]}
+      podeMontar={noCardapio && permissoes.includes('ALTERAR_PRODUTO')}
+      podeTirarDoAr={noCardapio && permissoes.includes('DESATIVAR_PRODUTO')}
       aoVoltar={() => void navegar(caminhoDaSecao(estabelecimentoId, secao))}
     />
   );

@@ -1,6 +1,6 @@
 import { estadoConhecido, type EstadoDeDisponibilidade } from '../api/disponibilidade';
 import type { components } from '../api/generated/catalog';
-import { precoLegivel } from './produtos';
+import { precoLegivel, publicacaoConhecida, type EstadoDePublicacao } from './produtos';
 
 /**
  * A ponte entre o produto inteiro do contrato — `GET .../catalog/produtos/{id}`,
@@ -29,6 +29,8 @@ export type OpcaoNaTela = {
   /** `null` quando o acréscimo é zero — e aí a tela não mostra nada (W-D). */
   acrescimo: string | null;
   disponibilidade: EstadoDeDisponibilidade | null;
+  /** A posição que o servidor mandou — só para derivar a da opção nova (W-J). */
+  ordem: number;
 };
 
 export type GrupoNaTela = {
@@ -38,6 +40,7 @@ export type GrupoNaTela = {
   regra: string;
   obrigatorio: boolean;
   opcoes: OpcaoNaTela[];
+  ordem: number;
 };
 
 export type ProdutoAbertoNaTela = {
@@ -46,6 +49,8 @@ export type ProdutoAbertoNaTela = {
   preco: string;
   vendavel: boolean;
   disponibilidade: EstadoDeDisponibilidade | null;
+  /** Lido, como na lista (ADR-068 §2). `null` se desconhecido — e aí a tela não oferece escrita. */
+  publicacao: EstadoDePublicacao | null;
   grupos: GrupoNaTela[];
 };
 
@@ -60,6 +65,7 @@ export function produtoAbertoParaTela(produto: ProdutoInteiroDoContrato): Produt
     preco: precoLegivel(produto.precoBase),
     vendavel: produto.vendavel === true,
     disponibilidade: estadoConhecido(produto.disponibilidade),
+    publicacao: publicacaoConhecida(produto.estadoDePublicacao),
     grupos: naOrdem(produto.gruposDeOpcoes ?? []).map(grupoParaTela),
   };
 }
@@ -73,6 +79,7 @@ function grupoParaTela(grupo: GrupoDoContrato): GrupoNaTela {
     regra: regraDoGrupo(min, max),
     obrigatorio: min >= 1,
     opcoes: naOrdem(grupo.opcoes ?? []).map(opcaoParaTela),
+    ordem: grupo.ordem ?? 0,
   };
 }
 
@@ -82,6 +89,7 @@ function opcaoParaTela(opcao: OpcaoDoContrato): OpcaoNaTela {
     nome: opcao.nome ?? '',
     acrescimo: acrescimoLegivel(opcao.acrescimo),
     disponibilidade: estadoConhecido(opcao.disponibilidade),
+    ordem: opcao.ordem ?? 0,
   };
 }
 

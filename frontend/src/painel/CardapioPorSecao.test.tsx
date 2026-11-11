@@ -346,6 +346,48 @@ describe('CardapioPorSecao — a escrita', () => {
     expect(within(linha).queryByRole('button', { name: /publicar/i })).toBeNull();
   });
 
+  it('W-J · com DESATIVAR_PRODUTO, tirar do ar mora ao lado de publicar: DELETE, "Fora do cardápio", e o Publicar volta', async () => {
+    servidor([PIZZAS], [produto('1', 'Margherita', 's-piz', 0)]);
+    const base = chamarFalso.getMockImplementation() as (c: string, o?: unknown) => unknown;
+    chamarFalso.mockImplementation((caminho: string, opcoes?: { metodo?: string }) =>
+      opcoes?.metodo === 'DELETE'
+        ? Promise.resolve(
+            produto('1', 'Margherita', 's-piz', 0, {
+              estadoDePublicacao: 'INATIVO',
+              vendavel: false,
+            }),
+          )
+        : base(caminho, opcoes),
+    );
+
+    render(
+      <SessaoProvider>
+        <CardapioPorSecao estabelecimentoId="p1" podePublicar podeTirarDoAr />
+      </SessaoProvider>,
+    );
+    const linha = (await screen.findByText('Margherita')).closest('li') as HTMLElement;
+    await userEvent.click(within(linha).getByRole('button', { name: 'Tirar do ar' }));
+
+    expect(await within(linha).findByText('Fora do cardápio')).toBeInTheDocument();
+    expect(within(linha).getByRole('button', { name: 'Publicar' })).toBeInTheDocument();
+    expect(within(linha).queryByRole('button', { name: 'Tirar do ar' })).toBeNull();
+    const deletes = chamadas().filter(([, o]) => o?.metodo === 'DELETE');
+    expect(deletes.map(([c]) => c)).toEqual(['/api/v1/merchants/p1/catalog/produtos/1/publicacao']);
+  });
+
+  it('W-J · o produto fora do ar tem o botão de publicar de novo', async () => {
+    servidor(
+      [PIZZAS],
+      [produto('1', 'Margherita', 's-piz', 0, { estadoDePublicacao: 'INATIVO', vendavel: false })],
+    );
+
+    montarComEscrita();
+    const linha = (await screen.findByText('Margherita')).closest('li') as HTMLElement;
+    await userEvent.click(within(linha).getByRole('button', { name: 'Publicar' }));
+
+    expect(await within(linha).findByText('No cardápio')).toBeInTheDocument();
+  });
+
   it('sem as permissões, nem o campo da seção nem o botão de publicar aparecem', async () => {
     servidor(
       [PIZZAS],

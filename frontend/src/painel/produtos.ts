@@ -39,7 +39,7 @@ export function rotuloDaPublicacao(estado: EstadoDePublicacao | null): string | 
   return estado === null ? null : PUBLICACAO[estado];
 }
 
-function publicacaoConhecida(valor: unknown): EstadoDePublicacao | null {
+export function publicacaoConhecida(valor: unknown): EstadoDePublicacao | null {
   return typeof valor === 'string' && valor in PUBLICACAO ? (valor as EstadoDePublicacao) : null;
 }
 
