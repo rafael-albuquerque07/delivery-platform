@@ -169,6 +169,15 @@ o marca. **Invariante não:** o botão do cadastro de loja não é desabilitado 
 tela mostra o `detail` do 400 como veio (ADR-055). Antecipar a regra seria mantê-la em dois
 lugares — o erro que a W-D consertou no `vendavel`.
 
+**Uma exceção, com critério** (W-J, ADR-079 §3): a tela deixa de oferecer uma ação **só quando
+o servidor a recusa sempre, pelo estado do recurso, e nunca pelo que a pessoa digitaria** — e
+então diz o estado e oferece a saída. O caso que a criou: num produto no ar, o grupo novo nasce
+vazio e a C4 recobrada o recusa sempre; no lugar do formulário, a tela diz *"Para mudar os
+grupos, tire o produto do ar."*, com o botão ao lado. **A opção nova, que o servidor aceita no
+produto no ar, continua com formulário.** Validação de campo e invariante sobre o conteúdo
+seguem a regra de cima. Se o servidor passar a aceitar, a tela fica mais restrita do que ele, e
+nunca menos.
+
 **E a lista do seletor de fuso vem do contrato**, não de uma constante solta: o `merchant`
 declara as zonas aceitas no schema do campo, e o tipo gerado as carrega. A tela as lista a
 partir de um `Record<Fuso, string>` de rótulos, e o `Record` exige do typecheck exatamente
@@ -249,7 +258,7 @@ tela, com o gatilho de cada um.
 | `required` nos esquemas do `catalog` e na `LojaDoUsuario` do `merchant` | Todo campo do tipo gerado é opcional, e a tela precisa tratar ausência que não acontece | a primeira tela que leia produto |
 | O **estado da operação** — a loja está aberta agora? | O seletor não pode mostrar aberta/fechada. A `OperacaoDoEstabelecimentoPort` do `estabelecimento.md` §3 não existe em código | sem rodada marcada — a porta não existe (ADR-046, emenda de 30/09/2026), e a rota da G-C1 responde outra pergunta: qual expediente carimbar |
 | Paginação na tela do cardápio | O cardápio pede a página do teto da rota — 100 — e diz quantos há (W-F); a lista da disponibilidade continua com 20. Quem tiver 200 produtos não alcança o resto | a primeira loja de teste com mais de 100 produtos |
-| Rota de escrita do catálogo | Criar seção, criar produto e publicar existem desde a W-F (ADR-067). **Editar** produto, despublicar, grupos e opções, renomear e reordenar seção não têm tela — cada um com gatilho no `dividas.md` | a rota de cada um |
+| Rota de escrita do catálogo | Criar seção, criar produto e publicar existem desde a W-F (ADR-067); tirar do ar, criar grupo e criar opção, desde a W-J (ADR-079). **Editar** produto, remover grupo ou opção, renomear e reordenar seção não têm tela — cada um com gatilho no `dividas.md` | a rota de cada um |
 
 **Enquanto um item desta tabela não tiver rota, a tela que depende dele não é
 escrita** — e não é simulada com valor de configuração temporário. Um
@@ -286,5 +295,6 @@ interpolação é, por si, a razão: no dia em que o nome do produto vier da API
 | Estado de enum desconhecido não concede nada | testes `estado que o front não conhece vira null…` e `estado que o front não conhece não aparece como "Disponível"` |
 | O front não deriva regra de domínio | teste `3b · e quando o servidor diz que não é vendável, a tela diz também` |
 | O formulário não antecipa a M12 | teste `A7 · a tela não antecipa a M12: matriz vazia, botão habilitado, e a requisição acontece` |
+| A exceção do produto no ar vale só para o grupo | teste `M4 · produto no ar: a frase e a saída no lugar do criar grupo — e a opção continua` |
 | A lista de fusos é a do contrato | o `typecheck`, pelo `Record<Fuso, string>` do `CadastroDeLojaPage`; e, do lado do servidor, o `AllowableValuesDoFusoTest` |
 | As seis premissas | **ninguém, e é por isso que este documento existe.** Nenhuma máquina confere que uma tela não foi desenhada. |

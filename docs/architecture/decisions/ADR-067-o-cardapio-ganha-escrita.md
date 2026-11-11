@@ -1,6 +1,6 @@
 # ADR-067 — O cardápio ganha escrita, e a seção passa a significar alguma coisa
 
-- **Status:** aceita
+- **Status:** aceita · **emendada em 10/11/2026**: o publicado ganha botão de volta
 - **Data:** 11/10/2026
 - **Rodada:** W-F
 - **Relacionada:** ADR-016 (front mínimo), ADR-047 (a sessão), ADR-053 (o contrato declara),
@@ -185,3 +185,16 @@ três operações existem no agregado e não têm rota, e `reordenar` arrasta o 
 **E o dia em que uma loja tiver mais produtos do que cabem na tela.** A listagem de produtos
 **é paginada** desde a G-B3; o que não existe é a paginação da **tela**, e a composição por
 seção a torna mais visível.
+
+## Emenda de 10/11/2026 — o publicado ganha botão de volta
+
+**O §6 dizia que o produto publicado não tem botão de volta, porque não havia rota de
+despublicar.** A rota nasceu na E-7 (ADR-078), e a W-J lhe deu tela (ADR-079 §2): o publicado
+mostra **Tirar do ar**, sob `DESATIVAR_PRODUTO`, no mesmo lugar onde o rascunho mostra
+**Publicar** — e o botão de publicar passa a valer também para o produto fora do ar.
+
+**O terceiro gatilho desta ADR — a primeira tela que peça para tirar um item do cardápio —
+disparou com a W-J.** A dívida dele tinha sido paga antes, pela rota (linha 62 do razão).
+
+**A `ordem` derivada do §4 ganha dois irmãos**: a do grupo e a da opção (ADR-079 §4).
+

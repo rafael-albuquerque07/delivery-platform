@@ -67,7 +67,7 @@
 | 064 | A categoria ganha persistência, e só criar e listar | ✅ aceita |
 | 065 | O produto nasce por rota, e o cardápio é publicado por quem o monta | ✅ aceita · **emendada** (08/11/2026: a rota de tirar do ar nasce sem tela — ADR-078) |
 | 066 | A referência do corpo que não resolve é pedido inválido | ✅ aceita |
-| 067 | O cardápio ganha escrita, e a seção passa a significar alguma coisa | ✅ aceita |
+| 067 | O cardápio ganha escrita, e a seção passa a significar alguma coisa | ✅ aceita · **emendada** (10/11/2026: o publicado ganha botão de volta — ADR-079) |
 | 068 | A listagem mostra o rascunho, porque quem a chama é o painel | ✅ aceita |
 | 069 | O convite chega pela mão de quem convida, e o token se lê uma vez | ✅ aceita |
 | 070 | A tela do convite, e o segredo que já está no navegador de quem o recebeu | ✅ aceita · **emendada** (19/10/2026: uma ação, e ela é aceitar — ADR-076) |
@@ -79,8 +79,9 @@
 | 076 | O convite aceita antes de entrar | ✅ aceita |
 | 077 | O grupo de opções e a opção ganham rota, dentro do produto | ✅ aceita · **emendada** (08/11/2026: o caminho de volta tem rota — ADR-078) |
 | 078 | O produto sai do cardápio, sob a permissão que já existia | ✅ aceita · **emendada** (10/11/2026: o rascunho responde 409, e a atribuição estava errada) |
+| 079 | A tela dos grupos, e o produto que sai do ar para mudar de forma | ✅ aceita |
 
-**Setenta e cinco escritas, duas sem objeto — estas com registro próprio desde
+**Setenta e seis escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê
