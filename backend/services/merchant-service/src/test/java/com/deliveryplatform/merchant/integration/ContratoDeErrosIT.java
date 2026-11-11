@@ -70,6 +70,8 @@ class ContratoDeErrosIT extends Infraestrutura {
     private static final String CONVITE = "/api/v1/convites/{token}";
     private static final String ACEITE = "/api/v1/convites/{token}/aceite";
     private static final String HORARIO = "/api/v1/merchants/{estabelecimentoId}/settings/horario";
+    private static final String PEDIDO_MINIMO = "/api/v1/merchants/{estabelecimentoId}/settings/pedido-minimo";
+    private static final String DESCONTO = "/api/v1/merchants/{estabelecimentoId}/settings/desconto-retirada";
 
     /** O que o contrato declara e nenhum caso provoca. Hoje: nada. */
     private static final Map<String, String> NAO_PROVOCAVEIS = Map.of();
@@ -210,6 +212,62 @@ class ContratoDeErrosIT extends Infraestrutura {
                             String token = IDENTITY.tokenDe(vinculado(loja, Permissao.GERENCIAR_EQUIPE));
                             return put("/api/v1/merchants/" + loja + "/settings/horario",
                                     DefinirHorarioIT.SEXTA_A_NOITE, token);
+                        }),
+
+                // O pedido mínimo e o desconto de retirada (ADR-080): 200, 400, 401, 403 cada.
+                new Provocacao("GET", PEDIDO_MINIMO, 400, "identificador da loja que não é UUID",
+                        () -> get("/api/v1/merchants/nao-e-uuid/settings/pedido-minimo", estranho())),
+                new Provocacao("GET", PEDIDO_MINIMO, 401, "sem token",
+                        () -> get("/api/v1/merchants/" + UUID.randomUUID() + "/settings/pedido-minimo", null)),
+                new Provocacao("GET", PEDIDO_MINIMO, 403, "vínculo sem CONFIGURAR_LOJA",
+                        () -> {
+                            UUID loja = loja();
+                            String token = IDENTITY.tokenDe(vinculado(loja, Permissao.GERENCIAR_EQUIPE));
+                            return get("/api/v1/merchants/" + loja + "/settings/pedido-minimo", token);
+                        }),
+                new Provocacao("PUT", PEDIDO_MINIMO, 400, "modalidade aceita sem mínimo (M17)",
+                        () -> {
+                            UUID loja = loja();
+                            String token = IDENTITY.tokenDe(vinculado(loja, Permissao.CONFIGURAR_LOJA));
+                            return put("/api/v1/merchants/" + loja + "/settings/pedido-minimo",
+                                    "{\"pedidoMinimoPorModalidade\":{\"ENTREGA\":0}}", token);
+                        }),
+                new Provocacao("PUT", PEDIDO_MINIMO, 401, "sem token",
+                        () -> put("/api/v1/merchants/" + UUID.randomUUID() + "/settings/pedido-minimo",
+                                PedidoMinimoEDescontoIT.MINIMOS, null)),
+                new Provocacao("PUT", PEDIDO_MINIMO, 403, "vínculo sem CONFIGURAR_LOJA",
+                        () -> {
+                            UUID loja = loja();
+                            String token = IDENTITY.tokenDe(vinculado(loja, Permissao.GERENCIAR_EQUIPE));
+                            return put("/api/v1/merchants/" + loja + "/settings/pedido-minimo",
+                                    PedidoMinimoEDescontoIT.MINIMOS, token);
+                        }),
+                new Provocacao("GET", DESCONTO, 400, "identificador da loja que não é UUID",
+                        () -> get("/api/v1/merchants/nao-e-uuid/settings/desconto-retirada", estranho())),
+                new Provocacao("GET", DESCONTO, 401, "sem token",
+                        () -> get("/api/v1/merchants/" + UUID.randomUUID() + "/settings/desconto-retirada", null)),
+                new Provocacao("GET", DESCONTO, 403, "vínculo sem CONFIGURAR_LOJA",
+                        () -> {
+                            UUID loja = loja();
+                            String token = IDENTITY.tokenDe(vinculado(loja, Permissao.GERENCIAR_EQUIPE));
+                            return get("/api/v1/merchants/" + loja + "/settings/desconto-retirada", token);
+                        }),
+                new Provocacao("PUT", DESCONTO, 400, "desconto negativo (M15)",
+                        () -> {
+                            UUID loja = loja();
+                            String token = IDENTITY.tokenDe(vinculado(loja, Permissao.CONFIGURAR_LOJA));
+                            return put("/api/v1/merchants/" + loja + "/settings/desconto-retirada",
+                                    "{\"descontoDeRetirada\":-1}", token);
+                        }),
+                new Provocacao("PUT", DESCONTO, 401, "sem token",
+                        () -> put("/api/v1/merchants/" + UUID.randomUUID() + "/settings/desconto-retirada",
+                                PedidoMinimoEDescontoIT.DESCONTO, null)),
+                new Provocacao("PUT", DESCONTO, 403, "vínculo sem CONFIGURAR_LOJA",
+                        () -> {
+                            UUID loja = loja();
+                            String token = IDENTITY.tokenDe(vinculado(loja, Permissao.GERENCIAR_EQUIPE));
+                            return put("/api/v1/merchants/" + loja + "/settings/desconto-retirada",
+                                    PedidoMinimoEDescontoIT.DESCONTO, token);
                         }));
     }
 

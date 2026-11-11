@@ -16,6 +16,90 @@
     "description" : "Consumido por outro serviço, com o token de quem pediu encaminhado. Não roteado pelo gateway — ADR-045."
   } ],
   "paths" : {
+    "/api/v1/merchants/{estabelecimentoId}/settings/pedido-minimo" : {
+      "get" : {
+        "tags" : [ "configuracao-da-loja-controller" ],
+        "summary" : "Lê os pedidos mínimos da loja, por modalidade",
+        "description" : "Exige CONFIGURAR_LOJA. Zero é \"sem mínimo\".",
+        "operationId" : "lerPedidoMinimo",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Os mínimos gravados, zero inclusive",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PedidoMinimoResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Identificador da loja malformado"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa"
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "configuracao-da-loja-controller" ],
+        "summary" : "Define os pedidos mínimos da loja, por modalidade",
+        "description" : "Exige CONFIGURAR_LOJA. Substitui todos; uma entrada por modalidade aceita. Zero vale como \"sem mínimo\".",
+        "operationId" : "definirPedidoMinimo",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PedidoMinimoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Os mínimos como ficaram gravados",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PedidoMinimoResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Corpo malformado, modalidade desconhecida, identificador da loja malformado, ou mínimos que o domínio recusa — modalidade aceita sem entrada, entrada para modalidade que a loja não aceita, ou valor negativo (M17)"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa"
+          }
+        }
+      }
+    },
     "/api/v1/merchants/{estabelecimentoId}/settings/horario" : {
       "get" : {
         "tags" : [ "configuracao-da-loja-controller" ],
@@ -90,6 +174,90 @@
           },
           "400" : {
             "description" : "Corpo malformado, dia que não é dia da semana, identificador da loja malformado, ou faixa que o domínio recusa — início igual ao fim, ou a mesma faixa duas vezes no mesmo dia"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa"
+          }
+        }
+      }
+    },
+    "/api/v1/merchants/{estabelecimentoId}/settings/desconto-retirada" : {
+      "get" : {
+        "tags" : [ "configuracao-da-loja-controller" ],
+        "summary" : "Lê o desconto de retirada da loja",
+        "description" : "Exige CONFIGURAR_LOJA. Zero é sem desconto.",
+        "operationId" : "lerDescontoDeRetirada",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "O desconto gravado; zero quando não há",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DescontoDeRetiradaResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Identificador da loja malformado"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa"
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "configuracao-da-loja-controller" ],
+        "summary" : "Define o desconto de retirada da loja",
+        "description" : "Exige CONFIGURAR_LOJA. Valor fixo, para a loja inteira; zero é sem desconto.",
+        "operationId" : "definirDescontoDeRetirada",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DescontoDeRetiradaRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "O desconto como ficou gravado",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DescontoDeRetiradaResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Corpo malformado, identificador da loja malformado, ou desconto negativo (M15)"
           },
           "401" : {
             "description" : "Sem token, ou token inválido"
@@ -397,6 +565,30 @@
   },
   "components" : {
     "schemas" : {
+      "PedidoMinimoRequest" : {
+        "type" : "object",
+        "properties" : {
+          "pedidoMinimoPorModalidade" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "number"
+            },
+            "description" : "Por modalidade, o mínimo sobre o valor dos itens, sem a taxa de entrega, em reais. Uma entrada para cada modalidade que a loja aceita, e para nenhuma outra. Zero vale como \"sem mínimo\"."
+          }
+        },
+        "required" : [ "pedidoMinimoPorModalidade" ]
+      },
+      "PedidoMinimoResponse" : {
+        "type" : "object",
+        "properties" : {
+          "pedidoMinimoPorModalidade" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "number"
+            }
+          }
+        }
+      },
       "FaixaDeHorarioRequest" : {
         "type" : "object",
         "properties" : {
@@ -451,6 +643,25 @@
                 "$ref" : "#/components/schemas/FaixaDeHorarioResponse"
               }
             }
+          }
+        }
+      },
+      "DescontoDeRetiradaRequest" : {
+        "type" : "object",
+        "properties" : {
+          "descontoDeRetirada" : {
+            "type" : "number",
+            "description" : "Em reais, abatido do pedido de quem retira no balcão. Zero é sem desconto; negativo é recusado.",
+            "example" : 5.0
+          }
+        },
+        "required" : [ "descontoDeRetirada" ]
+      },
+      "DescontoDeRetiradaResponse" : {
+        "type" : "object",
+        "properties" : {
+          "descontoDeRetirada" : {
+            "type" : "number"
           }
         }
       },

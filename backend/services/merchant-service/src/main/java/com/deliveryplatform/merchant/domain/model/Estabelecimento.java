@@ -33,7 +33,8 @@ import java.util.UUID;
  * porque quem lê esse campo é o {@code settlement}, que não tem código.
  *
  * <p><b>Imutável, e a alteração devolve outra loja.</b> O primeiro ato que altera a
- * loja é {@link #comHorario} (E-4, ADR-073), e ele segue o
+ * loja é {@link #comHorario} (E-4, ADR-073); {@link #comDescontoDeRetirada} e
+ * {@link #comPedidoMinimo} (E-9, ADR-080) seguem a mesma forma. O horário segue o
  * {@code Disponibilidade.com(Pausa)}: os campos continuam {@code final}, e a loja nova
  * passa pelo mesmo construtor e pelas mesmas verificações. O horário não tem evento
  * próprio — o que ele muda é {@code aberto}, e quem publica isso é a varredura da
@@ -215,6 +216,28 @@ public final class Estabelecimento {
                 politicaDeTroco,
                 new Disponibilidade(horarioDeFuncionamento, disponibilidade.pausa()),
                 areasDeEntrega);
+    }
+
+    /**
+     * A mesma loja com outro desconto de retirada (E-9, ADR-080). Recusa o que o
+     * {@code Operacao} recusa — desconto negativo, M15 —, com
+     * {@code IllegalArgumentException}; quem traduz é o caso de uso.
+     */
+    public Estabelecimento comDescontoDeRetirada(Money desconto) {
+        return comOperacao(operacao.comDescontoDeRetirada(desconto));
+    }
+
+    /**
+     * A mesma loja com outros pedidos mínimos, substituídos inteiros (E-9, ADR-080). Recusa
+     * o que a M17 recusa, pelo construtor do {@code Operacao}.
+     */
+    public Estabelecimento comPedidoMinimo(Map<Modalidade, Money> minimos) {
+        return comOperacao(operacao.comPedidoMinimo(minimos));
+    }
+
+    private Estabelecimento comOperacao(Operacao outra) {
+        return new Estabelecimento(
+                id, identificacao, outra, politicaDeTroco, disponibilidade, areasDeEntrega);
     }
 
     public boolean aceita(Modalidade modalidade) {

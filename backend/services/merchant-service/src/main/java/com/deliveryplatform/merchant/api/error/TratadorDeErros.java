@@ -5,6 +5,7 @@ import com.deliveryplatform.merchant.application.exception.CadastroDeLojaRecusad
 import com.deliveryplatform.merchant.application.exception.ConviteRecusado;
 import com.deliveryplatform.merchant.application.exception.ConviteSemAutoridade;
 import com.deliveryplatform.merchant.application.exception.HorarioRecusado;
+import com.deliveryplatform.merchant.application.exception.OperacaoRecusada;
 import com.deliveryplatform.merchant.domain.exception.ConviteInvalido;
 import com.deliveryplatform.merchant.domain.exception.JaPertenceAEquipe;
 import com.deliveryplatform.merchant.application.exception.SemExpedientePorHorario;
@@ -102,6 +103,16 @@ public class TratadorDeErros {
     }
 
     /**
+     * 400 para o pedido mínimo ou o desconto que o domínio recusa (ADR-080) — M17 e M15. A
+     * frase é daqui, por motivo; a mensagem do domínio, com os valores como chegaram, fica na
+     * causa.
+     */
+    @ExceptionHandler(OperacaoRecusada.class)
+    public ProblemDetail operacaoRecusada(OperacaoRecusada excecao) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, fraseDe(excecao.motivo()));
+    }
+
+    /**
      * 404 para o convite que não vale: inexistente, expirado, aceito ou cancelado — a
      * mesma frase nos quatro (ADR-069 §3). Distinguir contaria a quem tenta tokens no escuro
      * quais já existiram. A frase diz o que fazer, e não por quê.
@@ -162,6 +173,14 @@ public class TratadorDeErros {
         return switch (motivo) {
             case INICIO_IGUAL_AO_FIM -> "uma faixa de horário não pode terminar na mesma hora em que começa";
             case FAIXA_REPETIDA -> "a mesma faixa de horário aparece duas vezes no mesmo dia";
+        };
+    }
+
+    static String fraseDe(OperacaoRecusada.Motivo motivo) {
+        return switch (motivo) {
+            case PEDIDO_MINIMO -> "informe um pedido mínimo para cada modalidade que a loja aceita, "
+                    + "e só para elas — zero ou mais, e zero é sem mínimo";
+            case DESCONTO_NEGATIVO -> "o desconto de retirada não pode ser negativo";
         };
     }
 }

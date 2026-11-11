@@ -108,6 +108,25 @@ public record Operacao(
         return new Operacao(tipoDeOperacao, metodosPorModalidade, Money.ZERO, semMinimo);
     }
 
+    /**
+     * A mesma operação com outro desconto de retirada (E-9, ADR-080). Passa pelo construtor
+     * canônico, que cobra a M15 — e recusa com {@code IllegalArgumentException}, que quem
+     * traduz é o caso de uso.
+     */
+    public Operacao comDescontoDeRetirada(Money desconto) {
+        return new Operacao(tipoDeOperacao, metodosPorModalidade, desconto, pedidoMinimoPorModalidade);
+    }
+
+    /**
+     * A mesma operação com outros mínimos, <b>substituídos inteiros</b> (E-9, ADR-080). Passa
+     * pelo construtor canônico, que cobra a M17: uma entrada para toda modalidade aceita e
+     * para nenhuma outra, e nenhuma negativa. Zero entra como entrada, e significa "sem
+     * mínimo"; a modalidade que falta é recusada, e não lida como zero.
+     */
+    public Operacao comPedidoMinimo(Map<Modalidade, Money> minimos) {
+        return new Operacao(tipoDeOperacao, metodosPorModalidade, descontoDeRetirada, minimos);
+    }
+
     /** Derivado, não campo. É {@code metodosPorModalidade.keySet()}, e essa é a decisão. */
     public Set<Modalidade> modalidadesAceitas() {
         return metodosPorModalidade.keySet();

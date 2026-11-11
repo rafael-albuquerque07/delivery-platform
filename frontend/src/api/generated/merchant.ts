@@ -4,6 +4,30 @@
  */
 
 export interface paths {
+    "/api/v1/merchants/{estabelecimentoId}/settings/pedido-minimo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lê os pedidos mínimos da loja, por modalidade
+         * @description Exige CONFIGURAR_LOJA. Zero é "sem mínimo".
+         */
+        get: operations["lerPedidoMinimo"];
+        /**
+         * Define os pedidos mínimos da loja, por modalidade
+         * @description Exige CONFIGURAR_LOJA. Substitui todos; uma entrada por modalidade aceita. Zero vale como "sem mínimo".
+         */
+        put: operations["definirPedidoMinimo"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/merchants/{estabelecimentoId}/settings/horario": {
         parameters: {
             query?: never;
@@ -21,6 +45,30 @@ export interface paths {
          * @description Exige CONFIGURAR_LOJA. Substitui o horário inteiro; mapa vazio volta a loja a "nunca abre por horário".
          */
         put: operations["definirHorario"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/merchants/{estabelecimentoId}/settings/desconto-retirada": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lê o desconto de retirada da loja
+         * @description Exige CONFIGURAR_LOJA. Zero é sem desconto.
+         */
+        get: operations["lerDescontoDeRetirada"];
+        /**
+         * Define o desconto de retirada da loja
+         * @description Exige CONFIGURAR_LOJA. Valor fixo, para a loja inteira; zero é sem desconto.
+         */
+        put: operations["definirDescontoDeRetirada"];
         post?: never;
         delete?: never;
         options?: never;
@@ -176,6 +224,17 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        PedidoMinimoRequest: {
+            /** @description Por modalidade, o mínimo sobre o valor dos itens, sem a taxa de entrega, em reais. Uma entrada para cada modalidade que a loja aceita, e para nenhuma outra. Zero vale como "sem mínimo". */
+            pedidoMinimoPorModalidade: {
+                [key: string]: number;
+            };
+        };
+        PedidoMinimoResponse: {
+            pedidoMinimoPorModalidade?: {
+                [key: string]: number;
+            };
+        };
         FaixaDeHorarioRequest: {
             /**
              * @description Hora de abrir, no fuso da loja.
@@ -202,6 +261,16 @@ export interface components {
             horarioDeFuncionamento?: {
                 [key: string]: components["schemas"]["FaixaDeHorarioResponse"][];
             };
+        };
+        DescontoDeRetiradaRequest: {
+            /**
+             * @description Em reais, abatido do pedido de quem retira no balcão. Zero é sem desconto; negativo é recusado.
+             * @example 5
+             */
+            descontoDeRetirada: number;
+        };
+        DescontoDeRetiradaResponse: {
+            descontoDeRetirada?: number;
         };
         /** @description O convite: o telefone de quem vai entrar e as permissões oferecidas. */
         ConviteRequest: {
@@ -326,6 +395,96 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    lerPedidoMinimo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Os mínimos gravados, zero inclusive */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PedidoMinimoResponse"];
+                };
+            };
+            /** @description Identificador da loja malformado */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    definirPedidoMinimo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PedidoMinimoRequest"];
+            };
+        };
+        responses: {
+            /** @description Os mínimos como ficaram gravados */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PedidoMinimoResponse"];
+                };
+            };
+            /** @description Corpo malformado, modalidade desconhecida, identificador da loja malformado, ou mínimos que o domínio recusa — modalidade aceita sem entrada, entrada para modalidade que a loja não aceita, ou valor negativo (M17) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     lerHorario: {
         parameters: {
             query?: never;
@@ -394,6 +553,96 @@ export interface operations {
                 };
             };
             /** @description Corpo malformado, dia que não é dia da semana, identificador da loja malformado, ou faixa que o domínio recusa — início igual ao fim, ou a mesma faixa duas vezes no mesmo dia */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    lerDescontoDeRetirada: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description O desconto gravado; zero quando não há */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DescontoDeRetiradaResponse"];
+                };
+            };
+            /** @description Identificador da loja malformado */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    definirDescontoDeRetirada: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DescontoDeRetiradaRequest"];
+            };
+        };
+        responses: {
+            /** @description O desconto como ficou gravado */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DescontoDeRetiradaResponse"];
+                };
+            };
+            /** @description Corpo malformado, identificador da loja malformado, ou desconto negativo (M15) */
             400: {
                 headers: {
                     [name: string]: unknown;

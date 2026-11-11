@@ -1,11 +1,18 @@
 package com.deliveryplatform.merchant.api.controller;
 
+import com.deliveryplatform.merchant.api.dto.DescontoDeRetiradaRequest;
+import com.deliveryplatform.merchant.api.dto.DescontoDeRetiradaResponse;
 import com.deliveryplatform.merchant.api.dto.FaixaDeHorarioRequest;
 import com.deliveryplatform.merchant.api.dto.HorarioRequest;
 import com.deliveryplatform.merchant.api.dto.HorarioResponse;
+import com.deliveryplatform.merchant.api.dto.PedidoMinimoRequest;
+import com.deliveryplatform.merchant.api.dto.PedidoMinimoResponse;
 import com.deliveryplatform.merchant.api.seguranca.SujeitoDoToken;
 import com.deliveryplatform.merchant.application.port.in.ConsultarHorario;
+import com.deliveryplatform.merchant.application.port.in.ConsultarOperacao;
+import com.deliveryplatform.merchant.application.port.in.DefinirDescontoDeRetirada;
 import com.deliveryplatform.merchant.application.port.in.DefinirHorario;
+import com.deliveryplatform.merchant.application.port.in.DefinirPedidoMinimo;
 import com.deliveryplatform.merchant.application.port.in.DefinirHorario.FaixaPedida;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,8 +37,9 @@ import java.util.UUID;
 
 /**
  * A configuração da loja, sob {@code /settings} — o prefixo que o gateway já roteia para
- * o {@code merchant} ({@code merchant-settings}, ADR-012). Hoje o horário, lido e escrito
- * (ADR-073). As outras partes da H1.2 entram aqui, sob a mesma {@code CONFIGURAR_LOJA}.
+ * o {@code merchant} ({@code merchant-settings}, ADR-012). O horário (ADR-073), o pedido
+ * mínimo e o desconto de retirada (ADR-080), cada um sub-recurso irmão, lido e escrito, sob a
+ * mesma {@code CONFIGURAR_LOJA}.
  *
  * <p>O {@code estabelecimentoId} da URL <b>autoriza</b>: o caso de uso o confronta com o
  * vínculo do {@code sub} antes de buscar a loja (invariante 9).
@@ -42,10 +50,18 @@ public class ConfiguracaoDaLojaController {
 
     private final DefinirHorario horarios;
     private final ConsultarHorario leitura;
+    private final ConsultarOperacao operacoes;
+    private final DefinirPedidoMinimo minimos;
+    private final DefinirDescontoDeRetirada descontos;
 
-    public ConfiguracaoDaLojaController(DefinirHorario horarios, ConsultarHorario leitura) {
+    public ConfiguracaoDaLojaController(DefinirHorario horarios, ConsultarHorario leitura,
+                                        ConsultarOperacao operacoes, DefinirPedidoMinimo minimos,
+                                        DefinirDescontoDeRetirada descontos) {
         this.horarios = horarios;
         this.leitura = leitura;
+        this.operacoes = operacoes;
+        this.minimos = minimos;
+        this.descontos = descontos;
     }
 
     /**
@@ -93,6 +109,79 @@ public class ConfiguracaoDaLojaController {
 
         return HorarioResponse.de(
                 horarios.definir(estabelecimentoId, SujeitoDoToken.de(token), horario));
+    }
+
+    /** Os pedidos mínimos como estão gravados — uma entrada por modalidade aceita (ADR-080). */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Os mínimos gravados, zero inclusive"),
+            @ApiResponse(responseCode = "400", description = "Identificador da loja malformado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa", content = @Content)
+    })
+    @GetMapping(path = "/pedido-minimo", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Lê os pedidos mínimos da loja, por modalidade",
+            description = "Exige CONFIGURAR_LOJA. Zero é \"sem mínimo\".")
+    public PedidoMinimoResponse lerPedidoMinimo(
+            @PathVariable UUID estabelecimentoId, @AuthenticationPrincipal Jwt token) {
+        return PedidoMinimoResponse.de(operacoes.daLoja(estabelecimentoId, SujeitoDoToken.de(token)));
+    }
+
+    /**
+     * Substitui os pedidos mínimos inteiros (ADR-028, ADR-080). O mínimo é sobre o valor dos
+     * itens; quem o cobra é a guarda de T01, no {@code order}. Não publica evento.
+     */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Os mínimos como ficaram gravados"),
+            @ApiResponse(responseCode = "400", description = "Corpo malformado, modalidade desconhecida, identificador da loja malformado, ou mínimos que o domínio recusa — modalidade aceita sem entrada, entrada para modalidade que a loja não aceita, ou valor negativo (M17)", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa", content = @Content)
+    })
+    @PutMapping(path = "/pedido-minimo", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Define os pedidos mínimos da loja, por modalidade",
+            description = "Exige CONFIGURAR_LOJA. Substitui todos; uma entrada por modalidade "
+                    + "aceita. Zero vale como \"sem mínimo\".")
+    public PedidoMinimoResponse definirPedidoMinimo(
+            @PathVariable UUID estabelecimentoId,
+            @AuthenticationPrincipal Jwt token,
+            @Valid @RequestBody PedidoMinimoRequest pedido) {
+        return PedidoMinimoResponse.de(minimos.definir(
+                estabelecimentoId, SujeitoDoToken.de(token), pedido.pedidoMinimoPorModalidade()));
+    }
+
+    /** O desconto de retirada como está gravado (ADR-080). */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "O desconto gravado; zero quando não há"),
+            @ApiResponse(responseCode = "400", description = "Identificador da loja malformado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa", content = @Content)
+    })
+    @GetMapping(path = "/desconto-retirada", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Lê o desconto de retirada da loja",
+            description = "Exige CONFIGURAR_LOJA. Zero é sem desconto.")
+    public DescontoDeRetiradaResponse lerDescontoDeRetirada(
+            @PathVariable UUID estabelecimentoId, @AuthenticationPrincipal Jwt token) {
+        return DescontoDeRetiradaResponse.de(
+                operacoes.daLoja(estabelecimentoId, SujeitoDoToken.de(token)));
+    }
+
+    /** Troca o desconto de retirada (ADR-024, ADR-080). Não publica evento. */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "O desconto como ficou gravado"),
+            @ApiResponse(responseCode = "400", description = "Corpo malformado, identificador da loja malformado, ou desconto negativo (M15)", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa", content = @Content)
+    })
+    @PutMapping(path = "/desconto-retirada", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Define o desconto de retirada da loja",
+            description = "Exige CONFIGURAR_LOJA. Valor fixo, para a loja inteira; zero é sem desconto.")
+    public DescontoDeRetiradaResponse definirDescontoDeRetirada(
+            @PathVariable UUID estabelecimentoId,
+            @AuthenticationPrincipal Jwt token,
+            @Valid @RequestBody DescontoDeRetiradaRequest pedido) {
+        return DescontoDeRetiradaResponse.de(descontos.definir(
+                estabelecimentoId, SujeitoDoToken.de(token), pedido.descontoDeRetirada()));
     }
 
     private static FaixaPedida paraComando(FaixaDeHorarioRequest faixa) {
