@@ -9,6 +9,9 @@
 *.pem
 *.key
 *.p12
+# .pfx é o mesmo PKCS#12 com outra extensão, e é o formato comum do
+# certificado A1 da emissão fiscal — o mesmo segredo que o *.p12 acima
+*.pfx
 *.jks
 *.keystore
 *.crt
@@ -102,6 +105,9 @@ application-local.properties
 # Pacote de aplicação é transitório: extraído, aplicado, descartado.
 # Nunca deveria ser commitado — já aconteceu quatro vezes.
 /APLICAR-*.md
+# Para onde vai o pacote aplicado: o agente move, não apaga. Sem esta linha,
+# um `git add .` publica todos os pacotes de uma vez.
+/_to_delete/
 
 
 # =============================================================================
