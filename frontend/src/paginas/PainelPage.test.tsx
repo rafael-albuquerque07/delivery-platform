@@ -70,7 +70,7 @@ const CANTINA = {
   permissoes: ['VER_PRODUTO'],
 };
 
-/** A dona configura a loja: tem `CONFIGURAR_LOJA`, e com ela a seção Horário (ADR-074). */
+/** A dona configura a loja: tem `CONFIGURAR_LOJA`, e com ela a seção da configuração, com o horário dentro (ADR-074, ADR-082). */
 const QUIOSQUE = {
   estabelecimentoId: 'q3',
   nome: 'Quiosque',
@@ -204,27 +204,27 @@ describe('PainelPage', () => {
     expect(within(outro).queryByRole('button', { name: 'Equipe' })).toBeNull();
   });
 
-  it('17 · a seção Horário só aparece na loja em que se tem CONFIGURAR_LOJA', async () => {
+  it('17 · a seção da configuração só aparece na loja em que se tem CONFIGURAR_LOJA', async () => {
     responder([QUIOSQUE, CANTINA]);
 
     const primeira = montar('/painel/lojas/q3/produtos');
     const menu = await screen.findByRole('navigation', { name: 'Seções desta loja' });
-    expect(within(menu).getByRole('button', { name: 'Horário' })).toBeInTheDocument();
+    expect(within(menu).getByRole('button', { name: 'Configuração da loja' })).toBeInTheDocument();
     primeira.unmount();
 
     montar('/painel/lojas/c2/produtos');
     const outro = await screen.findByRole('navigation', { name: 'Seções desta loja' });
-    expect(within(outro).queryByRole('button', { name: 'Horário' })).toBeNull();
+    expect(within(outro).queryByRole('button', { name: 'Configuração da loja' })).toBeNull();
   });
 
-  it('18 · a seção Horário vive sob a loja escolhida, e lê o horário daquela loja', async () => {
+  it('18 · a seção da configuração vive sob a loja escolhida, e lê o horário daquela loja', async () => {
     responder([QUIOSQUE, CANTINA]);
 
     montar('/painel/lojas/q3/produtos');
     const menu = await screen.findByRole('navigation', { name: 'Seções desta loja' });
-    await userEvent.click(within(menu).getByRole('button', { name: 'Horário' }));
+    await userEvent.click(within(menu).getByRole('button', { name: 'Configuração da loja' }));
 
-    await waitFor(() => expect(onde()).toHaveTextContent('/painel/lojas/q3/horario'));
+    await waitFor(() => expect(onde()).toHaveTextContent('/painel/lojas/q3/configuracao'));
     expect(await screen.findByRole('heading', { name: 'Horário' })).toBeInTheDocument();
     expect(caminhosPedidos()).toContain('/api/v1/merchants/q3/settings/horario');
   });

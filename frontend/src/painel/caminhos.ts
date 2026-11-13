@@ -13,7 +13,7 @@ const SEGMENTO: Record<Secao, string> = {
   cardapio: 'produtos',
   disponibilidade: 'disponibilidade',
   equipe: 'equipe',
-  horario: 'horario',
+  configuracao: 'configuracao',
 };
 
 export function caminhoDaLoja(estabelecimentoId: string): string {

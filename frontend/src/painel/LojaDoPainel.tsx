@@ -2,7 +2,7 @@ import { Navigate, Outlet, useLocation, useNavigate, useParams } from 'react-rou
 
 import { CardapioPorSecao } from './CardapioPorSecao';
 import { ConvidarParaEquipe } from './ConvidarParaEquipe';
-import { HorarioDaSemana } from './HorarioDaSemana';
+import { ConfiguracaoDaLoja } from './ConfiguracaoDaLoja';
 import { ProdutoAberto } from './ProdutoAberto';
 import { ListaDeProdutos } from './ListaDeProdutos';
 import { caminhoDaLoja, caminhoDaSecao, caminhoDoNovoProduto, secaoDoCaminho } from './caminhos';
@@ -72,7 +72,7 @@ const MARCA: Record<Secao, boolean> = {
   cardapio: false,
   disponibilidade: true,
   equipe: false,
-  horario: false,
+  configuracao: false,
 };
 
 /**
@@ -167,8 +167,17 @@ export function ProdutoDaSecao({ secao }: { secao: Secao }) {
   );
 }
 
-/** `/painel/lojas/:id/horario` — a semana inteira, lida e salva (ADR-074). */
-export function HorarioDaLoja() {
+/**
+ * `/painel/lojas/:id/configuracao` — o horário, o pedido mínimo, o desconto de retirada e as
+ * áreas de entrega, um bloco cada (ADR-082). A `key` remonta os quatro ao trocar de loja.
+ */
+export function ConfiguracaoDaLojaDoPainel() {
   const { estabelecimentoId = '' } = useParams();
-  return <HorarioDaSemana key={estabelecimentoId} estabelecimentoId={estabelecimentoId} />;
+  return <ConfiguracaoDaLoja key={estabelecimentoId} estabelecimentoId={estabelecimentoId} />;
+}
+
+/** `/painel/lojas/:id/horario`, o endereço da W-H: o horário mora dentro da configuração. */
+export function HorarioAntigo() {
+  const { estabelecimentoId = '' } = useParams();
+  return <Navigate to={caminhoDaSecao(estabelecimentoId, 'configuracao')} replace />;
 }

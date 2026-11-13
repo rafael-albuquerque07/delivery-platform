@@ -6,7 +6,7 @@ import type { Permissao } from './tipos';
  * provider na W-A: o fast refresh só recarrega módulo que exporta apenas
  * componentes. O porquê da tabela está no javadoc do `MenuDoPainel`.
  */
-export type Secao = 'cardapio' | 'disponibilidade' | 'equipe' | 'horario';
+export type Secao = 'cardapio' | 'disponibilidade' | 'equipe' | 'configuracao';
 
 const ITENS: Record<Permissao, { rotulo: string; secao: Secao | null }> = {
   VER_PRODUTO: { rotulo: 'Cardápio', secao: 'cardapio' },
@@ -19,7 +19,8 @@ const ITENS: Record<Permissao, { rotulo: string; secao: Secao | null }> = {
   VER_ENTREGA: { rotulo: 'Entregas', secao: null },
   GERENCIAR_EQUIPE: { rotulo: 'Equipe', secao: 'equipe' },
   GERENCIAR_JORNADA: { rotulo: 'Jornada', secao: null },
-  CONFIGURAR_LOJA: { rotulo: 'Horário', secao: 'horario' },
+  // O menu nomeia a permissão desde a segunda tela dela (ADR-074, gatilho; ADR-082).
+  CONFIGURAR_LOJA: { rotulo: 'Configuração da loja', secao: 'configuracao' },
 };
 
 export function secoesDe(permissoes: Permissao[]): { rotulo: string; secao: Secao }[] {
