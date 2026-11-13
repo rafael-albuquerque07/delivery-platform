@@ -1,6 +1,6 @@
 # ADR-074 — A tela do horário, e a tela que não valida o que o domínio decide
 
-- **Status:** aceita · **emendada em 19/10/2026**: marcar o que acabou não espera a varredura
+- **Status:** aceita · **emendada em 19/10/2026**: marcar o que acabou não espera a varredura · **emendada em 13/11/2026**: o item do menu passa a ser a configuração (ADR-082)
 - **Data:** 18/10/2026
 - **Rodada:** W-H
 - **Relacionada:** ADR-016 (front mínimo), ADR-047 (a sessão), ADR-055 e ADR-063 (o corpo de
@@ -182,3 +182,10 @@ permaneceu marcado, com o selo de não vendável. **Isso exerceu a abertura do m
 não desfazendo a marcação.** A devolução na abertura seguinte não foi exercida nessa passagem.
 
 O registro da passagem está em `docs/operacao/passagem-humana.md`.
+
+## Emenda de 13/11/2026 — a segunda tela chegou
+
+**A W-K deu tela ao pedido mínimo, ao desconto de retirada e às áreas de entrega**, e o item do
+menu passou a se chamar **"Configuração da loja"**, em `/painel/lojas/:id/configuracao`, com o
+horário como o primeiro de quatro blocos — o que a §4 e o terceiro gatilho acima escreveram. O
+corpo fica como está. O endereço `/horario` leva à configuração. A decisão está na ADR-082.

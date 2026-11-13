@@ -82,8 +82,9 @@
 | 079 | A tela dos grupos, e o produto que sai do ar para mudar de forma | ✅ aceita |
 | 080 | Duas configurações ganham rota, e a lista das escritas que faltam encolhe | ✅ aceita |
 | 081 | A última escrita do merchant, e a lista que o semeador sustentava | ✅ aceita |
+| 082 | A segunda tela da CONFIGURAR_LOJA, e o zero que não é ausência | ✅ aceita |
 
-**Setenta e oito escritas, duas sem objeto — estas com registro próprio desde
+**Setenta e nove escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

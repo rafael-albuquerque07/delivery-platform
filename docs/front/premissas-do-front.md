@@ -145,6 +145,14 @@ com `Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })`.
 O protótipo fazia `Number(item.price) * Number(item.qty)` no navegador e somava
 uma taxa fixa de R$ 5 — que, além de ser float, contraria P5.
 
+**Zero é um valor, e ausência não é zero** (W-K, ADR-082). Quando o zero tem significado
+escrito no domínio, a tela escreve o significado, e não "R$ 0,00": o pedido mínimo zero é
+*"sem mínimo"* (M17), o desconto zero é *"sem desconto"*, a área de taxa zero é *"entrega
+grátis"*. E o que não existe **não aparece** — o bairro fora da lista das áreas não ganha
+linha com taxa zero, e a loja sem área diz que não entrega em bairro nenhum (M11). Escrito com
+o formato do dinheiro, o zero e a ausência se leem iguais, e o comerciante lê "entrego de
+graça" onde o sistema diz "não entrego".
+
 **E o front não deriva regra de domínio** (R-1, 10/10/2026). O `vendavel` é o caso
 que trouxe isto à tona (W-D): a tela do produto aberto tem **todos** os dados para
 recalculá-lo — os grupos, o mínimo de cada um, o estado de cada opção — e mostra o
@@ -295,6 +303,7 @@ interpolação é, por si, a razão: no dia em que o nome do produto vier da API
 | Estado de enum desconhecido não concede nada | testes `estado que o front não conhece vira null…` e `estado que o front não conhece não aparece como "Disponível"` |
 | O front não deriva regra de domínio | teste `3b · e quando o servidor diz que não é vendável, a tela diz também` |
 | O formulário não antecipa a M12 | teste `A7 · a tela não antecipa a M12: matriz vazia, botão habilitado, e a requisição acontece` |
+| O zero se escreve pelo significado, e a ausência não aparece | testes `2 · o mínimo zero aparece como "sem mínimo"…` e `3 · bairro que não está na lista não aparece com taxa zero…` (`ConfiguracaoDaLoja.test.tsx`) |
 | A exceção do produto no ar vale só para o grupo | teste `M4 · produto no ar: a frase e a saída no lugar do criar grupo — e a opção continua` |
 | A lista de fusos é a do contrato | o `typecheck`, pelo `Record<Fuso, string>` do `CadastroDeLojaPage`; e, do lado do servidor, o `AllowableValuesDoFusoTest` |
 | As seis premissas | **ninguém, e é por isso que este documento existe.** Nenhuma máquina confere que uma tela não foi desenhada. |
