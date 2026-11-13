@@ -81,8 +81,9 @@
 | 078 | O produto sai do cardápio, sob a permissão que já existia | ✅ aceita · **emendada** (10/11/2026: o rascunho responde 409, e a atribuição estava errada) |
 | 079 | A tela dos grupos, e o produto que sai do ar para mudar de forma | ✅ aceita |
 | 080 | Duas configurações ganham rota, e a lista das escritas que faltam encolhe | ✅ aceita |
+| 081 | A última escrita do merchant, e a lista que o semeador sustentava | ✅ aceita |
 
-**Setenta e sete escritas, duas sem objeto — estas com registro próprio desde
+**Setenta e oito escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

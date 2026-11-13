@@ -488,6 +488,13 @@ seu `GET`, sob `CONFIGURAR_LOJA`. `Estabelecimento.comPedidoMinimo` substitui o 
 `Operacao`, que recobra a M17 e a M15. O zero entra como entrada; a modalidade omitida é
 recusada, e não lida como zero.
 
+**E as áreas de entrega, pelo quarto irmão** (E-10, ADR-081): `PUT .../settings/areas-entrega`,
+com o seu `GET`, sob `CONFIGURAR_LOJA`. `Estabelecimento.comAreasDeEntrega` substitui a lista
+inteira — ativas e desativadas — e passa pelo construtor, que recobra a M9 e a M10. A lista
+vazia é aceita, e o bairro que sai da lista deixa de ser entrega, e não vira taxa zero (M11).
+Substituir inteiro é seguro porque ninguém guarda o identificador de uma área: o pedido congela
+nome e taxa por valor (ADR-020).
+
 **E a assimetria é deliberada:** horário vazio **fecha** a loja, operação padrão a
 **abriria** — prometendo uma forma de pagar que o comerciante não escolheu, com dinheiro
 chegando à porta (P1).
@@ -792,7 +799,7 @@ Todos com `correlationId`, todos via outbox na mesma transação da alteração.
 | `VinculoAlteradoV1` | Membro criado, alterado, suspenso, removido | **Todos** — invalidação de cache de autorização |
 | `ConfiguracaoOperacionalAlteradaV1` | Tipo, modalidades, métodos, troco, `maxEntregasSimultaneas` | `order`, `delivery`, `conversation` |
 | `ExpedienteAlteradoV1` | Abriu, fechou, pausou, retomou — com `motivo`. Hoje só a abertura é produzida (ADR-046); payload: `estabelecimentoId`, `motivo`, `expedienteDeReferencia` | `conversation`, **`catalog`** (reativa `ESGOTADO_HOJE`) |
-| `AreasDeEntregaAlteradasV1` | Área criada, alterada, desativada | `conversation` (lista de bairros) |
+| `AreasDeEntregaAlteradasV1` | Área criada, alterada, desativada. **Não é produzido:** a rota das áreas (E-10) não publica, porque o `conversation` não tem código e o evento não tem esquema — ADR-081 §3 | `conversation` (lista de bairros) |
 | `VinculoEntregadorAlteradoV1` | Vínculo ou remuneração | `delivery` |
 
 > Este evento se chamava `DisponibilidadeAlteradaV1` e colidia com um evento de
