@@ -4,6 +4,7 @@ import com.deliveryplatform.merchant.application.exception.AcessoNegado;
 import com.deliveryplatform.merchant.application.exception.CadastroDeLojaRecusado;
 import com.deliveryplatform.merchant.application.exception.ConviteRecusado;
 import com.deliveryplatform.merchant.application.exception.ConviteSemAutoridade;
+import com.deliveryplatform.merchant.application.exception.AreasRecusadas;
 import com.deliveryplatform.merchant.application.exception.HorarioRecusado;
 import com.deliveryplatform.merchant.application.exception.OperacaoRecusada;
 import com.deliveryplatform.merchant.domain.exception.ConviteInvalido;
@@ -107,6 +108,16 @@ public class TratadorDeErros {
      * frase é daqui, por motivo; a mensagem do domínio, com os valores como chegaram, fica na
      * causa.
      */
+    /**
+     * 400 para as áreas de entrega que o domínio recusa (ADR-081) — CEP, E3 e faixa repetida, M9
+     * e M10. A frase é daqui, por motivo; a mensagem do domínio, com o nome e a faixa como
+     * chegaram, fica na causa.
+     */
+    @ExceptionHandler(AreasRecusadas.class)
+    public ProblemDetail areasRecusadas(AreasRecusadas excecao) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, fraseDe(excecao.motivo()));
+    }
+
     @ExceptionHandler(OperacaoRecusada.class)
     public ProblemDetail operacaoRecusada(OperacaoRecusada excecao) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, fraseDe(excecao.motivo()));
@@ -173,6 +184,16 @@ public class TratadorDeErros {
         return switch (motivo) {
             case INICIO_IGUAL_AO_FIM -> "uma faixa de horário não pode terminar na mesma hora em que começa";
             case FAIXA_REPETIDA -> "a mesma faixa de horário aparece duas vezes no mesmo dia";
+        };
+    }
+
+    static String fraseDe(AreasRecusadas.Motivo motivo) {
+        return switch (motivo) {
+            case CEP_INVALIDO -> "um CEP precisa ter oito dígitos, e a faixa começa antes de terminar";
+            case AREA_INVALIDA -> "a taxa de uma área não pode ser negativa, e a mesma faixa de CEP "
+                    + "não se repete na mesma área";
+            case AREAS_EM_CONFLITO -> "duas áreas não podem ter o mesmo nome, e as faixas de CEP de "
+                    + "áreas ativas não podem se cruzar";
         };
     }
 

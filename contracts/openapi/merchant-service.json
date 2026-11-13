@@ -268,6 +268,90 @@
         }
       }
     },
+    "/api/v1/merchants/{estabelecimentoId}/settings/areas-entrega" : {
+      "get" : {
+        "tags" : [ "configuracao-da-loja-controller" ],
+        "summary" : "Lê as áreas de entrega da loja",
+        "description" : "Exige CONFIGURAR_LOJA. Lista vazia quando a loja não entrega em lugar nenhum.",
+        "operationId" : "lerAreasDeEntrega",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "As áreas gravadas; lista vazia quando a loja não entrega em lugar nenhum",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AreasDeEntregaResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Identificador da loja malformado"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa"
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "configuracao-da-loja-controller" ],
+        "summary" : "Define as áreas de entrega da loja",
+        "description" : "Exige CONFIGURAR_LOJA. Substitui todas; lista vazia volta a loja a não entregar em lugar nenhum. Taxa zero é entrega grátis, e bairro sem área não é.",
+        "operationId" : "definirAreasDeEntrega",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AreasDeEntregaRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "As áreas como ficaram gravadas",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AreasDeEntregaResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Corpo malformado, identificador da loja malformado, ou áreas que o domínio recusa — CEP inválido ou faixa invertida, taxa negativa, faixa repetida na mesma área, duas áreas com o mesmo nome (M9), ou faixas que se cruzam entre áreas ativas (M10)"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa"
+          }
+        }
+      }
+    },
     "/api/v1/merchants/{estabelecimentoId}/team/convites" : {
       "post" : {
         "tags" : [ "equipe-controller" ],
@@ -662,6 +746,106 @@
         "properties" : {
           "descontoDeRetirada" : {
             "type" : "number"
+          }
+        }
+      },
+      "AreaRequest" : {
+        "type" : "object",
+        "properties" : {
+          "nome" : {
+            "type" : "string",
+            "description" : "O bairro, como o cliente o lê.",
+            "example" : "Boa Viagem",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "taxa" : {
+            "type" : "number",
+            "description" : "Em reais. Zero é entrega grátis nesta área — e é diferente de não haver área (M11).",
+            "example" : 7.0
+          },
+          "ativa" : {
+            "type" : "boolean",
+            "description" : "Desativada continua na lista e não cota nada."
+          },
+          "faixasDeCep" : {
+            "type" : "array",
+            "description" : "Opcionais na regra, obrigatórias no corpo: lista vazia é a área alcançável só pelo nome.",
+            "items" : {
+              "$ref" : "#/components/schemas/FaixaDeCepRequest"
+            }
+          }
+        },
+        "required" : [ "ativa", "faixasDeCep", "nome", "taxa" ]
+      },
+      "AreasDeEntregaRequest" : {
+        "type" : "object",
+        "properties" : {
+          "areasDeEntrega" : {
+            "type" : "array",
+            "description" : "As áreas da loja, ativas e desativadas. Lista vazia: a loja não entrega em lugar nenhum. Duas áreas com o mesmo nome — sem distinguir caixa, acento e espaço — são recusadas, e faixas de CEP não se cruzam entre áreas ativas.",
+            "items" : {
+              "$ref" : "#/components/schemas/AreaRequest"
+            }
+          }
+        },
+        "required" : [ "areasDeEntrega" ]
+      },
+      "FaixaDeCepRequest" : {
+        "type" : "object",
+        "properties" : {
+          "inicio" : {
+            "type" : "string",
+            "description" : "Oito dígitos; o hífen é aceito.",
+            "example" : "51020-000"
+          },
+          "fim" : {
+            "type" : "string",
+            "description" : "Oito dígitos, igual ou depois do início.",
+            "example" : "51130-999"
+          }
+        },
+        "required" : [ "fim", "inicio" ]
+      },
+      "AreaResponse" : {
+        "type" : "object",
+        "properties" : {
+          "nome" : {
+            "type" : "string"
+          },
+          "taxa" : {
+            "type" : "number"
+          },
+          "ativa" : {
+            "type" : "boolean"
+          },
+          "faixasDeCep" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FaixaDeCepResponse"
+            }
+          }
+        }
+      },
+      "AreasDeEntregaResponse" : {
+        "type" : "object",
+        "properties" : {
+          "areasDeEntrega" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AreaResponse"
+            }
+          }
+        }
+      },
+      "FaixaDeCepResponse" : {
+        "type" : "object",
+        "properties" : {
+          "inicio" : {
+            "type" : "string"
+          },
+          "fim" : {
+            "type" : "string"
           }
         }
       },

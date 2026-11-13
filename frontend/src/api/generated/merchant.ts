@@ -76,6 +76,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/merchants/{estabelecimentoId}/settings/areas-entrega": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lê as áreas de entrega da loja
+         * @description Exige CONFIGURAR_LOJA. Lista vazia quando a loja não entrega em lugar nenhum.
+         */
+        get: operations["lerAreasDeEntrega"];
+        /**
+         * Define as áreas de entrega da loja
+         * @description Exige CONFIGURAR_LOJA. Substitui todas; lista vazia volta a loja a não entregar em lugar nenhum. Taxa zero é entrega grátis, e bairro sem área não é.
+         */
+        put: operations["definirAreasDeEntrega"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/merchants/{estabelecimentoId}/team/convites": {
         parameters: {
             query?: never;
@@ -271,6 +295,51 @@ export interface components {
         };
         DescontoDeRetiradaResponse: {
             descontoDeRetirada?: number;
+        };
+        AreaRequest: {
+            /**
+             * @description O bairro, como o cliente o lê.
+             * @example Boa Viagem
+             */
+            nome: string;
+            /**
+             * @description Em reais. Zero é entrega grátis nesta área — e é diferente de não haver área (M11).
+             * @example 7
+             */
+            taxa: number;
+            /** @description Desativada continua na lista e não cota nada. */
+            ativa: boolean;
+            /** @description Opcionais na regra, obrigatórias no corpo: lista vazia é a área alcançável só pelo nome. */
+            faixasDeCep: components["schemas"]["FaixaDeCepRequest"][];
+        };
+        AreasDeEntregaRequest: {
+            /** @description As áreas da loja, ativas e desativadas. Lista vazia: a loja não entrega em lugar nenhum. Duas áreas com o mesmo nome — sem distinguir caixa, acento e espaço — são recusadas, e faixas de CEP não se cruzam entre áreas ativas. */
+            areasDeEntrega: components["schemas"]["AreaRequest"][];
+        };
+        FaixaDeCepRequest: {
+            /**
+             * @description Oito dígitos; o hífen é aceito.
+             * @example 51020-000
+             */
+            inicio: string;
+            /**
+             * @description Oito dígitos, igual ou depois do início.
+             * @example 51130-999
+             */
+            fim: string;
+        };
+        AreaResponse: {
+            nome?: string;
+            taxa?: number;
+            ativa?: boolean;
+            faixasDeCep?: components["schemas"]["FaixaDeCepResponse"][];
+        };
+        AreasDeEntregaResponse: {
+            areasDeEntrega?: components["schemas"]["AreaResponse"][];
+        };
+        FaixaDeCepResponse: {
+            inicio?: string;
+            fim?: string;
         };
         /** @description O convite: o telefone de quem vai entrar e as permissões oferecidas. */
         ConviteRequest: {
@@ -643,6 +712,96 @@ export interface operations {
                 };
             };
             /** @description Corpo malformado, identificador da loja malformado, ou desconto negativo (M15) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    lerAreasDeEntrega: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description As áreas gravadas; lista vazia quando a loja não entrega em lugar nenhum */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AreasDeEntregaResponse"];
+                };
+            };
+            /** @description Identificador da loja malformado */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    definirAreasDeEntrega: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AreasDeEntregaRequest"];
+            };
+        };
+        responses: {
+            /** @description As áreas como ficaram gravadas */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AreasDeEntregaResponse"];
+                };
+            };
+            /** @description Corpo malformado, identificador da loja malformado, ou áreas que o domínio recusa — CEP inválido ou faixa invertida, taxa negativa, faixa repetida na mesma área, duas áreas com o mesmo nome (M9), ou faixas que se cruzam entre áreas ativas (M10) */
             400: {
                 headers: {
                     [name: string]: unknown;

@@ -72,6 +72,7 @@ class ContratoDeErrosIT extends Infraestrutura {
     private static final String HORARIO = "/api/v1/merchants/{estabelecimentoId}/settings/horario";
     private static final String PEDIDO_MINIMO = "/api/v1/merchants/{estabelecimentoId}/settings/pedido-minimo";
     private static final String DESCONTO = "/api/v1/merchants/{estabelecimentoId}/settings/desconto-retirada";
+    private static final String AREAS = "/api/v1/merchants/{estabelecimentoId}/settings/areas-entrega";
 
     /** O que o contrato declara e nenhum caso provoca. Hoje: nada. */
     private static final Map<String, String> NAO_PROVOCAVEIS = Map.of();
@@ -268,6 +269,36 @@ class ContratoDeErrosIT extends Infraestrutura {
                             String token = IDENTITY.tokenDe(vinculado(loja, Permissao.GERENCIAR_EQUIPE));
                             return put("/api/v1/merchants/" + loja + "/settings/desconto-retirada",
                                     PedidoMinimoEDescontoIT.DESCONTO, token);
+                        }),
+
+                // As áreas de entrega (ADR-081): 200, 400, 401, 403 em cada operação.
+                new Provocacao("GET", AREAS, 400, "identificador da loja que não é UUID",
+                        () -> get("/api/v1/merchants/nao-e-uuid/settings/areas-entrega", estranho())),
+                new Provocacao("GET", AREAS, 401, "sem token",
+                        () -> get("/api/v1/merchants/" + UUID.randomUUID() + "/settings/areas-entrega", null)),
+                new Provocacao("GET", AREAS, 403, "vínculo sem CONFIGURAR_LOJA",
+                        () -> {
+                            UUID loja = loja();
+                            String token = IDENTITY.tokenDe(vinculado(loja, Permissao.GERENCIAR_EQUIPE));
+                            return get("/api/v1/merchants/" + loja + "/settings/areas-entrega", token);
+                        }),
+                new Provocacao("PUT", AREAS, 400, "duas áreas com o mesmo nome (M9)",
+                        () -> {
+                            UUID loja = loja();
+                            String token = IDENTITY.tokenDe(vinculado(loja, Permissao.CONFIGURAR_LOJA));
+                            return put("/api/v1/merchants/" + loja + "/settings/areas-entrega",
+                                    "{\"areasDeEntrega\":[{\"nome\":\"Pina\",\"taxa\":1,\"ativa\":true,\"faixasDeCep\":[]},"
+                                            + "{\"nome\":\"PINA\",\"taxa\":2,\"ativa\":true,\"faixasDeCep\":[]}]}", token);
+                        }),
+                new Provocacao("PUT", AREAS, 401, "sem token",
+                        () -> put("/api/v1/merchants/" + UUID.randomUUID() + "/settings/areas-entrega",
+                                AreasDeEntregaIT.DUAS_AREAS, null)),
+                new Provocacao("PUT", AREAS, 403, "vínculo sem CONFIGURAR_LOJA",
+                        () -> {
+                            UUID loja = loja();
+                            String token = IDENTITY.tokenDe(vinculado(loja, Permissao.GERENCIAR_EQUIPE));
+                            return put("/api/v1/merchants/" + loja + "/settings/areas-entrega",
+                                    AreasDeEntregaIT.DUAS_AREAS, token);
                         }));
     }
 

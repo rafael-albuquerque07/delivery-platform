@@ -1,5 +1,10 @@
 package com.deliveryplatform.merchant.api.controller;
 
+import com.deliveryplatform.merchant.api.dto.AreasDeEntregaRequest;
+import com.deliveryplatform.merchant.api.dto.AreasDeEntregaResponse;
+import com.deliveryplatform.merchant.application.port.in.ConsultarAreasDeEntrega;
+import com.deliveryplatform.merchant.application.port.in.DefinirAreasDeEntrega;
+import com.deliveryplatform.merchant.application.port.in.DefinirAreasDeEntrega.AreaPedida;
 import com.deliveryplatform.merchant.api.dto.DescontoDeRetiradaRequest;
 import com.deliveryplatform.merchant.api.dto.DescontoDeRetiradaResponse;
 import com.deliveryplatform.merchant.api.dto.FaixaDeHorarioRequest;
@@ -38,8 +43,8 @@ import java.util.UUID;
 /**
  * A configuração da loja, sob {@code /settings} — o prefixo que o gateway já roteia para
  * o {@code merchant} ({@code merchant-settings}, ADR-012). O horário (ADR-073), o pedido
- * mínimo e o desconto de retirada (ADR-080), cada um sub-recurso irmão, lido e escrito, sob a
- * mesma {@code CONFIGURAR_LOJA}.
+ * mínimo e o desconto de retirada (ADR-080) e as áreas de entrega (ADR-081), cada um
+ * sub-recurso irmão, lido e escrito, sob a mesma {@code CONFIGURAR_LOJA}.
  *
  * <p>O {@code estabelecimentoId} da URL <b>autoriza</b>: o caso de uso o confronta com o
  * vínculo do {@code sub} antes de buscar a loja (invariante 9).
@@ -53,15 +58,21 @@ public class ConfiguracaoDaLojaController {
     private final ConsultarOperacao operacoes;
     private final DefinirPedidoMinimo minimos;
     private final DefinirDescontoDeRetirada descontos;
+    private final ConsultarAreasDeEntrega areasLidas;
+    private final DefinirAreasDeEntrega areasEscritas;
 
     public ConfiguracaoDaLojaController(DefinirHorario horarios, ConsultarHorario leitura,
                                         ConsultarOperacao operacoes, DefinirPedidoMinimo minimos,
-                                        DefinirDescontoDeRetirada descontos) {
+                                        DefinirDescontoDeRetirada descontos,
+                                        ConsultarAreasDeEntrega areasLidas,
+                                        DefinirAreasDeEntrega areasEscritas) {
         this.horarios = horarios;
         this.leitura = leitura;
         this.operacoes = operacoes;
         this.minimos = minimos;
         this.descontos = descontos;
+        this.areasLidas = areasLidas;
+        this.areasEscritas = areasEscritas;
     }
 
     /**
@@ -182,6 +193,51 @@ public class ConfiguracaoDaLojaController {
             @Valid @RequestBody DescontoDeRetiradaRequest pedido) {
         return DescontoDeRetiradaResponse.de(descontos.definir(
                 estabelecimentoId, SujeitoDoToken.de(token), pedido.descontoDeRetirada()));
+    }
+
+    /** As áreas de entrega como estão gravadas, ativas e desativadas (ADR-081). */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "As áreas gravadas; lista vazia quando a loja não entrega em lugar nenhum"),
+            @ApiResponse(responseCode = "400", description = "Identificador da loja malformado", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa", content = @Content)
+    })
+    @GetMapping(path = "/areas-entrega", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Lê as áreas de entrega da loja",
+            description = "Exige CONFIGURAR_LOJA. Lista vazia quando a loja não entrega em lugar nenhum.")
+    public AreasDeEntregaResponse lerAreasDeEntrega(
+            @PathVariable UUID estabelecimentoId, @AuthenticationPrincipal Jwt token) {
+        return AreasDeEntregaResponse.de(areasLidas.daLoja(estabelecimentoId, SujeitoDoToken.de(token)));
+    }
+
+    /**
+     * Substitui as áreas de entrega inteiras (ADR-020, ADR-081). Ninguém guarda o identificador de
+     * uma área — o pedido congela nome e taxa por valor —, e por isso a lista se troca inteira.
+     * Não publica evento.
+     */
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "As áreas como ficaram gravadas"),
+            @ApiResponse(responseCode = "400", description = "Corpo malformado, identificador da loja malformado, ou áreas que o domínio recusa — CEP inválido ou faixa invertida, taxa negativa, faixa repetida na mesma área, duas áreas com o mesmo nome (M9), ou faixas que se cruzam entre áreas ativas (M10)", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Sem token, ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Sem vínculo, sem CONFIGURAR_LOJA ou loja inexistente — a mesma recusa", content = @Content)
+    })
+    @PutMapping(path = "/areas-entrega", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Define as áreas de entrega da loja",
+            description = "Exige CONFIGURAR_LOJA. Substitui todas; lista vazia volta a loja a não "
+                    + "entregar em lugar nenhum. Taxa zero é entrega grátis, e bairro sem área não é.")
+    public AreasDeEntregaResponse definirAreasDeEntrega(
+            @PathVariable UUID estabelecimentoId,
+            @AuthenticationPrincipal Jwt token,
+            @Valid @RequestBody AreasDeEntregaRequest pedido) {
+        List<AreaPedida> areas = pedido.areasDeEntrega().stream()
+                .map(area -> new AreaPedida(area.nome(), area.taxa(), area.ativa(),
+                        area.faixasDeCep().stream()
+                                .map(f -> new DefinirAreasDeEntrega.FaixaPedida(f.inicio(), f.fim()))
+                                .toList()))
+                .toList();
+        return AreasDeEntregaResponse.de(
+                areasEscritas.definir(estabelecimentoId, SujeitoDoToken.de(token), areas));
     }
 
     private static FaixaPedida paraComando(FaixaDeHorarioRequest faixa) {

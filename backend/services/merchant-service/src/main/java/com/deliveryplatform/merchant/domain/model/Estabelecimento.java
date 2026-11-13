@@ -34,7 +34,8 @@ import java.util.UUID;
  *
  * <p><b>Imutável, e a alteração devolve outra loja.</b> O primeiro ato que altera a
  * loja é {@link #comHorario} (E-4, ADR-073); {@link #comDescontoDeRetirada} e
- * {@link #comPedidoMinimo} (E-9, ADR-080) seguem a mesma forma. O horário segue o
+ * {@link #comPedidoMinimo} (E-9, ADR-080) e {@link #comAreasDeEntrega} (E-10, ADR-081)
+ * seguem a mesma forma. O horário segue o
  * {@code Disponibilidade.com(Pausa)}: os campos continuam {@code final}, e a loja nova
  * passa pelo mesmo construtor e pelas mesmas verificações. O horário não tem evento
  * próprio — o que ele muda é {@code aberto}, e quem publica isso é a varredura da
@@ -233,6 +234,17 @@ public final class Estabelecimento {
      */
     public Estabelecimento comPedidoMinimo(Map<Modalidade, Money> minimos) {
         return comOperacao(operacao.comPedidoMinimo(minimos));
+    }
+
+    /**
+     * A mesma loja com outras áreas de entrega, <b>substituídas inteiras</b> (E-10, ADR-081).
+     * Passa pelo construtor, que cobra a M9 entre todas as áreas e a M10 entre as ativas, e
+     * recusa com {@code IllegalArgumentException}; quem traduz é o caso de uso. A lista vazia é
+     * aceita: é o estado de nascença da loja criada por rota.
+     */
+    public Estabelecimento comAreasDeEntrega(List<AreaDeEntrega> areas) {
+        return new Estabelecimento(
+                id, identificacao, operacao, politicaDeTroco, disponibilidade, areas);
     }
 
     private Estabelecimento comOperacao(Operacao outra) {
