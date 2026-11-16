@@ -1,6 +1,6 @@
 # ADR-029 — Recuperação do administrador único
 
-**Status:** Aceita — 24/08/2026
+**Status:** Aceita — 24/08/2026 · emendada em 16/11/2026: de onde o operador lê a origem do pagamento
 **Fecha a pendência de:** `docs/dominio/estabelecimento.md` §9
 **Relacionada:** ADR-011 (autorização contextual), ADR-013 (dados pessoais), ADR-015 (emissão do JWT)
 **Detalhada em:** `docs/operacao/recuperacao-de-acesso.md`
@@ -200,3 +200,16 @@ O §18.5 do mesmo documento continua valendo — os prazos da ADR-013, o encarre
 e o canal do titular seguem pendentes de revisão jurídica. O que mudou é que
 agora há material preparado para ela: `docs/operacao/revisao-juridica.md` e
 `docs/operacao/legitimo-interesse.md`.
+
+## Emenda de 16/11/2026 — de onde o operador lê a origem do pagamento
+
+O §3 aceita, como segundo elemento da prova, *"a origem do pagamento da assinatura"*, e o
+corpo não diz onde esse registro mora. **Ele mora no provedor de cobrança recorrente, fora deste
+produto** — a cobrança da assinatura é não-objetivo escrito no PRD §7 desde esta data. O operador
+consulta o registro lá e o confronta com o que a pessoa apresenta: os últimos dígitos do cartão,
+ou o pagador do boleto (`docs/operacao/recuperacao-de-acesso.md` §2).
+
+**A plataforma não guarda dado de cartão nem de boleto**, e não passa a guardar para servir a
+esta prova. Nenhum provedor está contratado, e esta emenda não nomeia um. O corpo fica como está.
+
+Gatilho escrito: nenhum.

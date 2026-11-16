@@ -316,6 +316,7 @@ Registrados explicitamente para evitar retorno em cada revisão de escopo.
 | Aplicativo nativo para consumidor | O canal é o WhatsApp; aplicativo compete por instalação |
 | Rastreamento em mapa em tempo real | O comerciante conhece o entregador e o alcança por telefone; entra apenas se houver operação que justifique |
 | Repasse financeiro e conciliação bancária | O produto registra o acerto operacional; não movimenta valor |
+| Cobrança da assinatura do comerciante | A mensalidade é cobrada fora do produto, por provedor de cobrança recorrente, e o produto não guarda cartão nem boleto — não é o dinheiro dos pedidos, que é a linha de cima |
 | Cupons, promoções e precificação dinâmica | Campos existem no modelo com valor neutro; regra fica para depois |
 | Operação em múltiplas cidades ou regiões | Fora do perfil-alvo inicial |
 | Avaliações e reputação | Não resolve a dor que decide a compra |
