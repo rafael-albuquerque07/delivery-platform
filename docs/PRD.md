@@ -156,7 +156,7 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 **H3.2** Como comerciante, quero marcar o que acabou sem precisar contar estoque.
 - Estado por produto: disponível, acabando, esgotado hoje, esgotado por tempo indeterminado
 - **Esgotado hoje volta automaticamente a disponível na abertura do expediente seguinte**
-- Produto esgotado não é oferecido no canal nem aceito no rascunho da conversa
+- Produto esgotado não é oferecido no canal nem aceito no rascunho da conversa — *Entra a partir do 7a*
 
 > A reativação automática é o que faz o recurso ser usado de verdade. Se o comerciante precisar lembrar de reativar doze itens toda manhã, ele para de usar na segunda semana.
 
@@ -189,11 +189,12 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 - Pedido não pode ficar sem saída possível em nenhum estado
 
 **H4.5** Como atendente, quero lançar no painel um pedido que chegou por telefone ou no balcão, para que ele entre na mesma fila dos que chegam pelo canal.
-- *Entra a partir do marco 6*
+- *Entra a partir do marco 3* (ADR-083)
 
 Esta história existe porque o 7a faz do canal a entrada de pedido (ADR-075). **Sem ela, o
 pedido que chega por telefone ou no balcão não tem história em marco nenhum**, e a mitigação do
-§11 — *"painel e balcão continuam operando"* — seria falsa.
+§11 — *"painel e balcão continuam operando"* — seria falsa. Desde 17/11/2026 ela é também a
+primeira porta por onde um pedido nasce, e entra com o marco 3, antes do 7a (ADR-083).
 
 ### E5 — Liquidação e troco
 
@@ -366,23 +367,30 @@ Consequências para o produto, não apenas para a engenharia:
 
 Cada marco entrega valor operável, não uma camada técnica.
 
-| Marco | Entrega | O comerciante consegue |
-|---|---|---|
-| **1** | Conta, estabelecimento, equipe e permissões | Cadastrar a loja e o time, com poderes diferentes |
-| **2** | Cardápio com opções e disponibilidade qualitativa | Publicar o cardápio e marcar o que acabou |
-| **3** | Painel de pedidos e ciclo de preparo | Receber e acompanhar pedidos numa tela |
-| **4** | Liquidação presencial, troco e Pix confirmado | Registrar como cada pedido foi pago de verdade |
-| **5** | Entregadores, vínculo, remuneração e despacho | Despachar e saber quem está com cada pedido |
-| **6** | **Fechamento de expediente** | Fechar o dia com extrato por entregador |
-| **7** | Canal WhatsApp determinístico — **o 7a vem antes do marco 3** (ADR-075) | Receber pedido pelo WhatsApp com menu numerado |
-| **8** | Pagamento online e emissão fiscal | Cobrar antecipado e emitir documento |
-| **9** | Atendimento assistido e escalonamento | Atender sozinho a maior parte dos pedidos |
-| **10** | Controle quantitativo e substituição de item | Operar minimercado com contagem de estoque |
-| **11** | Rastreamento e telemetria — **condicionado pelo §7** | Mostrar a entrega no mapa |
+| Marco | Entrega | O comerciante consegue | Histórias |
+|---|---|---|---|
+| **1** | Conta, estabelecimento, equipe e permissões | Cadastrar a loja e o time, com poderes diferentes | H1.1, H1.2, H1.3, H2.1, H2.2 |
+| **2** | Cardápio com opções e disponibilidade qualitativa | Publicar o cardápio e marcar o que acabou | H3.1, H3.2 |
+| **3** | Painel de pedidos e ciclo de preparo | Receber e acompanhar pedidos numa tela | H4.1, H4.4, H4.5 |
+| **4** | Liquidação presencial, troco e Pix confirmado | Registrar como cada pedido foi pago de verdade | H5.1, H5.2, H5.3 |
+| **5** | Entregadores, vínculo, remuneração e despacho | Despachar e saber quem está com cada pedido | H6.1, H6.2, H6.3 |
+| **6** | **Fechamento de expediente** | Fechar o dia com extrato por entregador | H7.1, H7.2, H7.3 |
+| **7** | Canal WhatsApp determinístico — **o 7a vem logo depois do marco 3** (ADR-083) | Receber pedido pelo WhatsApp com menu numerado | 7a: H4.2, H8.1, H8.2 · 7b: H8.3 |
+| **8** | Pagamento online e emissão fiscal | Cobrar antecipado e emitir documento | H10.1 |
+| **9** | Atendimento assistido e escalonamento | Atender sozinho a maior parte dos pedidos | H9.1, H9.2, H9.3 |
+| **10** | Controle quantitativo e substituição de item | Operar minimercado com contagem de estoque | H3.3, H4.3 |
+| **11** | Rastreamento e telemetria — **condicionado pelo §7** | Mostrar a entrega no mapa | — |
 
 **A ordem não é a dos números.** O marco 7 se parte em **7a** — o menu numerado de ponta a ponta,
-até o pedido confirmado — e **7b**, o resto. O 7a é executado **antes do marco 3**, porque é ele
-que faz um pedido nascer (ADR-075). Os números ficam como estão.
+até o pedido confirmado (ADR-075) — e **7b**, o resto. O 7a é executado **logo depois do marco 3**:
+a primeira porta por onde um pedido nasce é o lançamento no painel, a H4.5, que entra com o marco
+3 (ADR-083). O canal continua sendo a fundação do produto (P4); o que se constrói antes é a porta
+que não depende de nada externo. Os números ficam como estão.
+
+**A coluna "Histórias"** segue, nesta ordem: a anotação *"Entra a partir do marco N"* da própria
+história; o recorte do 7a da ADR-075 §1; e o épico, para o resto — E1 e E2 no marco 1, E3 no 2, E4
+no 3, E5 no 4, E6 no 5, E7 no 6 e E9 no 9. Critério que só se verifica com o canal leva a anotação
+*"Entra a partir do 7a"*, dentro da história de outro marco. O marco 11 não tem história escrita.
 
 ### 10.1 Ponto de parada com produto vendável
 
@@ -395,6 +403,11 @@ ampliação: ele é a entrada de pedido do produto, como a P4 do §5 já dizia. 
 existe produto completo"* continua verdadeiro — e passa a incluir o 7a e a H4.5, o lançamento
 manual. *"Os marcos 7 a 9 ampliam o alcance"* vale para o 7b, o 8 e o 9.
 
+**Emenda de 17/11/2026.** Com a ADR-083, a H4.5 entra com o marco 3 e o 7a vem logo depois dele.
+*"Ao fim do marco 6 existe produto completo"* continua verdadeiro, e continua incluindo o 7a e a
+H4.5. O canal continua sendo a entrada de pedido do produto, como a P4 diz; a primeira entrada a
+ser construída é a do painel.
+
 ---
 
 ## 11. Riscos de produto
@@ -406,7 +419,7 @@ manual. *"Os marcos 7 a 9 ampliam o alcance"* vale para o 7b, o 8 e o 9.
 | **Interpretação automática erra valor ou pedido** | Prejuízo e desconfiança | Valor nunca vem da interpretação; confirmação por botão; escalonamento obrigatório em alergia e restrição |
 | **Trote no pedido presencial** | Prejuízo direto do comerciante | Confirmação ativa na conversa; teto de valor para cliente sem histórico; bloqueio por reincidência |
 | **Entregador contesta o acerto** | Atrito e abandono do recurso | Extrato imutável, com lançamentos rastreáveis e correção por ajuste, nunca por edição |
-| **Dependência de um único canal externo** | Interrupção total do recebimento | Canal é a entrada de pedido do produto (ADR-075), e por isso o risco é maior do que esta linha dizia. A mitigação é a **H4.5**, o lançamento manual no painel: com ela, o pedido que chega por telefone ou no balcão entra na mesma fila. **Até ela existir em código, a queda do canal é a queda do recebimento.** |
+| **Dependência de um único canal externo** | Interrupção total do recebimento | Canal é a entrada de pedido do produto (ADR-075), e por isso o risco é maior do que esta linha dizia. A mitigação é a **H4.5**, o lançamento manual no painel: com ela, o pedido que chega por telefone ou no balcão entra na mesma fila. Desde a ADR-083 ela entra com o marco 3, antes do canal: o balcão e o telefone têm entrada desde o primeiro pedido. |
 | **Dados pessoais em conversa** | Exposição regulatória | Retenção definida por tipo; áudio com prazo curto; exclusão que alcança a conversa; contrato com o provedor de interpretação |
 
 ---

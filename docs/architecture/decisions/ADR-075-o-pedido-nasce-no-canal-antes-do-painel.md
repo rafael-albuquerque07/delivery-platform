@@ -1,6 +1,6 @@
 # ADR-075 — O pedido nasce no canal antes do painel
 
-- **Status:** aceita
+- **Status:** aceita · **emendada em 17/11/2026**: a primeira porta passa a ser o painel (ADR-083)
 - **Data:** 18/10/2026
 - **Rodada:** P-1
 - **Relacionada:** PRD §3.1, §5, §10, §10.1 e §11; H4.1, H4.2, H8.1, H8.2 e H8.3; ADR-006 (o
@@ -120,3 +120,14 @@ efeito, com 198 frases envelhecendo.
 e o teste do `README.md` das decisões é *"alguém que não seja nós pode fazer isso
 acontecer?"*. Não pode. **O lugar delas é este corpo**, e elas se respondem na rodada que
 escrever o 7a.
+
+## Emenda de 17/11/2026 — a primeira porta passa a ser o painel
+
+**A H4.5 entra com o marco 3, e o 7a vem logo depois dele** (ADR-083). A alternativa que esta
+ADR não escolheu em 18/10 — o atendente lança o pedido no painel — passa a ser a primeira porta
+por onde um pedido nasce. O corpo fica como está: ele registra a decisão que valeu de 18/10 a
+17/11.
+
+**A §1 continua valendo como o recorte do 7a.** O que muda é quando ele é construído, não o que
+ele contém. **As três perguntas acima continuam abertas** — o recorte, o provedor e o número, e o
+custo do canal no 7a.

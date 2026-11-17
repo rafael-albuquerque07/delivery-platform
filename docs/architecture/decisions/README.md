@@ -75,7 +75,7 @@
 | 072 | A seção que o comando colhe, e o item que não era gatilho | ✅ aceita · **emendada** (16/10/2026: "condição nossa" tem duas espécies) |
 | 073 | O horário ganha rota, sob uma permissão que não existia | ✅ aceita · **emendada** (17/10/2026: a irmã de leitura) |
 | 074 | A tela do horário, e a tela que não valida o que o domínio decide | ✅ aceita · **emendada** (19/10/2026: marcar o que acabou não espera a varredura) |
-| 075 | O pedido nasce no canal, e o 7a vem antes do marco 3 | ✅ aceita |
+| 075 | O pedido nasce no canal, e o 7a vem antes do marco 3 | ✅ aceita · **emendada** (17/11/2026: a primeira porta passa a ser o painel — ADR-083) |
 | 076 | O convite aceita antes de entrar | ✅ aceita |
 | 077 | O grupo de opções e a opção ganham rota, dentro do produto | ✅ aceita · **emendada** (08/11/2026: o caminho de volta tem rota — ADR-078) |
 | 078 | O produto sai do cardápio, sob a permissão que já existia | ✅ aceita · **emendada** (10/11/2026: o rascunho responde 409, e a atribuição estava errada) |
@@ -83,8 +83,9 @@
 | 080 | Duas configurações ganham rota, e a lista das escritas que faltam encolhe | ✅ aceita |
 | 081 | A última escrita do merchant, e a lista que o semeador sustentava | ✅ aceita |
 | 082 | A segunda tela da CONFIGURAR_LOJA, e o zero que não é ausência | ✅ aceita |
+| 083 | A primeira porta do pedido é o painel, e o canal vem logo depois | ✅ aceita |
 
-**Setenta e nove escritas, duas sem objeto — estas com registro próprio desde
+**Oitenta escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê
