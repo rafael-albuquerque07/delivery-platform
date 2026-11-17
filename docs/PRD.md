@@ -129,7 +129,7 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 
 **H1.3** Como comerciante, quero definir minhas áreas de entrega e taxas por bairro.
 - Cadastro de bairros ou faixas de CEP atendidos, com taxa por área
-- Endereço fora da área é recusado no momento do pedido, com mensagem clara
+- Endereço fora da área é recusado no momento do pedido, com mensagem clara — *Entra a partir do marco 3*
 - Taxa zero é valor válido e distinto de área não atendida
 
 ### E2 — Equipe e permissões
@@ -148,10 +148,11 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 ### E3 — Cardápio e disponibilidade
 
 **H3.1** Como comerciante, quero cadastrar produtos com as opções que meu cliente escolhe.
-- Produto com preço-base, descrição e imagem
+- Produto com preço-base e descrição
+- Imagem do produto — *Entra a partir do 7a* (decisão de 17/11/2026: a imagem serve a quem compra, e o armazenamento é decidido com a mídia do canal)
 - Grupos de opções com mínimo e máximo de escolhas: tamanho obrigatório, adicionais opcionais, remoções
 - Cada opção com seu acréscimo de preço
-- Produto rascunho não aparece para o cliente
+- Produto rascunho não aparece para o cliente — *Entra a partir do 7a*
 
 **H3.2** Como comerciante, quero marcar o que acabou sem precisar contar estoque.
 - Estado por produto: disponível, acabando, esgotado hoje, esgotado por tempo indeterminado
@@ -185,10 +186,16 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 
 **H4.4** Como comerciante, quero cancelar ou o cliente cancelar dentro da regra.
 - Todo cancelamento registra a causa
-- Pedido pago que é cancelado dispara devolução do valor
+- Pedido pago que é cancelado dispara devolução do valor — *Entra a partir do marco 8* (ADR-030: o cancelamento de pedido pago online é o caminho de devolução do marco 8)
 - Pedido não pode ficar sem saída possível em nenhum estado
 
 **H4.5** Como atendente, quero lançar no painel um pedido que chegou por telefone ou no balcão, para que ele entre na mesma fila dos que chegam pelo canal.
+- O pedido lançado nasce pela mesma transição que o do canal — a T01 do `pedido.md` —, com as mesmas guardas: itens vendáveis, área atendida na entrega, invariantes de valor e regra do troco
+- O pedido mínimo da modalidade vale também para o pedido lançado, sem aceite manual por cima dele (ADR-028 §4)
+- Quem confirma é o atendente, por ato explícito no painel, no lugar do botão do cliente
+- O total aparece discriminado antes de lançar — itens, taxa de entrega e desconto
+- O pedido entra na mesma fila do painel, com a origem `BALCAO` — a do que chegou por telefone e a do que chegou no balcão
+- Lançar exige uma permissão própria, que nenhuma das permissões de H2.1 cobre
 - *Entra a partir do marco 3* (ADR-083)
 
 Esta história existe porque o 7a faz do canal a entrada de pedido (ADR-075). **Sem ela, o
@@ -389,8 +396,11 @@ que não depende de nada externo. Os números ficam como estão.
 
 **A coluna "Histórias"** segue, nesta ordem: a anotação *"Entra a partir do marco N"* da própria
 história; o recorte do 7a da ADR-075 §1; e o épico, para o resto — E1 e E2 no marco 1, E3 no 2, E4
-no 3, E5 no 4, E6 no 5, E7 no 6 e E9 no 9. Critério que só se verifica com o canal leva a anotação
-*"Entra a partir do 7a"*, dentro da história de outro marco. O marco 11 não tem história escrita.
+no 3, E5 no 4, E6 no 5, E7 no 6 e E9 no 9. Critério que só se verifica com algo que um marco
+posterior ao da história entrega leva a anotação *"Entra a partir do marco N"* — ou *"do 7a"* —,
+dentro da história. **Posterior na ordem de construção, e não no número:** um critério do marco 4
+que dependa da conversa não leva anotação, porque o 7a vem antes do 4. O marco 11 não tem história
+escrita.
 
 ### 10.1 Ponto de parada com produto vendável
 
