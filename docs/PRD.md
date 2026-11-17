@@ -141,9 +141,9 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 - Colaborador sem permissão recebe recusa clara, não erro genérico
 
 **H2.2** Como plataforma, preciso impedir escalada de privilégio.
-- Quem gerencia equipe administra colaboradores, nunca administradores
+- Quem gerencia equipe administra colaboradores, nunca administradores — *espera a rota das operações de equipe* (razão, linha 73)
 - Ninguém concede permissão que não possui
-- Um estabelecimento sempre mantém pelo menos um administrador ativo
+- Um estabelecimento sempre mantém pelo menos um administrador ativo — *espera a rota das operações de equipe* (razão, linha 73)
 - Nenhuma tela expõe dado de outro estabelecimento, mesmo com o identificador em mãos
 
 ### E3 — Cardápio e disponibilidade
