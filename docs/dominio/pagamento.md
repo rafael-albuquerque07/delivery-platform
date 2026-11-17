@@ -392,7 +392,8 @@ vazio e começar a enfiar coisa nele.
   devolução devida vira devolução esquecida, isso vira decisão — e provavelmente
   ADR.
 - **Emissão fiscal** (H10.1, marco 8). Nasce do pedido concluído, e a relação
-  dela com estorno é assunto de quando existir.
+  dela com estorno é assunto de quando existir — há uma proposta, não uma decisão:
+  `docs/propostas/emissao-fiscal-onde-mora-o-certificado.md`.
 - **Split de pagamento entre plataforma e comerciante.** Não existe: não há
   comissão sobre venda (PRD §7). Se um dia houver, P1 caiu e este documento
   inteiro é reescrito, não emendado.

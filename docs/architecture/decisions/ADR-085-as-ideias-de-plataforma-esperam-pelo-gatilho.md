@@ -1,6 +1,6 @@
 # ADR-085 — As ideias de plataforma esperam pelo gatilho
 
-- **Status:** aceita
+- **Status:** aceita · **emendada em 17/11/2026**: a conversa fiscal entra no repositório (R-15)
 - **Data:** 17/11/2026
 - **Rodada:** R-14
 - **Relacionada:** ADR-027 (compatibilidade de eventos), ADR-056 (recurso de outra loja é 404),
@@ -103,3 +103,8 @@ da rota.
 **O primeiro comerciante que pedir para integrar outro sistema.** Aí uma ADR decide se o produto
 vira plataforma — API pública, webhooks de saída para terceiros, automações montadas pelo
 comerciante.
+
+## Emenda de 17/11/2026, R-15 — a conversa fiscal entra no repositório
+
+A conversa sobre emissão fiscal citada no Contexto está registrada na proposta `docs/propostas/emissao-fiscal-onde-mora-o-certificado.md`, que
+entrou no repositório nesta rodada. O corpo fica como está.
