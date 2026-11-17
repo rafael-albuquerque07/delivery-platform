@@ -84,8 +84,9 @@
 | 081 | A última escrita do merchant, e a lista que o semeador sustentava | ✅ aceita |
 | 082 | A segunda tela da CONFIGURAR_LOJA, e o zero que não é ausência | ✅ aceita |
 | 083 | A primeira porta do pedido é o painel, e o canal vem logo depois | ✅ aceita |
+| 084 | O método vira skill obrigatória do repositório | ✅ aceita |
 
-**Oitenta escritas, duas sem objeto — estas com registro próprio desde
+**Oitenta e uma escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

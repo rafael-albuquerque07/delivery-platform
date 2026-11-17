@@ -12,6 +12,15 @@ WhatsApp**. Se uma decisão parecer estranha, confira as premissas em
 
 ---
 
+## Método obrigatório
+
+Antes de aplicar um pacote, escrever uma rodada, registrar uma passagem humana ou dizer que um
+marco fechou, carregue a skill `metodo-delivery-platform`, em `.claude/skills/`. Ela é obrigatória
+(ADR-084) e não decide produto nem arquitetura: só o modo de trabalhar. Para escrever código, ela
+se soma à skill `novo-caso-de-uso`.
+
+---
+
 ## Comandos
 
 ```bash
