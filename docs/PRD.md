@@ -123,7 +123,8 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 - Modalidades aceitas: entrega, retirada ou ambas
 - Métodos de pagamento aceitos, por modalidade
 - Política de troco: valor máximo de fundo e se aceita pedido sem troco disponível
-- Horário de funcionamento e pausa manual imediata
+- Horário de funcionamento
+- Pausa manual imediata — *espera o primeiro comerciante que pedir para fechar a loja agora* (ADR-073)
 - Desconto para quem retira no balcão, quando o comerciante quiser oferecê-lo
 - Pedido mínimo por modalidade, sobre o valor dos itens — sem a taxa de entrega —, com zero valendo como "sem mínimo"
 
