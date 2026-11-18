@@ -2,6 +2,7 @@ package com.deliveryplatform.merchant.api.error;
 
 import com.deliveryplatform.merchant.application.exception.AcessoNegado;
 import com.deliveryplatform.merchant.application.exception.CadastroDeLojaRecusado;
+import com.deliveryplatform.merchant.application.exception.CondicoesRecusadas;
 import com.deliveryplatform.merchant.application.exception.ConviteRecusado;
 import com.deliveryplatform.merchant.application.exception.ConviteSemAutoridade;
 import com.deliveryplatform.merchant.application.exception.AreasRecusadas;
@@ -118,6 +119,15 @@ public class TratadorDeErros {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, fraseDe(excecao.motivo()));
     }
 
+    /**
+     * 400 para as condições do pedido que não têm como ser respondidas (ADR-087): entrega sem
+     * endereço, ou CEP que não é CEP. A frase é daqui, por motivo; a do domínio fica na causa.
+     */
+    @ExceptionHandler(CondicoesRecusadas.class)
+    public ProblemDetail condicoesRecusadas(CondicoesRecusadas excecao) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, fraseDe(excecao.motivo()));
+    }
+
     @ExceptionHandler(OperacaoRecusada.class)
     public ProblemDetail operacaoRecusada(OperacaoRecusada excecao) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, fraseDe(excecao.motivo()));
@@ -194,6 +204,13 @@ public class TratadorDeErros {
                     + "não se repete na mesma área";
             case AREAS_EM_CONFLITO -> "duas áreas não podem ter o mesmo nome, e as faixas de CEP de "
                     + "áreas ativas não podem se cruzar";
+        };
+    }
+
+    static String fraseDe(CondicoesRecusadas.Motivo motivo) {
+        return switch (motivo) {
+            case ENDERECO_AUSENTE -> "para entrega, informe o bairro ou o CEP";
+            case CEP_INVALIDO -> "um CEP precisa ter oito dígitos";
         };
     }
 

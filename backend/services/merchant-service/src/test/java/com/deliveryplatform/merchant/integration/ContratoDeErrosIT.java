@@ -64,6 +64,8 @@ class ContratoDeErrosIT extends Infraestrutura {
 
     private static final String CONTEXTO = "/internal/merchants/{estabelecimentoId}/me/contexto-de-acesso";
     private static final String EXPEDIENTE = "/internal/merchants/{estabelecimentoId}/expediente-corrente";
+    private static final String OPERACAO = "/internal/merchants/{estabelecimentoId}/operacao";
+    private static final String CONDICOES = "/internal/merchants/{estabelecimentoId}/condicoes-do-pedido";
     private static final String EQUIPE = "/api/v1/merchants/{estabelecimentoId}/team";
     private static final String MINHAS_LOJAS = "/api/v1/me/estabelecimentos";
     private static final String CONVITES = "/api/v1/merchants/{estabelecimentoId}/team/convites";
@@ -127,6 +129,27 @@ class ContratoDeErrosIT extends Infraestrutura {
                             String token = IDENTITY.tokenDe(vinculado(semHorario, Permissao.VER_PRODUTO));
                             return get("/internal/merchants/" + semHorario + "/expediente-corrente", token);
                         }),
+
+                new Provocacao("GET", OPERACAO, 400, "identificador da loja que não é UUID",
+                        () -> get("/internal/merchants/nao-e-uuid/operacao", estranho())),
+                new Provocacao("GET", OPERACAO, 401, "sem token",
+                        () -> get("/internal/merchants/" + UUID.randomUUID() + "/operacao", null)),
+                new Provocacao("GET", OPERACAO, 403, "sem vínculo com a loja",
+                        () -> get("/internal/merchants/" + loja() + "/operacao", estranho())),
+
+                new Provocacao("POST", CONDICOES, 400, "entrega sem bairro e sem CEP",
+                        () -> {
+                            UUID loja = loja();
+                            String token = IDENTITY.tokenDe(vinculado(loja, Permissao.VER_PEDIDO));
+                            return post("/internal/merchants/" + loja + "/condicoes-do-pedido",
+                                    "{\"modalidade\":\"ENTREGA\"}", token);
+                        }),
+                new Provocacao("POST", CONDICOES, 401, "sem token",
+                        () -> post("/internal/merchants/" + UUID.randomUUID() + "/condicoes-do-pedido",
+                                "{\"modalidade\":\"RETIRADA\"}", null)),
+                new Provocacao("POST", CONDICOES, 403, "sem vínculo com a loja",
+                        () -> post("/internal/merchants/" + loja() + "/condicoes-do-pedido",
+                                "{\"modalidade\":\"RETIRADA\"}", estranho())),
 
                 new Provocacao("GET", EQUIPE, 400, "identificador da loja que não é UUID",
                         () -> get("/api/v1/merchants/nao-e-uuid/team", estranho())),

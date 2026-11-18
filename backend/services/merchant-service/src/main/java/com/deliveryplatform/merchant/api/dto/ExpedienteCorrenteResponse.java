@@ -12,9 +12,9 @@ import java.util.UUID;
  *
  * <p><b>Se a loja está aberta agora.</b> Quem responde isso é a
  * {@code OperacaoDoEstabelecimentoPort} do {@code estabelecimento.md} §3, que
- * compõe horário <i>e</i> pausa — e que ainda não existe em código. Pôr um
- * {@code aberto} aqui criaria a segunda resposta para a mesma pergunta antes de
- * a primeira nascer, e as duas teriam de concordar para sempre.
+ * compõe horário <i>e</i> pausa, na rota interna da operação desde a M3-1
+ * (ADR-087). Pôr um {@code aberto} aqui criaria a segunda resposta para a mesma
+ * pergunta, e as duas teriam de concordar para sempre.
  *
  * <p><b>De onde veio a data</b> — se do expediente em curso ou da próxima
  * abertura. É informação verdadeira e sem consumidor: o catálogo apenas compara

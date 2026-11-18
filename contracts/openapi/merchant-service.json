@@ -352,6 +352,54 @@
         }
       }
     },
+    "/internal/merchants/{estabelecimentoId}/condicoes-do-pedido" : {
+      "post" : {
+        "tags" : [ "interno" ],
+        "summary" : "O que a T01 congela: métodos, pedido mínimo, desconto, troco e a área com a taxa",
+        "description" : "Na entrega, o bairro manda e o CEP é a alternativa (ADR-020). Fora de toda área ativa: 200, atendida falso, sem taxa, com os bairros atendidos. Exige vínculo ativo, e nenhuma permissão específica (ADR-087).",
+        "operationId" : "condicoesDoPedido",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CondicoesDoPedidoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "As condições da modalidade, e a área quando for entrega",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CondicoesDoPedidoResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Identificador malformado, corpo inválido, entrega sem bairro e sem CEP, ou CEP inválido"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo ativo com a loja, ou loja inexistente — a mesma recusa"
+          }
+        }
+      }
+    },
     "/api/v1/merchants/{estabelecimentoId}/team/convites" : {
       "post" : {
         "tags" : [ "equipe-controller" ],
@@ -493,6 +541,44 @@
           },
           "409" : {
             "description" : "Quem convidou não pode mais conceder o que ofereceu (A2), ou quem aceita já é da equipe"
+          }
+        }
+      }
+    },
+    "/internal/merchants/{estabelecimentoId}/operacao" : {
+      "get" : {
+        "tags" : [ "interno" ],
+        "summary" : "Se a loja está aberta agora, e como ela opera",
+        "description" : "aberto compõe horário e pausa. Exige vínculo ativo, e nenhuma permissão específica (ADR-087).",
+        "operationId" : "operacao",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Se a loja está aberta agora, e o tipo de operação",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/OperacaoAtualResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Identificador da loja malformado"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo ativo com a loja, ou loja inexistente — a mesma recusa"
           }
         }
       }
@@ -849,6 +935,99 @@
           }
         }
       },
+      "CondicoesDoPedidoRequest" : {
+        "type" : "object",
+        "description" : "A modalidade, e o endereço quando for entrega: o bairro, ou o CEP.",
+        "properties" : {
+          "modalidade" : {
+            "type" : "string",
+            "description" : "A modalidade do pedido.",
+            "enum" : [ "ENTREGA", "RETIRADA" ]
+          },
+          "bairro" : {
+            "type" : "string",
+            "description" : "O bairro, como o cliente escolheu. Na entrega, ele manda.",
+            "example" : "Boa Viagem",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "cep" : {
+            "type" : "string",
+            "description" : "O CEP, usado quando não há bairro.",
+            "example" : "51020-000",
+            "maxLength" : 20,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "modalidade" ]
+      },
+      "CondicoesDoPedidoResponse" : {
+        "type" : "object",
+        "description" : "O que a T01 congela, vindo do merchant. Campo que não se aplica não sai.",
+        "properties" : {
+          "estabelecimentoId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "modalidade" : {
+            "type" : "string",
+            "enum" : [ "ENTREGA", "RETIRADA" ]
+          },
+          "aceita" : {
+            "type" : "boolean",
+            "description" : "A loja aceita esta modalidade. Falso: nenhum outro campo sai."
+          },
+          "metodos" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "DINHEIRO", "CARTAO", "PIX" ]
+            },
+            "uniqueItems" : true
+          },
+          "pedidoMinimo" : {
+            "type" : "number",
+            "description" : "O pedido mínimo da modalidade, sobre os itens. Zero é sem mínimo (M17)."
+          },
+          "descontoDeRetirada" : {
+            "type" : "number",
+            "description" : "Só na retirada (I12)."
+          },
+          "politicaDeTroco" : {
+            "$ref" : "#/components/schemas/PoliticaDeTrocoResponse"
+          },
+          "atendida" : {
+            "type" : "boolean",
+            "description" : "Só na entrega: o endereço está numa área ativa."
+          },
+          "area" : {
+            "type" : "string",
+            "description" : "Só na entrega atendida: o nome da área."
+          },
+          "taxaDeEntrega" : {
+            "type" : "number",
+            "description" : "Só na entrega atendida. Zero é entrega grátis; na não atendida, não sai (M11)."
+          },
+          "bairrosAtendidos" : {
+            "type" : "array",
+            "description" : "Só na entrega não atendida: os nomes das áreas ativas (ADR-020).",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "PoliticaDeTrocoResponse" : {
+        "type" : "object",
+        "properties" : {
+          "fundoMaximoDeTroco" : {
+            "type" : "number"
+          },
+          "aceitaPedidoSemTrocoDisponivel" : {
+            "type" : "boolean"
+          }
+        }
+      },
       "ConviteRequest" : {
         "type" : "object",
         "description" : "O convite: o telefone de quem vai entrar e as permissões oferecidas.",
@@ -1007,6 +1186,26 @@
               "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA" ]
             },
             "uniqueItems" : true
+          }
+        }
+      },
+      "OperacaoAtualResponse" : {
+        "type" : "object",
+        "description" : "Se a loja está aberta agora, e como ela opera.",
+        "properties" : {
+          "estabelecimentoId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "A loja sobre a qual esta resposta fala."
+          },
+          "aberto" : {
+            "type" : "boolean",
+            "description" : "Aberta agora: horário de funcionamento e pausa, compostos no merchant."
+          },
+          "tipoDeOperacao" : {
+            "type" : "string",
+            "description" : "O tipo de operação da loja.",
+            "enum" : [ "PRODUCAO", "SEPARACAO", "MISTA" ]
           }
         }
       },
