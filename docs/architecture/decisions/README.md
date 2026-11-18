@@ -86,9 +86,10 @@
 | 083 | A primeira porta do pedido é o painel, e o canal vem logo depois | ✅ aceita |
 | 084 | O método vira skill obrigatória do repositório | ✅ aceita |
 | 085 | As ideias de plataforma esperam pelo gatilho | ✅ aceita |
-| 086 | O marco 3 em fatias | ✅ aceita |
+| 086 | O marco 3 em fatias | ✅ aceita · **emendada** (18/11/2026: a fatia 1 são duas consultas — ADR-087) |
+| 087 | A operação da loja e as condições do pedido, em duas consultas | ✅ aceita |
 
-**Oitenta e três escritas, duas sem objeto — estas com registro próprio desde
+**Oitenta e quatro escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

@@ -384,7 +384,7 @@ mudança de estado (invariante 7 do `CLAUDE.md`).
 | `LiquidacaoConfirmadaV1` | `payment` | Muda a `Liquidacao` para `CONFIRMADA`. Se o pedido estiver `CANCELADO`, confirma assim mesmo e gera `Devolucao` — ADR-030 §6 |
 | `CobrancaExpiradaV1` | `payment` | Registra que a cobrança venceu. **Não** muda estado do pedido |
 | `EstornoExecutadoV1` | `payment` | Muda a `Devolucao` para `EXECUTADA` — marco 8 |
-| `ConfiguracaoOperacionalAlteradaV1` | `merchant` | Modalidades, métodos e regra de troco aplicáveis ao pedido |
+| `ConfiguracaoOperacionalAlteradaV1` | `merchant` | Nada no marco 3: o que a T01 congela — modalidades, métodos, mínimo, desconto, troco e taxa — vem da consulta das condições do pedido, sem cache (ADR-087) |
 | `JornadaAbertaV1` | `settlement` | **Invalida cache** de jornada aberta — não projeta |
 | `JornadaFechadaV1` | `settlement` | Idem |
 | `ExpedienteAlteradoV1` | `merchant` | **Invalida cache** de operação da loja — não projeta |

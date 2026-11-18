@@ -1,6 +1,6 @@
 # ADR-086 — O marco 3 em fatias
 
-- **Status:** aceita
+- **Status:** aceita · **emendada em 18/11/2026**: a fatia 1 são duas consultas (M3-1)
 - **Data:** 17/11/2026
 - **Rodada:** P-5
 - **Relacionada:** ADR-083 (a primeira porta do pedido é o painel), ADR-018 (a cotação), ADR-045 e
@@ -108,3 +108,10 @@ antes de haver um pedido.
 
 **O primeiro lojista pagante, para o histórico de alteração.** Aí nasce o histórico — quem, quando,
 antes e depois —, que a ADR-085 esperava da T01.
+
+## Emenda de 18/11/2026, M3-1 — a fatia 1 são duas consultas
+
+A Decisão 1 punha métodos, troco, mínimo e desconto na resposta da `OperacaoDoEstabelecimentoPort`;
+o `estabelecimento.md` a declara com `aberto`, `tipoDeOperacao` e `maxEntregasSimultaneas`. Por
+decisão do Rafael, a operação responde o que a porta declara, e o que a T01 congela vem de uma
+segunda consulta, sem cache (ADR-087). O corpo fica como está.

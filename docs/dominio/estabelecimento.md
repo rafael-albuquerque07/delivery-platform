@@ -293,10 +293,11 @@ não é `UUID` é 403, como nas outras rotas.
 
 #### O que ela não responde
 
-Se a loja está **aberta agora**. A porta que compõe horário, pausa e dia
-operacional para quem pergunta — a `OperacaoDoEstabelecimentoPort` da §3 —
-ainda não existe em código. Um valor calculado por engano aqui seria o segundo
-lugar a errar na virada das 04:00, antes de o primeiro existir.
+Se a loja está **aberta agora**. Quem compõe horário, pausa e dia operacional
+para quem pergunta é a `OperacaoDoEstabelecimentoPort` da §3, em
+`GET /internal/merchants/{estabelecimentoId}/operacao` desde a M3-1 (ADR-087).
+Um valor calculado por engano aqui seria um segundo lugar a errar na virada das
+04:00.
 
 #### E o gêmeo interno
 
@@ -386,6 +387,15 @@ descuido: a alternativa — liberar em caso de dúvida — significa que uma que
 vira acesso irrestrito aos dados de todas as lojas. Mitigação é disponibilidade
 (réplicas, cache com TTL que sobrevive a queda curta), não relaxamento da regra.
 Os detalhes de TTL, invalidação e janela de tolerância estão na **ADR-011**.
+
+> **Em código desde a M3-1 (ADR-087):** `GET /internal/merchants/{estabelecimentoId}/operacao`
+> responde `aberto` e `tipoDeOperacao`. O `maxEntregasSimultaneas` não existe no domínio
+> (ADR-087).
+>
+> **O que a T01 congela não vem desta porta.** Métodos, pedido mínimo, desconto, troco e a taxa da
+> área vêm de `POST /internal/merchants/{estabelecimentoId}/condicoes-do-pedido`, sem cache: a
+> resposta é congelada no pedido (ADR-034), como a da `DeliveryQuotePort`, que ela implementa
+> do lado do `merchant` (ADR-020).
 
 ### As quatro portas, e a política de cache de cada uma
 
