@@ -38,6 +38,8 @@ Cada regra aqui nasceu de um pacote que errou. **Quem escreve segue; quem aplica
     recomendar; a recomendação não vale como resposta.
 11. **Segredo nunca entra no pacote.** O pacote manda imprimir do `.env` só a linha que precisa, por
     comando que imprima só ela — e de preferência só a contagem (`grep -c`).
+    E nenhum comando imprime o dono de arquivo: `ls -A`, nunca `ls -l` nem `ls -la` — o dono é o
+    nome de usuário da máquina.
 12. **Rodada de código diz que critérios cobre, e que teste prova cada um.** E atualiza a linha
     de cada critério em `docs/marcos/marco-N.md`.
 13. **O comando de um fato negativo procura a forma da peça, não a palavra.** *"Não há rota
@@ -45,3 +47,11 @@ Cada regra aqui nasceu de um pacote que errou. **Quem escreve segue; quem aplica
     cliente. E vem com um controle que acha a mesma forma em outro lugar.
 14. **Comando que vai para célula de tabela não tem `|`.** Nem como separador, nem dentro do
     padrão: onde o padrão começa com `|`, use `.`.
+15. **Decisão que muda o que vale procura as frases que diziam o contrário.** Uma pasta nova no
+    git, uma porta, um consumidor, uma regra: o pacote traz o `grep` das frases que afirmam o
+    antigo — `CLAUDE.md`, ADRs, skills, agentes, `.gitignore`, `docs/`, `contracts/` — e troca
+    cada uma na mesma rodada; no corpo de uma ADR, por emenda. A que fica, fica com o motivo escrito.
+16. **Mutação se desfaz pela cópia, e a previsão sai das asserções.** Antes de mutar, o arquivo
+    é copiado para fora da árvore; depois, restaurado da cópia, com `diff` vazio — `git checkout`
+    não desfaz mutação em arquivo que o git não conhece. E *"cai o caso N, e só ele"* se escreve
+    lendo o que cada caso afirma, não o título dele: dois casos que afirmam a mesma coisa caem juntos.

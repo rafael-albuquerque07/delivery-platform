@@ -55,8 +55,8 @@ erro e devolve o controle — e o passo seguinte usa o jar velho que estava lá.
 ## 2. Conferir a data do jar — WSL, na raiz
 
 ```bash
-ls -l --time-style=+'%F %T' backend/services/merchant-service/build/libs/app.jar \
-                            backend/infra/gateway/build/libs/app.jar
+stat -c '%y  %n' backend/services/merchant-service/build/libs/app.jar \
+                 backend/infra/gateway/build/libs/app.jar
 ```
 
 **A data tem de ser de agora.** Se for de ontem, o passo 1 não rodou — volte a ele.

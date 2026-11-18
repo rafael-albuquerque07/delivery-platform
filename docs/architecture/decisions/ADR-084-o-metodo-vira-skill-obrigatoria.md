@@ -1,6 +1,6 @@
 # ADR-084 — O método vira skill obrigatória do repositório
 
-- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4)
+- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4) · **emendada em 18/11/2026**: o subagente é do repositório (S-5)
 - **Data:** 17/11/2026
 - **Rodada:** S-1
 - **Relacionada:** ADR-072 (a seção que o comando colhe, e a segunda passada do `docs/dividas.md`),
@@ -68,3 +68,12 @@ com o censo dos testes dos marcos 1 e 2. O corpo fica como está.
 A conferência do passo 3 do `aplicar-rodada.md` passa a ser feita por um subagente próprio,
 `.claude/agents/revisor-de-pacote.md`, que só lê. As regras continuam no `escrever-rodada.md`; o
 subagente diz como conferir cada uma. O corpo fica como está.
+
+## Emenda de 18/11/2026, S-5 — o subagente é do repositório
+
+A frase do corpo *"De `.claude/`, só `skills/` é do repositório"* passa a valer com `agents/`
+também. O `revisor-de-pacote` entrou no git na S-4 e é configuração do projeto, como as skills:
+quem clona o repositório ganha a conferência do passo 3. Decisão do Rafael. O `SKILL.md` e o
+`.gitignore` passam a dizer o mesmo. O `escrever-rodada.md` ganha a regra 15 — a decisão que
+muda o que vale procura as frases que diziam o contrário — e a 16, a mutação desfeita pela cópia;
+a regra 11 passa a cobrir o dono de arquivo. O corpo fica como está.

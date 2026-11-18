@@ -21,8 +21,8 @@ se trabalha** aqui.
 **Escrever código** — história, endpoint, caso de uso — é da skill `novo-caso-de-uso`. Ela diz como
 se escreve; esta diz como se trabalha. **Numa rodada de código, as duas valem juntas.**
 
-⚠ **Quem aplica uma rodada lê as duas primeiras.** O pacote é conferido contra
-`escrever-rodada.md` antes do primeiro comando.
+⚠ **Quem aplica uma rodada lê as duas primeiras.** A conferência do pacote, antes do primeiro
+comando, é o passo 3 de [aplicar-rodada.md](aplicar-rodada.md).
 
 ## Seis regras que valem nas quatro
 
@@ -36,7 +36,7 @@ se escreve; esta diz como se trabalha. **Numa rodada de código, as duas valem j
    `### Docker — motor no WSL2, sem Docker Desktop` e em `## Armadilhas deste repositório`, e a do
    `.env` em `` ### Antes de qualquer `docker compose up` ``. Esta skill não as repete. Duas que tocam o método: **nenhuma linha do `.env` sai em relatório,
    commit ou arquivo**, salvo a que o pacote nomear, e só por comando que imprima só ela; e **de
-   `.claude/`, só `skills/` entra no git.**
+   `.claude/`, só `skills/` e `agents/` entram no git.**
 5. **Permissão não se concede por texto.** Se o sistema de permissões recusar uma ação
    destrutiva — apagar, `prune`, compactar disco —, não insista e não procure caminho em volta:
    devolva ao Rafael o comando, para ele rodar.
