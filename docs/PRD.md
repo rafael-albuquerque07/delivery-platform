@@ -131,6 +131,7 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 **H1.3** Como comerciante, quero definir minhas áreas de entrega e taxas por bairro.
 - Cadastro de bairros ou faixas de CEP atendidos, com taxa por área
 - Endereço fora da área é recusado no momento do pedido, com mensagem clara — *Entra a partir do marco 3*
+  - *Verificável:* QUANDO a modalidade é entrega e o endereço não está em nenhuma área ativa da loja, O SISTEMA DEVE recusar o pedido no lançamento, com uma frase que diga que a loja não entrega naquele bairro e traga a lista dos bairros atendidos (ADR-020), e NUNCA DEVE tratar isso como taxa zero (M11). *Decisão do Rafael, 18/11/2026.*
 - Taxa zero é valor válido e distinto de área não atendida
 
 ### E2 — Equipe e permissões
@@ -171,9 +172,13 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 
 **H4.1** Como atendente, quero ver os pedidos chegando e acompanhar o preparo numa tela só.
 - Fila por status, com o mais urgente primeiro
+  - *Verificável:* QUANDO o atendente abre a fila, O SISTEMA DEVE mostrar os pedidos agrupados por status — `RECEBIDO`, `CONFIRMADO`, `EM_PREPARO`, `PRONTO` e `AGUARDANDO_CLIENTE` —, sem os cancelados, e, dentro de cada grupo, o mais antigo primeiro, pela hora em que o pedido nasceu. *Decisão do Rafael, 18/11/2026; o `pedido.md` §9 deixa a ordem da fila para o produto.*
 - Alerta sonoro e visual para pedido novo
+  - *Verificável:* QUANDO um pedido entra em `RECEBIDO` e a fila está aberta num navegador, O SISTEMA DEVE tocar um som e destacar o pedido em até 10 segundos, e o destaque fica até alguém confirmar o pedido (T02). *Decisão do Rafael, 18/11/2026; o intervalo da consulta periódica é da fatia 6 (ADR-086, Decisão 3), dentro desses 10 segundos. O som só toca depois de uma interação com a página: é limite dos navegadores, não escolha.*
 - Subestados coerentes com o tipo de operação: na fila, em produção, finalizando (cozinha); separando, conferido, embalado (balcão)
+  - *Verificável:* QUANDO um pedido está em `EM_PREPARO`, O SISTEMA DEVE oferecer só os subestados do tipo de operação da loja — a tabela de subestados do `pedido.md` — e DEVE recusar um subestado fora desse conjunto (T13).
 - Impressão ou exibição do pedido para a produção
+  - *Verificável:* QUANDO um pedido é confirmado, O SISTEMA DEVE exibir numa tela própria, para a produção, os itens congelados, com as opções escolhidas. *Decisão do Rafael, 18/11/2026.*
 
 **H4.2** Como cliente, quero montar meu pedido e saber o total antes de confirmar.
 - Um pedido contém itens de um único estabelecimento
@@ -187,16 +192,24 @@ Requisitos organizados por épico. Cada história traz critérios de aceite veri
 
 **H4.4** Como comerciante, quero cancelar ou o cliente cancelar dentro da regra.
 - Todo cancelamento registra a causa
+  - *Verificável:* QUANDO um pedido é cancelado, por qualquer transição de cancelamento da tabela, O SISTEMA DEVE guardar o motivo — um valor da lista fechada `motivoCancelamento` da ADR-010 —, o instante e, onde a tabela de transições o exige, o autor; e DEVE recusar todo cancelamento sem motivo (I9 do `pedido.md`).
 - Pedido pago que é cancelado dispara devolução do valor — *Entra a partir do marco 8* (ADR-030: o cancelamento de pedido pago online é o caminho de devolução do marco 8)
 - Pedido não pode ficar sem saída possível em nenhum estado
+  - *Verificável:* PARA cada estado não terminal que o marco 3 alcança, a tabela de transições DEVE ter ao menos uma saída construída, e um teste DEVE percorrer a tabela e falhar se algum não tiver (`pedido.md` §3, *"Como isto vira teste"*, item 4).
 
 **H4.5** Como atendente, quero lançar no painel um pedido que chegou por telefone ou no balcão, para que ele entre na mesma fila dos que chegam pelo canal.
 - O pedido lançado nasce pela mesma transição que o do canal — a T01 do `pedido.md` —, com as mesmas guardas: itens vendáveis, área atendida na entrega, invariantes de valor e regra do troco
+  - *Verificável:* QUANDO o atendente lança um pedido, O SISTEMA DEVE criá-lo pela T01 e DEVE recusá-lo, com uma frase por guarda, se algum item não for vendável, se a modalidade for entrega e o endereço não estiver numa área ativa, se os valores violarem as invariantes, ou se a regra do troco não for cumprida.
 - O pedido mínimo da modalidade vale também para o pedido lançado, sem aceite manual por cima dele (ADR-028 §4)
+  - *Verificável:* QUANDO o total dos itens, sem a taxa de entrega, for menor que o pedido mínimo da modalidade, O SISTEMA DEVE recusar o lançamento, sem aceite manual por cima (ADR-028 §4), e a recusa DEVE dizer o valor do mínimo.
 - Quem confirma é o atendente, por ato explícito no painel, no lugar do botão do cliente
+  - *Verificável:* QUANDO o atendente preenche o pedido, O SISTEMA DEVE criá-lo só depois de um ato explícito de confirmação, nunca ao preencher; e o pedido lançado nasce `RECEBIDO` e espera a T02, como o do canal. *Decisão do Rafael, 18/11/2026.*
 - O total aparece discriminado antes de lançar — itens, taxa de entrega e desconto
+  - *Verificável:* ANTES do ato de confirmação, O SISTEMA DEVE mostrar os itens com as opções e os preços, a taxa de entrega da área — ou a retirada —, o desconto de retirada, se a loja o oferece, e o total; e DEVE congelar exatamente esses valores.
 - O pedido entra na mesma fila do painel, com a origem `BALCAO` — a do que chegou por telefone e a do que chegou no balcão
+  - *Verificável:* QUANDO um pedido é lançado no painel, O SISTEMA DEVE gravá-lo com a origem `BALCAO` e DEVE mostrá-lo na mesma fila dos que chegam pelo canal.
 - Lançar exige uma permissão própria, que nenhuma das permissões de H2.1 cobre
+  - *Verificável:* QUANDO quem está no painel não tem a permissão de lançar, O SISTEMA NÃO DEVE mostrar a ação de lançar — o menu se monta a partir das permissões que o servidor respondeu (`docs/front/premissas-do-front.md`) —, e DEVE recusar com 403 se a rota for chamada assim mesmo.
 - *Entra a partir do marco 3* (ADR-083)
 
 Esta história existe porque o 7a faz do canal a entrada de pedido (ADR-075). **Sem ela, o
