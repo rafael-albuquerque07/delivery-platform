@@ -38,3 +38,10 @@ Cada regra aqui nasceu de um pacote que errou. **Quem escreve segue; quem aplica
     recomendar; a recomendação não vale como resposta.
 11. **Segredo nunca entra no pacote.** O pacote manda imprimir do `.env` só a linha que precisa, por
     comando que imprima só ela — e de preferência só a contagem (`grep -c`).
+12. **Rodada de código diz que critérios cobre, e que teste prova cada um.** E atualiza a linha
+    de cada critério em `docs/marcos/marco-N.md`.
+13. **O comando de um fato negativo procura a forma da peça, não a palavra.** *"Não há rota
+    interna"* se prova com `Mapping("/internal`, não com `/internal/` — que acha javadoc e
+    cliente. E vem com um controle que acha a mesma forma em outro lugar.
+14. **Comando que vai para célula de tabela não tem `|`.** Nem como separador, nem dentro do
+    padrão: onde o padrão começa com `|`, use `.`.

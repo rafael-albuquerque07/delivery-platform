@@ -1,6 +1,6 @@
 # ADR-084 — O método vira skill obrigatória do repositório
 
-- **Status:** aceita
+- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3)
 - **Data:** 17/11/2026
 - **Rodada:** S-1
 - **Relacionada:** ADR-072 (a seção que o comando colhe, e a segunda passada do `docs/dividas.md`),
@@ -56,3 +56,9 @@ regras repetidas em cada pacote e uma parte fora do repositório.
 ## Gatilho escrito
 
 **Nenhum.**
+
+## Emenda de 17/11/2026, S-3 — o critério aponta para o teste
+
+O fechamento de marco passa a ter quatro colunas — rota, tela, **teste** e exercida —, e a tabela
+de cada marco mora em `docs/marcos/marco-N.md`. Os dois primeiros arquivos entraram nesta rodada,
+com o censo dos testes dos marcos 1 e 2. O corpo fica como está.
