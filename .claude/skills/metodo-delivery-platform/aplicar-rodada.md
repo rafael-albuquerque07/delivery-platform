@@ -5,10 +5,10 @@ O Rafael extrai uma pasta na raiz do repositório e pede para aplicar o `.md` de
 1. **Leia o pacote inteiro antes do primeiro comando.**
 2. **Confira o estado.** `git status --short` vazio e `git log --oneline -1` igual ou adiante do
    que o §0 do pacote diz. Diferente: pare e diga o que achou.
-3. **Confira o pacote contra [escrever-rodada.md](escrever-rodada.md).** Violação que muda o que se
-   faz — controle que aponta para registro que não está no repositório, ramo que o documento não
-   tem, ação que o pacote dá como "autorizada" — vai para o Rafael **antes** de aplicar. Violação
-   que não muda nada vai para o relatório.
+3. **Confira o pacote contra [escrever-rodada.md](escrever-rodada.md) — pelo subagente
+   `revisor-de-pacote`**, antes do primeiro comando. Achado que muda o que se faz vai para o Rafael
+   **antes** de aplicar; achado que não muda nada vai para o relatório. *Se o subagente não estiver
+   disponível na sessão, confira você mesmo, item por item da lista dele, e diga que foi assim.*
 4. **Meça antes de mudar.** Todas as medições do pacote primeiro, com o comando e a saída inteira.
    Comando que pode voltar vazio leva o controle ao lado.
 5. **Onde o pacote diz "pare" ou "o Rafael decide", pergunte** com o que mediu e as opções do

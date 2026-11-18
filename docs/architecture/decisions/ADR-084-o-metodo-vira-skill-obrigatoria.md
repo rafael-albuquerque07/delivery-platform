@@ -1,6 +1,6 @@
 # ADR-084 — O método vira skill obrigatória do repositório
 
-- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3)
+- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4)
 - **Data:** 17/11/2026
 - **Rodada:** S-1
 - **Relacionada:** ADR-072 (a seção que o comando colhe, e a segunda passada do `docs/dividas.md`),
@@ -62,3 +62,9 @@ regras repetidas em cada pacote e uma parte fora do repositório.
 O fechamento de marco passa a ter quatro colunas — rota, tela, **teste** e exercida —, e a tabela
 de cada marco mora em `docs/marcos/marco-N.md`. Os dois primeiros arquivos entraram nesta rodada,
 com o censo dos testes dos marcos 1 e 2. O corpo fica como está.
+
+## Emenda de 18/11/2026, S-4 — o revisor de pacote
+
+A conferência do passo 3 do `aplicar-rodada.md` passa a ser feita por um subagente próprio,
+`.claude/agents/revisor-de-pacote.md`, que só lê. As regras continuam no `escrever-rodada.md`; o
+subagente diz como conferir cada uma. O corpo fica como está.
