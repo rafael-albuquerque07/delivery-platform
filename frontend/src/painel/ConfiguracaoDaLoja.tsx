@@ -278,7 +278,10 @@ function BlocoDoDesconto({ estabelecimentoId }: { estabelecimentoId: string }) {
       falha="Não foi possível ler o desconto de retirada agora."
     >
       {(dados) => (
-        <EditorDoDesconto estabelecimentoId={estabelecimentoId} inicial={dados.descontoDeRetirada} />
+        <EditorDoDesconto
+          estabelecimentoId={estabelecimentoId}
+          inicial={dados.descontoDeRetirada}
+        />
       )}
     </Bloco>
   );
@@ -301,8 +304,7 @@ function EditorDoDesconto({
   function enviar(evento: FormEvent) {
     evento.preventDefault();
     void gravacao.gravar(
-      (token) =>
-        definirDesconto(estabelecimentoId, { descontoDeRetirada: numeroDe(texto) }, token),
+      (token) => definirDesconto(estabelecimentoId, { descontoDeRetirada: numeroDe(texto) }, token),
       (voltou) => {
         definirGravado(voltou.descontoDeRetirada);
         definirTexto(textoDe(voltou.descontoDeRetirada));
@@ -365,7 +367,10 @@ function BlocoDasAreas({ estabelecimentoId }: { estabelecimentoId: string }) {
       falha="Não foi possível ler as áreas de entrega agora."
     >
       {(dados) => (
-        <EditorDasAreas estabelecimentoId={estabelecimentoId} inicial={dados.areasDeEntrega ?? []} />
+        <EditorDasAreas
+          estabelecimentoId={estabelecimentoId}
+          inicial={dados.areasDeEntrega ?? []}
+        />
       )}
     </Bloco>
   );

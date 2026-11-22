@@ -66,6 +66,14 @@ public class RegraDoCatalogoViolada extends RuntimeException {
          * agregado</b>: pelo caso de uso que cria produto (ADR-066).
          */
         CATEGORIA_NAO_ENCONTRADA,
+        /** Cotação: quantidade menor que 1. sem dados. */
+        QUANTIDADE_INVALIDA,
+        /** Cotação: opção escolhida que não pertence ao produto. sem dados. */
+        OPCAO_FORA_DO_PRODUTO,
+        /** Cotação: a mesma opção duas vezes no mesmo item (ADR-088). dados: o nome do produto. */
+        OPCAO_REPETIDA,
+        /** Cotação: escolhas num grupo fora do mínimo ou do máximo. dados: o nome do grupo, o mínimo, o máximo, o que veio. */
+        ESCOLHAS_FORA_DOS_LIMITES,
         /** Nulo onde o nosso código deveria ter posto valor. Só um defeito o produz. */
         INTEGRIDADE
     }

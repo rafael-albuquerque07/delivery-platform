@@ -19,6 +19,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -89,6 +90,11 @@ public class ProdutoRepositorioMongo implements ProdutoRepositorio {
     @Override
     public Optional<Produto> buscarPorId(UUID id) {
         return documentos.findById(id).map(ProdutoMapper::paraDominio);
+    }
+
+    @Override
+    public List<Produto> buscarPorIds(Collection<UUID> ids) {
+        return documentos.findAllById(ids).stream().map(ProdutoMapper::paraDominio).toList();
     }
 
     /**

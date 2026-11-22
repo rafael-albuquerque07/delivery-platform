@@ -6,14 +6,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * A porta de saída do produto. Quatro métodos, e nenhum a mais — o quarto,
- * {@link #idsParaReativar}, chegou na G-C3a; quem acrescentar o quinto emenda
- * esta frase.
+ * A porta de saída do produto. Cinco métodos, e nenhum a mais — o quarto,
+ * {@link #idsParaReativar}, chegou na G-C3a; o quinto, {@link #buscarPorIds},
+ * na M3-2, para a cotação ler os produtos numa ida só (ADR-088); quem
+ * acrescentar o sexto emenda esta frase.
  *
  * <p>Não há {@code apagar}: a C9 diz que produto nunca é apagado, e a forma
  * mais barata de garantir isso é não existir o método. Produto que sai do
@@ -31,6 +33,12 @@ public interface ProdutoRepositorio {
     Produto salvar(Produto produto);
 
     Optional<Produto> buscarPorId(UUID id);
+
+    /**
+     * Os produtos destes ids, numa ida ao banco — a cotação lê todos os itens de uma vez (ADR-088).
+     * Id que não existe não volta; a ordem não é garantida.
+     */
+    List<Produto> buscarPorIds(Collection<UUID> ids);
 
     /**
      * Os produtos de uma loja, <b>em qualquer estado de publicação</b> (ADR-068), pela

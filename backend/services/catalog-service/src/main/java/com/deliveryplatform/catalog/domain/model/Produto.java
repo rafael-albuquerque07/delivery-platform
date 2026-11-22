@@ -2,12 +2,14 @@ package com.deliveryplatform.catalog.domain.model;
 
 import com.deliveryplatform.catalog.domain.exception.GrupoNaoEncontrado;
 import com.deliveryplatform.catalog.domain.exception.OpcaoNaoEncontrada;
+import com.deliveryplatform.catalog.domain.exception.OpcoesIndisponiveis;
 import com.deliveryplatform.catalog.domain.exception.RegraDoCatalogoViolada;
 import com.deliveryplatform.valuetypes.Money;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -551,6 +553,81 @@ public final class Produto {
         return estadoDePublicacao == EstadoDePublicacao.ATIVO
                 && disponibilidade.permiteVenda()
                 && gruposDeOpcoes.stream().allMatch(GrupoDeOpcoes::satisfazivelHoje);
+    }
+
+    // ── a cotação ───────────────────────────────────────────────────────────
+
+    /**
+     * Valida a seleção e precifica um item do pedido (ADR-018, ADR-088).
+     *
+     * <p><b>A estrutura primeiro, a disponibilidade depois</b> (ADR-088, Decisão 6). A estrutura —
+     * cada opção pertence ao produto, nenhuma vem repetida, cada grupo respeita mínimo e máximo, a
+     * quantidade é pelo menos 1 — é erro de quem chama, e lança {@link RegraDoCatalogoViolada} (400).
+     * A disponibilidade é o mundo que mudou: <b>todas</b> as opções escolhidas indisponíveis vão
+     * juntas em {@link OpcoesIndisponiveis}, na ordem dos grupos (ADR-088, Decisão 7).
+     *
+     * <p><b>Não confere {@link #vendavel()}</b>: quem chama confere antes, porque produto não vendável
+     * vai para a lista dos indisponíveis e não interrompe a cotação.
+     *
+     * <p>{@code precoUnitario > 0} vale por construção no produto {@code ATIVO}: a publicação cobrou a
+     * C2, e a composição a recobra.
+     */
+    public LinhaCotada cotar(int quantidade, List<UUID> opcoesEscolhidas) {
+        List<UUID> escolhidas = opcoesEscolhidas == null ? List.of() : opcoesEscolhidas;
+
+        for (UUID escolhida : escolhidas) {
+            if (gruposDeOpcoes.stream().flatMap(g -> g.opcoes().stream())
+                    .noneMatch(o -> o.id().equals(escolhida))) {
+                throw new RegraDoCatalogoViolada(RegraDoCatalogoViolada.Motivo.OPCAO_FORA_DO_PRODUTO,
+                        "cotação: opção " + escolhida + " não pertence ao produto " + id);
+            }
+        }
+        if (new HashSet<>(escolhidas).size() < escolhidas.size()) {
+            throw new RegraDoCatalogoViolada(RegraDoCatalogoViolada.Motivo.OPCAO_REPETIDA,
+                    "cotação: opção repetida em " + nome, nome);
+        }
+        for (GrupoDeOpcoes g : gruposDeOpcoes) {
+            long veio = g.opcoes().stream().filter(o -> escolhidas.contains(o.id())).count();
+            if (veio < g.minEscolhas()) {
+                throw foraDosLimites(g, veio);
+            }
+            if (veio > g.maxEscolhas()) {
+                throw foraDosLimites(g, veio);
+            }
+        }
+        if (quantidade < 1) {
+            throw new RegraDoCatalogoViolada(RegraDoCatalogoViolada.Motivo.QUANTIDADE_INVALIDA,
+                    "cotação: quantidade " + quantidade);
+        }
+
+        List<UUID> indisponiveis = new ArrayList<>();
+        List<OpcaoCotada> cotadas = new ArrayList<>();
+        Money precoUnitario = precoBase;
+        for (GrupoDeOpcoes g : gruposDeOpcoes) {
+            for (Opcao o : g.opcoes()) {
+                if (!escolhidas.contains(o.id())) {
+                    continue;
+                }
+                if (!o.disponivel()) {
+                    indisponiveis.add(o.id());
+                }
+                cotadas.add(new OpcaoCotada(o.id(), g.nome(), o.nome(), o.acrescimo()));
+                precoUnitario = precoUnitario.mais(o.acrescimo());
+            }
+        }
+        if (!indisponiveis.isEmpty()) {
+            throw new OpcoesIndisponiveis(indisponiveis);
+        }
+        return new LinhaCotada(id, nome, precoBase, cotadas, precoUnitario, quantidade,
+                precoUnitario.vezes(quantidade), modoDeControle);
+    }
+
+    private static RegraDoCatalogoViolada foraDosLimites(GrupoDeOpcoes g, long veio) {
+        return new RegraDoCatalogoViolada(RegraDoCatalogoViolada.Motivo.ESCOLHAS_FORA_DOS_LIMITES,
+                "cotação: grupo " + g.nome() + " pede de " + g.minEscolhas() + " a "
+                        + g.maxEscolhas() + " e veio " + veio,
+                g.nome(), String.valueOf(g.minEscolhas()), String.valueOf(g.maxEscolhas()),
+                String.valueOf(veio));
     }
 
     // ── preço ───────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 package com.deliveryplatform.catalog.api.error;
 
 import com.deliveryplatform.catalog.application.exception.AcessoNegado;
+import com.deliveryplatform.catalog.application.exception.ItensIndisponiveis;
 import com.deliveryplatform.catalog.application.exception.LojaSemExpediente;
 import com.deliveryplatform.catalog.application.exception.ProdutoNaoEncontrado;
 import com.deliveryplatform.catalog.application.port.out.AutorizacaoIndisponivel;
@@ -9,7 +10,9 @@ import com.deliveryplatform.catalog.domain.exception.GrupoNaoEncontrado;
 import com.deliveryplatform.catalog.domain.exception.OpcaoNaoEncontrada;
 import com.deliveryplatform.catalog.domain.exception.RegraDoCatalogoViolada;
 import com.deliveryplatform.catalog.domain.model.EstadoDeDisponibilidade;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -19,7 +22,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Nove tratadores, e cada um devolve o código que monta no {@code ProblemDetail}:
+ * Dez tratadores, e cada um devolve o código que monta no {@code ProblemDetail}:
  *
  * <ul>
  *   <li>{@code AcessoNegado} e {@code AutorizacaoIndisponivel} → 403;</li>
@@ -31,6 +34,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  *   <li>{@code GrupoNaoEncontrado} → 404 (E-6, ADR-077);</li>
  *   <li>{@code LojaSemExpediente} → 409 (G-C2);</li>
  *   <li>{@code OptimisticLockingFailureException} → 409 (G-C3a, ADR-052);</li>
+ *   <li>{@code ItensIndisponiveis} → 409, com a lista dos indisponíveis (M3-2, ADR-088);</li>
  *   <li>{@code ExpedienteIndisponivel} → 503 (G-C2).</li>
  * </ul>
  *
@@ -205,8 +209,22 @@ public class TratadorDeErros {
                     + "loja; escolha uma das seções da lista";
             case MODO_SEM_CONTROLE -> "«" + d.get(1) + "» não tem controle de disponibilidade e não "
                     + "aceita a marcação «" + estado(d.get(0)) + "»";
+            case QUANTIDADE_INVALIDA -> "a quantidade de cada item é pelo menos 1";
+            case OPCAO_FORA_DO_PRODUTO -> "uma das opções escolhidas não é deste produto; "
+                    + "recarregue o cardápio";
+            case OPCAO_REPETIDA -> "a mesma opção veio duas vezes em «" + d.get(0) + "»";
+            case ESCOLHAS_FORA_DOS_LIMITES -> "o grupo «" + d.get(0) + "» pede "
+                    + escolhas(d.get(1), d.get(2)) + " e veio " + d.get(3);
             case INTEGRIDADE -> "não foi possível completar a operação";
         };
+    }
+
+    /** "1 escolha", "2 escolhas", "de 0 a 2 escolhas". */
+    private static String escolhas(String minimo, String maximo) {
+        if (minimo.equals(maximo)) {
+            return minimo + (minimo.equals("1") ? " escolha" : " escolhas");
+        }
+        return "de " + minimo + " a " + maximo + " escolhas";
     }
 
     private static String grupos(List<String> nomes) {
@@ -225,6 +243,27 @@ public class TratadorDeErros {
             case ESGOTADO_HOJE -> "esgotado hoje";
             case ESGOTADO_INDETERMINADO -> "esgotado";
         };
+    }
+
+    /**
+     * 409: há itens da cotação que não estão à venda agora (ADR-088, Decisão 7). A lista inteira
+     * vai na propriedade {@code indisponiveis}, sem nome — o produto de outra loja não pode ter
+     * nome na resposta (M7). A frase é fixa.
+     */
+    @ExceptionHandler(ItensIndisponiveis.class)
+    public ProblemDetail itensIndisponiveis(ItensIndisponiveis excecao) {
+        ProblemDetail corpo = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+                "há itens que não estão à venda agora; confira a lista");
+        corpo.setProperty("indisponiveis", excecao.indisponiveis().stream()
+                .map(i -> {
+                    Map<String, Object> entrada = new LinkedHashMap<>();
+                    entrada.put("item", i.item());
+                    entrada.put("produtoId", i.produtoId());
+                    entrada.put("opcaoId", i.opcaoId());
+                    return entrada;
+                })
+                .toList());
+        return corpo;
     }
 
     /**

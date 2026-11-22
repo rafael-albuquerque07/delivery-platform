@@ -125,10 +125,12 @@ class ErroDoCatalogoTest {
                 .filter(m -> m != Motivo.INTEGRIDADE && m != Motivo.RASCUNHO_NAO_SE_INATIVA)
                 .toList();
 
-        assertThat(deRegra).as("os nove motivos de regra além do rascunho").hasSize(9);
+        // Nove até a M3-2; a cotação acrescentou quatro (ADR-088). Quatro dados: o
+        // ESCOLHAS_FORA_DOS_LIMITES lê quatro, e os outros ignoram o que sobra.
+        assertThat(deRegra).as("os treze motivos de regra além do rascunho").hasSize(13);
         for (Motivo motivo : deRegra) {
             RegraDoCatalogoViolada violada =
-                    new RegraDoCatalogoViolada(motivo, "teste", "ESGOTADO_HOJE", "Pizza");
+                    new RegraDoCatalogoViolada(motivo, "teste", "ESGOTADO_HOJE", "Pizza", "1", "1");
             assertThat(tratador.regraViolada(violada).getStatus())
                     .as("%s", motivo)
                     .isEqualTo(400);

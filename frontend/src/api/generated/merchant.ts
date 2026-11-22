@@ -100,6 +100,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internal/merchants/{estabelecimentoId}/condicoes-do-pedido": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * O que a T01 congela: métodos, pedido mínimo, desconto, troco e a área com a taxa
+         * @description Na entrega, o bairro manda e o CEP é a alternativa (ADR-020). Fora de toda área ativa: 200, atendida falso, sem taxa, com os bairros atendidos. Exige vínculo ativo, e nenhuma permissão específica (ADR-087).
+         */
+        post: operations["condicoesDoPedido"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/merchants/{estabelecimentoId}/team/convites": {
         parameters: {
             query?: never;
@@ -158,6 +178,26 @@ export interface paths {
          * @description Exige sessão e nenhuma permissão. A A2 é conferida de novo aqui: se quem convidou perdeu o que ofereceu, o aceite é recusado.
          */
         post: operations["aceitar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internal/merchants/{estabelecimentoId}/operacao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Se a loja está aberta agora, e como ela opera
+         * @description aberto compõe horário e pausa. Exige vínculo ativo, e nenhuma permissão específica (ADR-087).
+         */
+        get: operations["operacao"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -341,6 +381,51 @@ export interface components {
             inicio?: string;
             fim?: string;
         };
+        /** @description A modalidade, e o endereço quando for entrega: o bairro, ou o CEP. */
+        CondicoesDoPedidoRequest: {
+            /**
+             * @description A modalidade do pedido.
+             * @enum {string}
+             */
+            modalidade: "ENTREGA" | "RETIRADA";
+            /**
+             * @description O bairro, como o cliente escolheu. Na entrega, ele manda.
+             * @example Boa Viagem
+             */
+            bairro?: string;
+            /**
+             * @description O CEP, usado quando não há bairro.
+             * @example 51020-000
+             */
+            cep?: string;
+        };
+        /** @description O que a T01 congela, vindo do merchant. Campo que não se aplica não sai. */
+        CondicoesDoPedidoResponse: {
+            /** Format: uuid */
+            estabelecimentoId?: string;
+            /** @enum {string} */
+            modalidade?: "ENTREGA" | "RETIRADA";
+            /** @description A loja aceita esta modalidade. Falso: nenhum outro campo sai. */
+            aceita?: boolean;
+            metodos?: ("DINHEIRO" | "CARTAO" | "PIX")[];
+            /** @description O pedido mínimo da modalidade, sobre os itens. Zero é sem mínimo (M17). */
+            pedidoMinimo?: number;
+            /** @description Só na retirada (I12). */
+            descontoDeRetirada?: number;
+            politicaDeTroco?: components["schemas"]["PoliticaDeTrocoResponse"];
+            /** @description Só na entrega: o endereço está numa área ativa. */
+            atendida?: boolean;
+            /** @description Só na entrega atendida: o nome da área. */
+            area?: string;
+            /** @description Só na entrega atendida. Zero é entrega grátis; na não atendida, não sai (M11). */
+            taxaDeEntrega?: number;
+            /** @description Só na entrega não atendida: os nomes das áreas ativas (ADR-020). */
+            bairrosAtendidos?: string[];
+        };
+        PoliticaDeTrocoResponse: {
+            fundoMaximoDeTroco?: number;
+            aceitaPedidoSemTrocoDisponivel?: boolean;
+        };
         /** @description O convite: o telefone de quem vai entrar e as permissões oferecidas. */
         ConviteRequest: {
             /**
@@ -402,6 +487,21 @@ export interface components {
             /** @enum {string} */
             papel?: "ADMINISTRADOR" | "COLABORADOR";
             permissoes?: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA")[];
+        };
+        /** @description Se a loja está aberta agora, e como ela opera. */
+        OperacaoAtualResponse: {
+            /**
+             * Format: uuid
+             * @description A loja sobre a qual esta resposta fala.
+             */
+            estabelecimentoId?: string;
+            /** @description Aberta agora: horário de funcionamento e pausa, compostos no merchant. */
+            aberto?: boolean;
+            /**
+             * @description O tipo de operação da loja.
+             * @enum {string}
+             */
+            tipoDeOperacao?: "PRODUCAO" | "SEPARACAO" | "MISTA";
         };
         ContextoDeAcesso: {
             /** Format: uuid */
@@ -824,6 +924,53 @@ export interface operations {
             };
         };
     };
+    condicoesDoPedido: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CondicoesDoPedidoRequest"];
+            };
+        };
+        responses: {
+            /** @description As condições da modalidade, e a área quando for entrega */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CondicoesDoPedidoResponse"];
+                };
+            };
+            /** @description Identificador malformado, corpo inválido, entrega sem bairro e sem CEP, ou CEP inválido */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo ativo com a loja, ou loja inexistente — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     convidar: {
         parameters: {
             query?: never;
@@ -972,6 +1119,49 @@ export interface operations {
             };
             /** @description Quem convidou não pode mais conceder o que ofereceu (A2), ou quem aceita já é da equipe */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    operacao: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Se a loja está aberta agora, e o tipo de operação */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OperacaoAtualResponse"];
+                };
+            };
+            /** @description Identificador da loja malformado */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo ativo com a loja, ou loja inexistente — a mesma recusa */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -162,6 +162,11 @@ class ConsultarProdutoServiceTest {
         }
 
         @Override
+        public List<Produto> buscarPorIds(java.util.Collection<UUID> ids) {
+            throw new UnsupportedOperationException("este caso de uso não cota");
+        }
+
+        @Override
         public Optional<Produto> buscarPorId(UUID id) {
             buscas++;
             return Optional.ofNullable(porId.get(id));

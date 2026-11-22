@@ -68,6 +68,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internal/merchants/{estabelecimentoId}/catalog/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cota os itens de um pedido: valida a seleção e precifica
+         * @description Exige vínculo ativo, e nenhuma permissão específica (ADR-088). Sem cache: cada chamada lê os produtos do banco.
+         */
+        post: operations["cotar"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/merchants/{estabelecimentoId}/catalog/produtos": {
         parameters: {
             query?: never;
@@ -244,6 +264,42 @@ export interface components {
             vendavel?: boolean;
             /** @enum {string} */
             estadoDePublicacao?: "RASCUNHO" | "ATIVO" | "INATIVO";
+        };
+        CotacaoRequest: {
+            itens: components["schemas"]["Item"][];
+        };
+        Item: {
+            /** Format: uuid */
+            produtoId: string;
+            /** Format: int32 */
+            quantidade?: number;
+            opcoes?: string[];
+        };
+        CotacaoResponse: {
+            linhas?: components["schemas"]["Linha"][];
+            subtotalDosItens?: number;
+            /** Format: date-time */
+            cotadoEm?: string;
+        };
+        Linha: {
+            /** Format: uuid */
+            produtoId?: string;
+            nomeDoProduto?: string;
+            precoBase?: number;
+            opcoes?: components["schemas"]["Opcao"][];
+            precoUnitario?: number;
+            /** Format: int32 */
+            quantidade?: number;
+            subtotal?: number;
+            /** @enum {string} */
+            modoDeControle?: "SEM_CONTROLE" | "QUALITATIVO";
+        };
+        Opcao: {
+            /** Format: uuid */
+            opcaoId?: string;
+            nomeDoGrupo?: string;
+            nomeDaOpcao?: string;
+            acrescimo?: number;
         };
         /** @description Um produto novo. Nasce rascunho; vai ao cardápio pela publicação. */
         ProdutoRequest: {
@@ -607,6 +663,60 @@ export interface operations {
             };
             /** @description O merchant não respondeu sobre o expediente */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    cotar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                estabelecimentoId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CotacaoRequest"];
+            };
+        };
+        responses: {
+            /** @description Uma linha por item, com os nomes e os preços que a T01 congela */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CotacaoResponse"];
+                };
+            };
+            /** @description Corpo malformado, identificador malformado, opção que não é do produto, opção repetida, ou escolhas fora do mínimo ou do máximo de um grupo — o defeito de quem chama vence o 409 (ADR-088) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem token, ou token inválido */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Sem vínculo ativo com a loja, loja inexistente ou merchant indisponível — a mesma recusa */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Há itens que não estão à venda agora — produto fora do ar, não vendável, de outra loja ou inexistente, ou opção indisponível; a lista inteira vem na propriedade indisponiveis (ADR-088) */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

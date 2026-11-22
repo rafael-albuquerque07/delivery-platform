@@ -37,8 +37,9 @@ import java.util.List;
  * autenticado", e a recusa que M7 desenhou com cuidado viraria outra coisa.
  *
  * <p><b>Nenhuma linha para {@code /internal/**}</b>, e não por esquecimento:
- * este serviço não expõe rota interna nenhuma nesta rodada. Ele <i>consome</i> a
- * do {@code merchant}.
+ * a única rota interna deste serviço, a cotação (ADR-088), exige o token do
+ * portador como as outras e cai no {@code anyRequest().authenticated()}. E ele
+ * <i>consome</i> as do {@code merchant}.
  */
 @Configuration
 @EnableConfigurationProperties({JwtProperties.class, AutorizacaoProperties.class,

@@ -55,5 +55,9 @@ export function definirAreas(
   corpo: NovasAreasDeEntrega,
   token: string,
 ): Promise<AreasDeEntrega> {
-  return chamar<AreasDeEntrega>(caminhoDasAreas(estabelecimentoId), { metodo: 'PUT', corpo, token });
+  return chamar<AreasDeEntrega>(caminhoDasAreas(estabelecimentoId), {
+    metodo: 'PUT',
+    corpo,
+    token,
+  });
 }

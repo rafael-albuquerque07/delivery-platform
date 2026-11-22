@@ -147,10 +147,13 @@ describe('ConfiguracaoDaLoja · A, a leitura', () => {
 
 describe('ConfiguracaoDaLoja · B, a escrita', () => {
   it('4 · grava o mínimo das duas modalidades, e mostra o que voltou', async () => {
-    servidor({}, {
-      'pedido-minimo': () =>
-        Promise.resolve({ pedidoMinimoPorModalidade: { ENTREGA: 25.5, RETIRADA: 0 } }),
-    });
+    servidor(
+      {},
+      {
+        'pedido-minimo': () =>
+          Promise.resolve({ pedidoMinimoPorModalidade: { ENTREGA: 25.5, RETIRADA: 0 } }),
+      },
+    );
     montar();
     await screen.findByLabelText('Pedido mínimo na entrega');
 

@@ -8,6 +8,10 @@
   "security" : [ {
     "bearerAuth" : [ ]
   } ],
+  "tags" : [ {
+    "name" : "interno",
+    "description" : "Consumido por outro serviço, com o token de quem pediu encaminhado. Não roteado pelo gateway — ADR-045."
+  } ],
   "paths" : {
     "/api/v1/merchants/{estabelecimentoId}/catalog/produtos/{produtoId}/publicacao" : {
       "put" : {
@@ -250,6 +254,57 @@
           },
           "503" : {
             "description" : "O merchant não respondeu sobre o expediente"
+          }
+        }
+      }
+    },
+    "/internal/merchants/{estabelecimentoId}/catalog/quote" : {
+      "post" : {
+        "tags" : [ "interno" ],
+        "summary" : "Cota os itens de um pedido: valida a seleção e precifica",
+        "description" : "Exige vínculo ativo, e nenhuma permissão específica (ADR-088). Sem cache: cada chamada lê os produtos do banco.",
+        "operationId" : "cotar",
+        "parameters" : [ {
+          "name" : "estabelecimentoId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CotacaoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Uma linha por item, com os nomes e os preços que a T01 congela",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CotacaoResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Corpo malformado, identificador malformado, opção que não é do produto, opção repetida, ou escolhas fora do mínimo ou do máximo de um grupo — o defeito de quem chama vence o 409 (ADR-088)"
+          },
+          "401" : {
+            "description" : "Sem token, ou token inválido"
+          },
+          "403" : {
+            "description" : "Sem vínculo ativo com a loja, loja inexistente ou merchant indisponível — a mesma recusa"
+          },
+          "409" : {
+            "description" : "Há itens que não estão à venda agora — produto fora do ar, não vendável, de outra loja ou inexistente, ou opção indisponível; a lista inteira vem na propriedade indisponiveis (ADR-088)"
           }
         }
       }
@@ -778,6 +833,112 @@
           "estadoDePublicacao" : {
             "type" : "string",
             "enum" : [ "RASCUNHO", "ATIVO", "INATIVO" ]
+          }
+        }
+      },
+      "CotacaoRequest" : {
+        "type" : "object",
+        "properties" : {
+          "itens" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Item"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "itens" ]
+      },
+      "Item" : {
+        "type" : "object",
+        "properties" : {
+          "produtoId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "quantidade" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 1
+          },
+          "opcoes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "uuid"
+            }
+          }
+        },
+        "required" : [ "produtoId" ]
+      },
+      "CotacaoResponse" : {
+        "type" : "object",
+        "properties" : {
+          "linhas" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Linha"
+            }
+          },
+          "subtotalDosItens" : {
+            "type" : "number"
+          },
+          "cotadoEm" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "Linha" : {
+        "type" : "object",
+        "properties" : {
+          "produtoId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "nomeDoProduto" : {
+            "type" : "string"
+          },
+          "precoBase" : {
+            "type" : "number"
+          },
+          "opcoes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Opcao"
+            }
+          },
+          "precoUnitario" : {
+            "type" : "number"
+          },
+          "quantidade" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "subtotal" : {
+            "type" : "number"
+          },
+          "modoDeControle" : {
+            "type" : "string",
+            "enum" : [ "SEM_CONTROLE", "QUALITATIVO" ]
+          }
+        }
+      },
+      "Opcao" : {
+        "type" : "object",
+        "properties" : {
+          "opcaoId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "nomeDoGrupo" : {
+            "type" : "string"
+          },
+          "nomeDaOpcao" : {
+            "type" : "string"
+          },
+          "acrescimo" : {
+            "type" : "number"
           }
         }
       },

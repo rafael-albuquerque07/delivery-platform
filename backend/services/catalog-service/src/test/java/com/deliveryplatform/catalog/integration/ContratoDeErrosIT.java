@@ -94,6 +94,7 @@ class ContratoDeErrosIT extends Infraestrutura {
     private static final String CRIAR_GRUPO = BASE + "/{produtoId}/grupos";
     private static final String CRIAR_OPCAO = BASE + "/{produtoId}/grupos/{grupoId}/opcoes";
     private static final String CATEGORIAS = "/api/v1/merchants/{estabelecimentoId}/catalog/categorias";
+    private static final String COTAR = "/internal/merchants/{estabelecimentoId}/catalog/quote";
 
     /**
      * O que o contrato declara e nenhum caso provoca, cada item com o motivo.
@@ -414,6 +415,29 @@ class ContratoDeErrosIT extends Infraestrutura {
                         () -> {
                             Cena c = cena("CRIAR_PRODUTO");
                             return listarCategorias(c.loja().toString(), c.token());
+                        }),
+
+                new Provocacao("POST", COTAR, 400, "lista de itens vazia — a forma do DTO",
+                        () -> {
+                            Cena c = cena();
+                            return cotar(c.loja().toString(), c.token(), "{\"itens\":[]}");
+                        }),
+                new Provocacao("POST", COTAR, 401, "sem token",
+                        () -> cotar(UUID.randomUUID().toString(), null, umItem(UUID.randomUUID()))),
+                new Provocacao("POST", COTAR, 403, "o merchant nega o vínculo",
+                        () -> {
+                            UUID loja = UUID.randomUUID();
+                            String token = IDENTITY.tokenDe(UUID.randomUUID());
+                            MERCHANT.nega();
+                            return cotar(loja.toString(), token, umItem(UUID.randomUUID()));
+                        }),
+                new Provocacao("POST", COTAR, 409, "produto em rascunho — ADR-088",
+                        () -> {
+                            Cena c = cena();
+                            Produto rascunho = produtos.salvar(Produto.rascunho(c.loja(),
+                                    ProdutoDeTeste.CATEGORIA, "Pizza em teste", Precos.reais("39.90"),
+                                    ModoDeControle.QUALITATIVO, 1));
+                            return cotar(c.loja().toString(), c.token(), umItem(rascunho.getId()));
                         }));
     }
 
@@ -603,6 +627,14 @@ class ContratoDeErrosIT extends Infraestrutura {
             requisicao = requisicao.header("Authorization", "Bearer " + token);
         }
         return requisicao.exchange().returnResult(String.class).getStatus().value();
+    }
+
+    private int cotar(String loja, String token, String corpo) {
+        return criarCategoriaOuProduto("/internal/merchants/" + loja + "/catalog/quote", token, corpo);
+    }
+
+    private static String umItem(UUID produtoId) {
+        return "{\"itens\":[{\"produtoId\":\"" + produtoId + "\",\"quantidade\":1,\"opcoes\":[]}]}";
     }
 
     private int marcarProduto(Cena c, UUID produtoId, String estado) {

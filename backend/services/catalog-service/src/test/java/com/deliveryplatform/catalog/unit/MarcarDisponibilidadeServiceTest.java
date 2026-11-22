@@ -158,6 +158,11 @@ class MarcarDisponibilidadeServiceTest {
                     }
 
                     @Override
+                    public List<Produto> buscarPorIds(java.util.Collection<UUID> ids) {
+                        throw new UnsupportedOperationException("este caso de uso não cota");
+                    }
+
+                    @Override
                     public Optional<Produto> buscarPorId(UUID id) {
                         return Optional.of(produto);
                     }
@@ -318,6 +323,11 @@ class MarcarDisponibilidadeServiceTest {
             @Override
             public Produto salvar(Produto p) {
                 return p;
+            }
+
+            @Override
+            public List<Produto> buscarPorIds(java.util.Collection<UUID> ids) {
+                throw new UnsupportedOperationException("este caso de uso não cota");
             }
 
             @Override
