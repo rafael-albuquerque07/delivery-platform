@@ -3,6 +3,10 @@
   "info" : {
     "title" : "merchant-service",
     "description" : "Estabelecimento, equipe e áreas de entrega. Toda rota exige token emitido pelo identity-service, e a autorização é resolvida pelo vínculo do usuário com a loja da URL.",
+    "license" : {
+      "name" : "MIT",
+      "url" : "https://opensource.org/licenses/MIT"
+    },
     "version" : "v1"
   },
   "security" : [ {

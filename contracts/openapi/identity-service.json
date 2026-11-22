@@ -3,12 +3,17 @@
   "info" : {
     "title" : "identity-service",
     "description" : "Conta de acesso ao painel: cadastro com verificação por telefone, login e a chave pública com que os demais serviços validam o token.",
+    "license" : {
+      "name" : "MIT",
+      "url" : "https://opensource.org/licenses/MIT"
+    },
     "version" : "v1"
   },
   "paths" : {
     "/api/v1/auth/verification-code" : {
       "post" : {
         "tags" : [ "cadastro-controller" ],
+        "summary" : "Envia o código de verificação para o telefone do cadastro",
         "operationId" : "solicitarCodigo",
         "requestBody" : {
           "content" : {
@@ -24,12 +29,14 @@
           "202" : {
             "description" : "Accepted"
           }
-        }
+        },
+        "security" : [ ]
       }
     },
     "/api/v1/auth/signup" : {
       "post" : {
         "tags" : [ "cadastro-controller" ],
+        "summary" : "Cria a conta, com o código de verificação",
         "operationId" : "cadastrar",
         "requestBody" : {
           "content" : {
@@ -52,12 +59,14 @@
               }
             }
           }
-        }
+        },
+        "security" : [ ]
       }
     },
     "/api/v1/auth/login" : {
       "post" : {
         "tags" : [ "autenticacao-controller" ],
+        "summary" : "Entra no painel com telefone e senha, e recebe o token",
         "operationId" : "login",
         "requestBody" : {
           "content" : {
@@ -80,12 +89,14 @@
               }
             }
           }
-        }
+        },
+        "security" : [ ]
       }
     },
     "/.well-known/jwks.json" : {
       "get" : {
         "tags" : [ "jwks-controller" ],
+        "summary" : "A chave pública com que os serviços validam o token",
         "operationId" : "jwks",
         "responses" : {
           "200" : {
@@ -99,7 +110,8 @@
               }
             }
           }
-        }
+        },
+        "security" : [ ]
       }
     }
   },

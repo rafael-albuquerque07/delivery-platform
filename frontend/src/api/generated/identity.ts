@@ -13,6 +13,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** Envia o código de verificação para o telefone do cadastro */
         post: operations["solicitarCodigo"];
         delete?: never;
         options?: never;
@@ -29,6 +30,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** Cria a conta, com o código de verificação */
         post: operations["cadastrar"];
         delete?: never;
         options?: never;
@@ -45,6 +47,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** Entra no painel com telefone e senha, e recebe o token */
         post: operations["login"];
         delete?: never;
         options?: never;
@@ -59,6 +62,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** A chave pública com que os serviços validam o token */
         get: operations["jwks"];
         put?: never;
         post?: never;

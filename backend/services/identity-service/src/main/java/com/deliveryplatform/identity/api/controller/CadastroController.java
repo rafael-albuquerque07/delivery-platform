@@ -14,6 +14,8 @@ import com.deliveryplatform.identity.api.dto.VerificationCodeRequest;
 import com.deliveryplatform.identity.application.port.in.CadastrarUsuario;
 import com.deliveryplatform.identity.application.port.in.SolicitarCodigoDeVerificacao;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 
 /**
@@ -31,6 +33,9 @@ import jakarta.validation.Valid;
  * do domínio do usuário — o {@code Usuario} enquanto pessoa mora em
  * {@code /api/v1/me}, que o gateway também já roteia.
  */
+// Pública de propósito: sem token (o javadoc do OpenApiConfig). O `security: []`
+// vazio diz isso no contrato, e o redocly do workflow `contracts` confere (V-1).
+@SecurityRequirements
 @RestController
 @RequestMapping("/api/v1/auth")
 public class CadastroController {
@@ -54,12 +59,14 @@ public class CadastroController {
      * ser verdade no dia em que houver adaptador de canal: aí vira 202 por
      * assincronia de verdade.
      */
+    @Operation(summary = "Envia o código de verificação para o telefone do cadastro")
     @PostMapping(path = "/verification-code", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void solicitarCodigo(@Valid @RequestBody VerificationCodeRequest requisicao) {
         codigos.solicitar(requisicao.telefone());
     }
 
+    @Operation(summary = "Cria a conta, com o código de verificação")
     @PostMapping(path = "/signup", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public SignupResponse cadastrar(@Valid @RequestBody SignupRequest requisicao) {

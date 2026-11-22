@@ -2,6 +2,7 @@ package com.deliveryplatform.identity.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,6 +33,7 @@ public class OpenApiConfig {
         return new OpenAPI().info(new Info()
                 .title("identity-service")
                 .version("v1")
+                .license(new License().name("MIT").url("https://opensource.org/licenses/MIT"))
                 .description("""
                         Conta de acesso ao painel: cadastro com verificação por \
                         telefone, login e a chave pública com que os demais \

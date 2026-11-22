@@ -16,12 +16,14 @@ on:
       - 'contracts/**'
       - 'package.json'
       - 'package-lock.json'
+      - 'redocly.yaml'
       - '.github/workflows/contracts.yml'
   pull_request:
     paths:
       - 'contracts/**'
       - 'package.json'
       - 'package-lock.json'
+      - 'redocly.yaml'
       - '.github/workflows/contracts.yml'
 
 permissions:

@@ -14,6 +14,9 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+
 /**
  * Publica a chave pública. Rota pública por decisão da ADR-037 §1: os outros
  * oito serviços precisam dela para validar token, e um JWKS protegido por token
@@ -30,6 +33,9 @@ import com.nimbusds.jose.proc.SecurityContext;
  * confiar num padrão para não vazar chave privada é apostar que ninguém troca o
  * padrão.
  */
+// Pública de propósito: sem token (o javadoc do OpenApiConfig). O `security: []`
+// vazio diz isso no contrato, e o redocly do workflow `contracts` confere (V-1).
+@SecurityRequirements
 @RestController
 public class JwksController {
 
@@ -39,6 +45,7 @@ public class JwksController {
         this.fonte = fonte;
     }
 
+    @Operation(summary = "A chave pública com que os serviços validam o token")
     @GetMapping(path = "/.well-known/jwks.json", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> jwks() throws Exception {
         List<JWK> publicas = fonte

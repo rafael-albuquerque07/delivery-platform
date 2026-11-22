@@ -3,6 +3,7 @@ package com.deliveryplatform.merchant.config;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +36,7 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("merchant-service")
                         .version("v1")
+                        .license(new License().name("MIT").url("https://opensource.org/licenses/MIT"))
                         .description("""
                                 Estabelecimento, equipe e áreas de entrega. Toda rota exige \
                                 token emitido pelo identity-service, e a autorização é \

@@ -1,0 +1,16 @@
+# O validador do workflow `contracts` (ADR-039, emenda da V-1).
+#
+# As regras são as do `recommended` do redocly. Cada exceção abaixo tem o motivo
+# escrito; uma exceção nova entra com o dela, ou não entra.
+extends:
+  - recommended
+
+rules:
+  # O endereço de cada serviço é do gateway e do ambiente (ADR-012): o contrato
+  # descreve rotas, não um host. Sem `servers`, de propósito.
+  no-empty-servers: off
+
+  # O identity é anterior à ADR-053 e não declara as recusas das quatro rotas
+  # públicas — e o JWKS não tem recusa nenhuma a declarar. Fica como aviso, e a
+  # dívida está no `docs/dividas.md`, em "Dívidas sem gatilho escrito".
+  operation-4xx-response: warn

@@ -8,11 +8,12 @@
   },
   "scripts": {
     "contracts:openapi": "redocly lint contracts/openapi/*.json",
-    "contracts:events": "ajv compile -s \"contracts/events/*.json\" --spec=draft2020 --strict=true",
+    "contracts:events": "ajv compile -s \"contracts/events/*.json\" --spec=draft2020 --strict=true -c ajv-formats",
     "contracts": "npm run contracts:openapi && npm run contracts:events"
   },
   "devDependencies": {
     "@redocly/cli": "^2.46.2",
-    "ajv-cli": "^5.0.0"
+    "ajv-cli": "^5.0.0",
+    "ajv-formats": "^3.0.1"
   }
 }

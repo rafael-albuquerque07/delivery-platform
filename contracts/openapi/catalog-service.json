@@ -3,6 +3,10 @@
   "info" : {
     "title" : "catalog-service",
     "description" : "Produto, opções e disponibilidade qualitativa. Toda rota exige token emitido pelo identity-service, e a autorização é resolvida no merchant-service com o token de quem pediu, encaminhado (ADR-045).",
+    "license" : {
+      "name" : "MIT",
+      "url" : "https://opensource.org/licenses/MIT"
+    },
     "version" : "v1"
   },
   "security" : [ {
