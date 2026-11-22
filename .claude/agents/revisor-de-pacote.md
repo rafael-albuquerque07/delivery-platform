@@ -77,3 +77,6 @@ Uma lista, um achado por item:
 Depois da lista, uma linha por item da conferência **em que não achou nada**, para se ver que ele
 foi olhado. **Não invente achado para parecer útil**, e não aprove por educação: se não conseguiu
 conferir algo, diga *"não conferido"* e por quê.
+
+**A última linha: quantos arquivos você abriu, além do pacote.** Abra o que o pacote cita e o dono
+de cada regra que você confere — não o repositório inteiro.

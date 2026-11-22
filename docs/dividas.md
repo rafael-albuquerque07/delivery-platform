@@ -24,6 +24,11 @@ grep -rn -i "nesta altura\|por enquanto\|ainda não existe\|quando houver\|até 
   | grep -v "/build/"
 ```
 
+**As três contas de uma vez:** `node scripts/razao.mjs`, da raiz — o recorte estreito, a segunda
+passada e as linhas numeradas da tabela, e quantas linhas do recorte estão em arquivo que o git não
+conhece. **Os dois comandos acima são a especificação dele:** os números têm de bater, e, se
+divergirem, o defeito é do script (ADR-072, emenda de 22/11/2026).
+
 **O `--exclude=dividas.md` não é detalhe.** Sem ele a varredura conta **este arquivo**: o
 cabeçalho que a descreve e as linhas que copiam as fórmulas viram ocorrências, e o número
 cresce quando o razão cresce. Medido na W-F — uma das ocorrências novas era a frase escrita

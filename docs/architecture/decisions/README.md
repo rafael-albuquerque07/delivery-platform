@@ -72,7 +72,7 @@
 | 069 | O convite chega pela mão de quem convida, e o token se lê uma vez | ✅ aceita |
 | 070 | A tela do convite, e o segredo que já está no navegador de quem o recebeu | ✅ aceita · **emendada** (19/10/2026: uma ação, e ela é aceitar — ADR-076) |
 | 071 | A lista tem um dono, e a cópia não é lista | ✅ aceita · **emendada** (16/10/2026: o terceiro item do gatilho não era gatilho; 16/10/2026 (2): os dois itens restantes são regra, e saem do razão) |
-| 072 | A seção que o comando colhe, e o item que não era gatilho | ✅ aceita · **emendada** (16/10/2026: "condição nossa" tem duas espécies) |
+| 072 | A seção que o comando colhe, e o item que não era gatilho | ✅ aceita · **emendada** (16/10/2026: "condição nossa" tem duas espécies) · **emendada** (22/11/2026: as contas têm um script) |
 | 073 | O horário ganha rota, sob uma permissão que não existia | ✅ aceita · **emendada** (17/10/2026: a irmã de leitura) |
 | 074 | A tela do horário, e a tela que não valida o que o domínio decide | ✅ aceita · **emendada** (19/10/2026: marcar o que acabou não espera a varredura) |
 | 075 | O pedido nasce no canal, e o 7a vem antes do marco 3 | ✅ aceita · **emendada** (17/11/2026: a primeira porta passa a ser o painel — ADR-083) |
@@ -84,7 +84,7 @@
 | 081 | A última escrita do merchant, e a lista que o semeador sustentava | ✅ aceita |
 | 082 | A segunda tela da CONFIGURAR_LOJA, e o zero que não é ausência | ✅ aceita |
 | 083 | A primeira porta do pedido é o painel, e o canal vem logo depois | ✅ aceita |
-| 084 | O método vira skill obrigatória do repositório | ✅ aceita |
+| 084 | O método vira skill obrigatória do repositório | ✅ aceita · **emendada** (17/11/2026: o critério aponta para o teste) · **emendada** (18/11/2026: o revisor de pacote) · **emendada** (18/11/2026: o subagente é do repositório) · **emendada** (22/11/2026: o revisor de diff) |
 | 085 | As ideias de plataforma esperam pelo gatilho | ✅ aceita |
 | 086 | O marco 3 em fatias | ✅ aceita · **emendada** (18/11/2026: a fatia 1 são duas consultas — ADR-087) · **emendada** (22/11/2026: a fatia 2 decidida — ADR-088) |
 | 087 | A operação da loja e as condições do pedido, em duas consultas | ✅ aceita |

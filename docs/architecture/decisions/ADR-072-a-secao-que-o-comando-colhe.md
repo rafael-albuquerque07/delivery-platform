@@ -1,6 +1,6 @@
 # ADR-072 — A seção que o comando colhe, e o item que não era gatilho
 
-- **Status:** aceita · **emendada em 16/10/2026**: "condição nossa" tem duas espécies, e uma delas não é dívida
+- **Status:** aceita · **emendada em 16/10/2026**: "condição nossa" tem duas espécies, e uma delas não é dívida · **emendada em 22/11/2026**: as contas têm um script (S-6)
 - **Data:** 16/10/2026
 - **Rodada:** R-4
 - **Relacionada:** ADR-071 (a lista tem um dono), `docs/dividas.md` e o recorte estreito dele,
@@ -150,3 +150,13 @@ O que esta emenda acrescenta é **para onde vai o que não é**: a pergunta, no 
 instrução, no README das decisões. *Nenhuma das duas no razão.*
 
 **Gatilho escrito: nenhum.**
+
+## Emenda de 22/11/2026, S-6 — as contas têm um script
+
+As três contas do razão — o recorte estreito, a segunda passada e as linhas numeradas — passam a
+sair também de `scripts/razao.mjs`, versionado. Antes, a contagem das linhas numeradas rodava num
+arquivo fora do repositório, na pasta temporária de quem aplicava. **Os dois comandos do cabeçalho
+do `docs/dividas.md` continuam sendo a especificação**; o script os reproduz, e divergência entre
+os dois é defeito do script. O script também diz quantas linhas do recorte estão em arquivo que o
+git não conhece — as cópias de `frontend/.tsbuild/`, que a conciliação já desconta. O corpo fica
+como está.

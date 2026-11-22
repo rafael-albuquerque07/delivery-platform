@@ -1,6 +1,6 @@
 # ADR-084 — O método vira skill obrigatória do repositório
 
-- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4) · **emendada em 18/11/2026**: o subagente é do repositório (S-5)
+- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4) · **emendada em 18/11/2026**: o subagente é do repositório (S-5) · **emendada em 22/11/2026**: o revisor de diff (S-6)
 - **Data:** 17/11/2026
 - **Rodada:** S-1
 - **Relacionada:** ADR-072 (a seção que o comando colhe, e a segunda passada do `docs/dividas.md`),
@@ -77,3 +77,12 @@ quem clona o repositório ganha a conferência do passo 3. Decisão do Rafael. O
 `.gitignore` passam a dizer o mesmo. O `escrever-rodada.md` ganha a regra 15 — a decisão que
 muda o que vale procura as frases que diziam o contrário — e a 16, a mutação desfeita pela cópia;
 a regra 11 passa a cobrir o dono de arquivo. O corpo fica como está.
+
+## Emenda de 22/11/2026, S-6 — o revisor de diff
+
+O `revisor-de-pacote` lê o plano antes do primeiro comando; o **`revisor-de-diff`**, em
+`.claude/agents/`, lê o que foi feito, antes do commit de toda rodada que muda código (o passo 11
+do `aplicar-rodada.md`). Só lê, como o primeiro. Nasceu de um defeito que nenhum dos dois
+revisores pegaria: a M3-1 mudou o contrato do `merchant` e não regravou os tipos do front. E o
+`revisor-de-pacote` passa a dizer quantos arquivos abriu, para o custo de cada revisão ser medido.
+O corpo fica como está.
