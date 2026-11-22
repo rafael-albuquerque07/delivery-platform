@@ -1,6 +1,6 @@
 # ADR-084 — O método vira skill obrigatória do repositório
 
-- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4) · **emendada em 18/11/2026**: o subagente é do repositório (S-5) · **emendada em 22/11/2026**: o revisor de diff (S-6)
+- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4) · **emendada em 18/11/2026**: o subagente é do repositório (S-5) · **emendada em 22/11/2026**: o revisor de diff (S-6) · **emendada em 22/11/2026**: o pacote aplicado fica no repositório (S-7)
 - **Data:** 17/11/2026
 - **Rodada:** S-1
 - **Relacionada:** ADR-072 (a seção que o comando colhe, e a segunda passada do `docs/dividas.md`),
@@ -86,3 +86,12 @@ do `aplicar-rodada.md`). Só lê, como o primeiro. Nasceu de um defeito que nenh
 revisores pegaria: a M3-1 mudou o contrato do `merchant` e não regravou os tipos do front. E o
 `revisor-de-pacote` passa a dizer quantos arquivos abriu, para o custo de cada revisão ser medido.
 O corpo fica como está.
+
+## Emenda de 22/11/2026, S-7 — o pacote aplicado fica no repositório
+
+Até a S-6, o pacote aplicado ia para `_to_delete/`, que o git ignora: o porquê de cada rodada
+ficava nos commits, nas ADRs e no razão, e o pacote — as previsões, as medições, as perguntas —
+sumia. **Decisão do Rafael:** cada pacote aplicado fica em `docs/rodadas/<RODADA>/`, no commit da
+rodada, com um `RELATORIO.md` resumido (o passo 12 do `aplicar-rodada.md`; a forma no
+`docs/rodadas/README.md`). Nenhum framework de SDD entrou: a ideia veio do registro de mudanças
+do OpenSpec, sem a ferramenta, porque ela duplicaria o PRD e as ADRs. O corpo fica como está.

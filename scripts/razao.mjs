@@ -7,6 +7,8 @@
 // segunda passada — e a contagem das linhas numeradas da tabela. Este script os reproduz, e os
 // números dele têm de bater com os do grep. Se divergirem, o defeito é deste arquivo.
 //
+// A pasta docs/rodadas/ fica fora das duas contas, como o --exclude-dir=rodadas dos comandos (S-7).
+//
 // Só lê. Não escreve nada e não chama a rede. Usa o git só para dizer quais arquivos o git não
 // conhece — sem git no caminho, essa parte sai como "não medido".
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -23,7 +25,7 @@ function arquivos(raiz, extensoes) {
     const caminho = join(raiz, nome);
     const p = barra(caminho);
     if (p.includes('/build/') || p.includes('/node_modules/') || p.endsWith('/build')
-        || p.endsWith('/node_modules')) continue;
+        || p.endsWith('/node_modules') || p.endsWith('/rodadas') || p.includes('/rodadas/')) continue;
     let st;
     try { st = statSync(caminho); } catch { continue; }
     if (st.isDirectory()) achados.push(...arquivos(caminho, extensoes));

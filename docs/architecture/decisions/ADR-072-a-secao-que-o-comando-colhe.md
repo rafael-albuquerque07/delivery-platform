@@ -1,6 +1,6 @@
 # ADR-072 — A seção que o comando colhe, e o item que não era gatilho
 
-- **Status:** aceita · **emendada em 16/10/2026**: "condição nossa" tem duas espécies, e uma delas não é dívida · **emendada em 22/11/2026**: as contas têm um script (S-6)
+- **Status:** aceita · **emendada em 16/10/2026**: "condição nossa" tem duas espécies, e uma delas não é dívida · **emendada em 22/11/2026**: as contas têm um script (S-6) · **emendada em 22/11/2026**: a pasta das rodadas fica fora das contas (S-7)
 - **Data:** 16/10/2026
 - **Rodada:** R-4
 - **Relacionada:** ADR-071 (a lista tem um dono), `docs/dividas.md` e o recorte estreito dele,
@@ -160,3 +160,11 @@ do `docs/dividas.md` continuam sendo a especificação**; o script os reproduz, 
 os dois é defeito do script. O script também diz quantas linhas do recorte estão em arquivo que o
 git não conhece — as cópias de `frontend/.tsbuild/`, que a conciliação já desconta. O corpo fica
 como está.
+
+## Emenda de 22/11/2026, S-7 — a pasta das rodadas fica fora das contas
+
+Os pacotes aplicados passam a ficar em `docs/rodadas/` (ADR-084, emenda desta data), e eles citam
+os comandos do razão, as fórmulas dos gatilhos e as formas da segunda passada. Os três comandos do
+cabeçalho do `docs/dividas.md` ganham `--exclude-dir=rodadas`, e o `scripts/razao.mjs` o mesmo
+corte, pelo motivo que o `--exclude=dividas.md` já tinha: instrumento que conta a própria
+descrição não está medindo. O corpo fica como está.

@@ -102,8 +102,8 @@ application-local.properties
 .claude/settings.local.json
 .claude/*.local.json
 
-# Pacote de aplicação é transitório: extraído, aplicado, descartado.
-# Nunca deveria ser commitado — já aconteceu quatro vezes.
+# Pacote na raiz é de passagem: extraído e aplicado, nunca commitado dali — já
+# aconteceu quatro vezes. O pacote aplicado fica em docs/rodadas/ (S-7).
 /APLICAR-*.md
 # Para onde vai o pacote aplicado: o agente move, não apaga. Sem esta linha,
 # um `git add .` publica todos os pacotes de uma vez.

@@ -38,7 +38,13 @@ O Rafael extrai uma pasta na raiz do repositório e pede para aplicar o `.md` de
     `_to_delete/`, e passe esse arquivo e o pacote ao subagente **`revisor-de-diff`**. Achado que
     impede o commit vai para o Rafael; o resto, para o relatório. *Sem o subagente na sessão,
     confira você mesmo, item por item da lista dele, e diga que foi assim.*
-12. **A pasta do pacote vai para `_to_delete/`**, que o git ignora. Não se apaga.
+12. **O pacote aplicado fica em `docs/rodadas/<RODADA>/`, no commit da rodada** — o último, quando
+    são dois: a pasta do pacote como rodou, e um `RELATORIO.md` com o relatório resumido, na forma
+    do `docs/rodadas/README.md`. A contagem de arquivos que o pacote prevê para o commit não inclui
+    essa pasta. Depois, a pasta original vai para `_to_delete/`, que o git ignora. Não se apaga.
+    Rodada de medição não tem commit: a pasta dela entra em `docs/rodadas/` no commit da rodada que
+    vem logo depois. Versão que parou não se guarda: o `RELATORIO.md` da versão aplicada diz que ela
+    existiu, até onde foi e por que parou.
 
 ## O relatório
 

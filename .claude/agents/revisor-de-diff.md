@@ -21,7 +21,8 @@ ele muda, e você confere contra a versão de hoje.
 ## Como conferir
 
 1. **O que o pacote pediu, e só isso** (`aplicar-rodada.md`, passo 6). Cada arquivo do diff está
-   pedido no pacote? Cada peça que o pacote pede está no diff? Arquivo a mais ou a menos é achado.
+   pedido no pacote? Cada peça que o pacote pede está no diff? Arquivo a mais ou a menos é achado —
+   salvo `docs/rodadas/<RODADA>/`, que o passo 12 manda guardar.
 2. **O contrato e os tipos do front** (`frontend/package.json`, `tipos:conferir`; o workflow
    `frontend.yml`). Se o diff muda `contracts/openapi/*.json`, ele muda também
    `frontend/src/api/generated/` do mesmo serviço? Contrato sem tipos regravados deixa a pipeline

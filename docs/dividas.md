@@ -6,11 +6,11 @@ torna incompleto. Refaça-o com os comandos abaixo antes de confiar nele.
 
 ```bash
 # os candidatos — toda menção a gatilho, em documento e em código
-grep -rn -i "gatilho" docs/ contracts/ CLAUDE.md README.md frontend/README.md --include=*.md --exclude=dividas.md
+grep -rn -i "gatilho" docs/ contracts/ CLAUDE.md README.md frontend/README.md --include=*.md --exclude=dividas.md --exclude-dir=rodadas
 grep -rn -i "gatilho" backend/ frontend/src/ --include=*.java --include=*.ts --include=*.tsx | grep -v "/build/\|/node_modules/\|\.tsbuild"
 
 # o recorte estreito, que é o que a R-1 mandou contar
-grep -rn "Gatilho escrito\|gatilho escrito" docs/ contracts/ CLAUDE.md backend/ frontend/ --include=*.md --include=*.java --include=*.ts --include=*.tsx --exclude=dividas.md | grep -v "/build/\|/node_modules/" | wc -l
+grep -rn "Gatilho escrito\|gatilho escrito" docs/ contracts/ CLAUDE.md backend/ frontend/ --include=*.md --include=*.java --include=*.ts --include=*.tsx --exclude=dividas.md --exclude-dir=rodadas | grep -v "/build/\|/node_modules/" | wc -l
 ```
 
 **Segunda passada, pelas formas em prosa.** O comando acima só acha o que usa a fórmula.
@@ -20,7 +20,7 @@ nunca apareceu aqui:
 
 ```bash
 grep -rn -i "nesta altura\|por enquanto\|ainda não existe\|quando houver\|até que haja" \
-  docs/ backend/*/*/src/main --include=*.md --include=*.java --exclude=dividas.md \
+  docs/ backend/*/*/src/main --include=*.md --include=*.java --exclude=dividas.md --exclude-dir=rodadas \
   | grep -v "/build/"
 ```
 
@@ -33,6 +33,11 @@ divergirem, o defeito é do script (ADR-072, emenda de 22/11/2026).
 cabeçalho que a descreve e as linhas que copiam as fórmulas viram ocorrências, e o número
 cresce quando o razão cresce. Medido na W-F — uma das ocorrências novas era a frase escrita
 no cabeçalho na mesma rodada. **Instrumento que se mede a si mesmo não está medindo.**
+
+**E o `--exclude-dir=rodadas` também não** (S-7). Os pacotes guardados em `docs/rodadas/` citam
+estes comandos, as fórmulas dos gatilhos e as formas da segunda passada — é o trabalho deles.
+Contados, cada rodada guardada mudaria as duas contas sem escrever gatilho nenhum. O mesmo corte
+vale para os dois comandos do censo das colunas, mais abaixo.
 
 Medido na E-3b: **32 linhas**; na E-3c, **36** — que já envelheceu na própria rodada: a frase abaixo, escrita depois da medição, levou o número a **37**, e a E-3d mediu 37, com a mesma contagem por arquivo; na W-F, **38**, e a nova é a ADR-067:23 — *"a seção, por enquanto, não significa nada"* —, condição que a própria rodada desfez ao dar tela à seção — e que também envelheceu na própria rodada: a frase desta linha, ao citar *"por enquanto"*, virou ocorrência, e o número real da W-F é **39**; a E-2 mediu **39**, com a mesma contagem por arquivo — mais duas da ADR-063 (que cita a frase vencida), uma da ADR-066 e três deste próprio razão, que cita as fórmulas; menos a da `RegraDoCatalogoViolada`, cuja frase vencida saiu na E-3b. Nenhuma é sobre a publicação. **Até a W-G o comando não excluía este arquivo**, e os números acima o contam. Na R-2, sobre `e43d227`: **39** sem a exclusão, **32** com ela — sete eram este razão. Das 32, três já tinham linha (43, 44 e 63); vinte foram triadas, e **as vinte eram peça, nenhuma estado de dado**: seis venceram, onze não, três não dá para dizer. Doze delas viraram as linhas 79 a 86. **Nove ficaram por triar**, pelo teto de vinte: `estabelecimento.md`:441 e :467, `premissas-do-front.md`:140, `mensagem-na-fila-morta.md`:124, `reconciliacao-de-pagamento.md`:161, `recuperacao-de-acesso.md`:135, `ConfiguracaoDaEscuta.java`:23, `ExpedienteCorrenteResponse.java`:15 e `Equipe.java`:313. **Na R-3 as nove foram triadas**, e a segunda passada passou a **31**: saíram `catalogo.md`:279 e `estabelecimento.md`:441, frases falsas trocadas no lugar, e entrou a ADR-038:133, que cita na emenda a frase do corpo. O que a segunda passada
 achar entra na tabela **com a fórmula**, não com a paráfrase. Na M3-1, **29**: a ADR-087 deu código à porta da operação, e as duas frases que diziam o contrário — `estabelecimento.md`:298 e `ExpedienteCorrenteResponse.java`:15 — foram consertadas no lugar. Na M3-2, **28**: a cotação ganhou código (ADR-088), e a frase do `premissas-do-front.md`:140 que dizia o contrário foi consertada no lugar.
@@ -430,8 +435,8 @@ tela. **Isto é o censo que a aplica ao que já estava escrito**, feito em 18/10
 A população, em dois comandos:
 
 ```bash
-grep -rn -i "coluna" docs CLAUDE.md README.md frontend/src backend contracts --include=*.md --include=*.java --include=*.ts --include=*.tsx --exclude-dir=node_modules --exclude-dir=build --exclude=dividas.md
-grep -rn -i "marco [0-9]\+[^0-9].\{0,40\}\(cumprid\|conclu\|fechad\|✅\|pronto\)" docs CLAUDE.md README.md frontend/src frontend/README.md backend contracts --include=*.md --include=*.java --include=*.ts --include=*.tsx --exclude-dir=node_modules --exclude-dir=build --exclude=dividas.md
+grep -rn -i "coluna" docs CLAUDE.md README.md frontend/src backend contracts --include=*.md --include=*.java --include=*.ts --include=*.tsx --exclude-dir=node_modules --exclude-dir=build --exclude-dir=rodadas --exclude=dividas.md
+grep -rn -i "marco [0-9]\+[^0-9].\{0,40\}\(cumprid\|conclu\|fechad\|✅\|pronto\)" docs CLAUDE.md README.md frontend/src frontend/README.md backend contracts --include=*.md --include=*.java --include=*.ts --include=*.tsx --exclude-dir=node_modules --exclude-dir=build --exclude-dir=rodadas --exclude=dividas.md
 ```
 
 **89** linhas no primeiro e **11** no segundo. Lidas uma a uma, quase todas **negam** a promessa

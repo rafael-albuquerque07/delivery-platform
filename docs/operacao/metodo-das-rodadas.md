@@ -4,8 +4,8 @@
 
 ## Por que este arquivo existe
 
-**O método das rodadas morava nos pacotes**, e os pacotes vão para `_to_delete/` depois de
-aplicados. A regra da G-C1, a de colar antes de trocar, a de usar a data que o `date` imprime, a
+**O método das rodadas morava nos pacotes**, e os pacotes iam para `_to_delete/` depois de
+aplicados — desde a S-7, cada um fica em `docs/rodadas/`, com o relatório resumido. A regra da G-C1, a de colar antes de trocar, a de usar a data que o `date` imprime, a
 de dizer qual trecho se seguiu quando dois se contradizem: cada pacote as reescrevia à mão. Se
 quem escreve os pacotes parasse, o repositório não saberia como as rodadas funcionam.
 
