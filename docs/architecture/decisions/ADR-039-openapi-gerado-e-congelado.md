@@ -1,6 +1,6 @@
 # ADR-039 — O contrato OpenAPI é gerado do código e congelado no repositório
 
-**Status:** Aceita — 08/09/2026
+**Status:** Aceita — 08/09/2026 · **emendada em 22/11/2026**: o validador do CI tem configuração, e passa (V-1)
 **Relacionada:** ADR-012 (roteamento do gateway), ADR-016 (front mínimo),
 ADR-031 e ADR-032 (nome de evento antes do código), ADR-035 (idioma)
 **Emenda:** `contracts/README.md`
@@ -162,3 +162,12 @@ provocação.
 
 **O que continua valendo desta ADR:** a forma do documento é gerada, o arquivo é
 congelado no repositório, e mudança de contrato é mudança de rodada.
+
+## Emenda de 22/11/2026, V-1 — o validador do CI tem configuração, e passa
+
+O workflow `contracts` nasceu em 29/09/2026 para rodar as ferramentas que o `package.json`
+declarava sem nunca executar, e rodava o redocly sem configuração, com as regras padrão: **falhou
+nas 24 execuções que teve, de 29/09 a 22/11/2026 — nunca passou**. A V-1 mediu cada regra e decidiu, uma por
+uma: o contrato foi consertado onde estava incompleto — o resumo das quatro rotas do `identity`, a
+segurança pública declarada nelas, a licença nos três serviços —, e o `redocly.yaml` da raiz
+escreve as duas exceções, cada uma com o motivo. O corpo fica como está.

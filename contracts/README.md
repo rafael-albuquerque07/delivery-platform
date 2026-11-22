@@ -5,7 +5,8 @@ entre serviços — a única coisa que se compartilha é o **formato**.
 
 - `openapi/` — um arquivo por serviço, **gerado do código e congelado**: um teste
   compara o documento gerado com o arquivo commitado e falha se divergirem
-  (ADR-039)
+  (ADR-039); e o workflow `contracts` os valida pelo redocly, com as regras do
+  `redocly.yaml` da raiz, cada exceção com o motivo escrito (ADR-039, emenda de 22/11/2026)
 - `asyncapi/` — eventos de domínio publicados via RabbitMQ
 - `events/` — JSON Schema por evento, versionado
 

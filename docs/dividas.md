@@ -268,6 +268,7 @@ Achadas nas rodadas, sem condição que as reabra. **Sem gatilho, ninguém olha.
 | As modalidades não estão no contrato: o mapa `metodosPorModalidade` é declarado com chave `string`, e o formulário da W-E nomeia `ENTREGA` e `RETIRADA` numa constante — a única lista dele sem o contrato atrás. Uma divergência com o domínio vira 400 sem `detail` | medido na W-E |
 | A correção do Mongo no `conversation`, que nenhum teste exerce | `CLAUDE.md`, armadilha do MongoDB no Boot 4 |
 | O `EstadoDePublicacao` é máquina de estados e não tem tabela de transições, que o `CLAUDE.md` (Convenções de código) manda ter. O `pedido.md`:14 registra o mesmo descompasso no pedido | R-11; E-8 |
+| O `identity` não declara as recusas das quatro rotas públicas — é anterior à ADR-053, e não tem `ContratoDeErrosIT`. O redocly as acusa como aviso (`operation-4xx-response`), e o JWKS não tem recusa a declarar | V-1; `redocly.yaml` |
 
 ---
 
