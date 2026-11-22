@@ -136,8 +136,8 @@ por um link.
 No contrato HTTP, `precoBase` é `number`. Em JavaScript isso é ponto flutuante.
 
 **O front não calcula dinheiro.** Não soma, não multiplica por quantidade, não
-aplica desconto. Quem faz conta é o servidor. A cotação está desenhada na
-ADR-018 (`POST /internal/catalog/quote`), **ainda não existe em código**, e é
+aplica desconto. Quem faz conta é o servidor. A cotação é a da
+ADR-088 (`POST /internal/merchants/{estabelecimentoId}/catalog/quote`), e é
 interna — o front nunca a chamará; o total chegará a ele pronto, dentro do
 pedido. O front **exibe** e **formata**,
 com `Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })`.

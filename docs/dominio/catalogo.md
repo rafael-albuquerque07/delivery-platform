@@ -260,8 +260,8 @@ rascunho para publicá-lo — pelo mesmo motivo que a lista mostra o que não es
 **Até a E-3d a listagem filtrava `ATIVO`**, com a razão de ser *"a vitrine do cardápio"*. A
 razão não se sustentava: a rota exige `VER_PRODUTO`, a `PermissaoDoCatalogo` só tem
 permissões de comerciante, e **nenhum cliente a chama**. O cardápio de quem compra é do
-`conversation`, pela porta da ADR-018, que não existe em código — e quando existir, entra por
-ela. *Listar não é oferecer: a C10 é sobre cotação.*
+`conversation`, pela porta da ADR-018, cuja cotação ganhou código na M3-2 (ADR-088); a leitura do
+cardápio para o canal segue sem rota, e entra por essa porta. *Listar não é oferecer: a C10 é sobre cotação.*
 
 **O resumo carrega `estadoDePublicacao`**, e isso é necessário, não cosmético: com rascunho
 na lista, `vendavel: false` confunde *"nunca foi publicado"* com *"acabou tudo"*, e as duas
@@ -372,7 +372,8 @@ em que uma opção muda de estado.
 
 ## 5. Cotação — a operação que sustenta o preço
 
-Contrato e justificativa na ADR-018. O que este documento fixa é o
+Contrato e justificativa na ADR-018 e na ADR-088, que pôs a loja na URL —
+`POST /internal/merchants/{estabelecimentoId}/catalog/quote`. O que este documento fixa é o
 comportamento de domínio.
 
 ```
@@ -383,10 +384,12 @@ cotar(estabelecimentoId, [ { produtoId, quantidade, opcoesEscolhidas[] } ])
 |---|---|---|
 | Seleção viola `minEscolhas`/`maxEscolhas` | **400** | Erro do chamador: pedido malformado |
 | Opção não pertence ao produto | **400** | Idem |
+| A mesma opção duas vezes no mesmo item | **400** | O modelo não tem quantidade por opção (ADR-088) |
 | `quantidade < 1` | **400** | Idem |
 | Produto não `ATIVO`, ou não vendável | **409** | Estado do mundo mudou, não erro do chamador |
 | Opção escolhida indisponível | **409** | Idem |
 | Produto de outro estabelecimento | **409** | ADR-004 — um estabelecimento por pedido |
+| Produto inexistente | **409** | Igual ao de outra loja: as duas respondem o mesmo (M7, ADR-088) |
 
 A distinção 400/409 não é preciosismo. O `order-service` trata as duas de formas
 diferentes: 400 é defeito e vira alerta; 409 é `ITEM_UNAVAILABLE` e volta ao
@@ -509,8 +512,8 @@ acabou depois da abertura.
 > o ato — o consumidor do `ExpedienteAlteradoV1` — é da G-C. C12 é o sistema de
 > tipos (nota da §1). C13 é o `changeUnit` do Mongock, com o `MongockIT`
 > afirmando que os dois índices da §7 existem (G-B1, 27/09/2026). **Ainda só
-> texto:** C7, C8 e C9 pela forma do agregado, sem regra própria; C10 na
-> cotação (G-C).
+> texto:** C7, C8 e C9 pela forma do agregado, sem regra própria. C10 é
+> cobrada na cotação, pelo `CotarItensService` (M3-2, ADR-088).
 >
 > **C2 tem conta.** "Toda combinação válida": o menor preço unitário é o preço
 > base mais, em cada grupo, os `minEscolhas` acréscimos mais baratos, mais todo

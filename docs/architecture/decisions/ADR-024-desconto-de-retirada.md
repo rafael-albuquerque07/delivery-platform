@@ -1,6 +1,6 @@
 # ADR-024 — Desconto de retirada, não preço por modalidade
 
-**Status:** Aceita — 23/08/2026 · **emendada em 16/10/2026**: o pedido mínimo existe desde a ADR-028
+**Status:** Aceita — 23/08/2026 · **emendada em 16/10/2026**: o pedido mínimo existe desde a ADR-028 · **emendada em 22/11/2026**: o prazo chegou, e a decisão está confirmada (M3-2)
 **Relacionada:** ADR-009 (modelo de valores), ADR-018 (cotação), ADR-020 (taxa por área), ADR-022 (remuneração do entregador)
 **Premissa do PRD:** "Modalidade — entrega ou retirada no balcão"
 **Detalhada em:** `docs/dominio/pedido.md` I12 · `docs/dominio/estabelecimento.md` §2
@@ -246,3 +246,11 @@ deste ponto:** a ADR-028 fechou a consequência pelo lado que esta ADR apontava,
 comerciante precisou reclamar. *A frase ficou de pé por quase dois meses porque a ADR que a
 pagou não voltou aqui — é o que a seção "Emenda não termina no grep", no README das decisões,
 existe para evitar.*
+
+## Emenda de 22/11/2026, M3-2 — o prazo chegou, e a decisão está confirmada
+
+Esta ADR pediu que a pergunta do preço por modalidade fosse respondida antes de escrever o
+`cotar`, e a emenda de 07/10 repetiu: *"Isso é folga, não dispensa"*. O `cotar` foi escrito na
+M3-2, e o Rafael confirmou antes: **o preço não varia por modalidade, e o `cotar` não recebe
+modalidade** (ADR-088, Decisão 3). A diferença entre entrega e retirada continua na taxa da área e
+no desconto de retirada. O corpo fica como está.

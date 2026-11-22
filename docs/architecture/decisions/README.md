@@ -19,13 +19,13 @@
 | 015 | Emitir JWT com `NimbusJwtEncoder` | ✅ aceita |
 | 016 | Front-end mínimo antes da PWA completa | ✅ aceita · **emendada** (29/09/2026: o 15.A começa no marco 2) · **emendada** (30/09/2026: o TanStack Query sai do 15.A) |
 | 017 | MongoDB como decisão de aprendizado | ✅ aceita |
-| 018 | Snapshot de opções no item e cotação pelo catálogo | ✅ aceita |
+| 018 | Snapshot de opções no item e cotação pelo catálogo | ✅ aceita · **emendada** (22/11/2026: o caminho da cotação — ADR-088) |
 | 019 | `DeliveryQuotePort`: cotação por distância geodésica | ⛔ **revogada** — ver 020 |
 | 020 | Taxa de entrega por área nomeada (bairro / faixa de CEP) | ✅ aceita |
 | 021 | Catálogo de serviços do MVP — oito serviços | ✅ aceita · **emendada** (24/09/2026: `merchant` sem Redis; 26/09/2026: `order` e `delivery` sem Redis; 27/09/2026: `catalog` sem o starter, motivo mantido) |
 | 022 | A remuneração do entregador pertence ao vínculo | ✅ aceita |
 | 023 | Fronteira `order` × `payment`: pedido é dono do registro | ✅ aceita |
-| 024 | Desconto de retirada, não preço por modalidade | ✅ aceita · **emendada** (07/10/2026: o `cotar` é marco 3, e o prazo desta decisão vai com ele) |
+| 024 | Desconto de retirada, não preço por modalidade | ✅ aceita · **emendada** (07/10/2026: o `cotar` é marco 3, e o prazo desta decisão vai com ele) · **emendada** (22/11/2026: o prazo chegou, e a decisão está confirmada) |
 | 025 | Fuso horário do estabelecimento e o dia operacional | ✅ aceita · **emendada** (26/09/2026: um evento de abertura por dia operacional — ADR-046) |
 | 026 | Fila morta, retentativa e reprocessamento | ✅ aceita · **emendada** (29/09/2026: consumidor de invalidação não tem retentativa nem fila morta) · **emendada** (10/10/2026: recusa definitiva vai à fila morta na primeira entrega) |
 | 027 | O que conta como mudança compatível num evento | ✅ aceita · **emendada** (17/10/2026: a exceção do §2, medida no primeiro valor novo num enum publicado) |
@@ -36,7 +36,7 @@
 | 032 | A guarda da conferência pergunta, não escuta | ✅ aceita |
 | 033 | O estado da jornada é perguntado | ✅ aceita |
 | 034 | Resposta que vira snapshot nunca é cacheada | ✅ aceita |
-| 035 | Domínio em português, o resto em inglês | ✅ aceita |
+| 035 | Domínio em português, o resto em inglês | ✅ aceita · **emendada** (22/11/2026: o caminho da cotação) |
 | 036 | O telefone é o identificador de login | ✅ aceita |
 | 037 | A emissão do access token: a chave, o tempo, e o que fica público | ✅ aceita · **emendada** (24/09/2026: cinco rotas públicas, lista viva na 044) |
 | 038 | O `sub` vira `UUID` na borda, e o caso de uso não conhece o token | ✅ aceita |
@@ -55,7 +55,7 @@
 | 051 | A imagem carrega o jar, não o compilador | ✅ aceita |
 | 052 | A versão no documento, e o 409 que ela cria | ✅ aceita |
 | 053 | O contrato declara o que a rota recusa, e um teste prova | ✅ aceita · **emenda a 039** · **emendada** (10/11/2026: um motivo desta classe responde 409) |
-| 054 | O gatilho da identidade de serviço não disparou | ✅ aceita · **emenda a 045** |
+| 054 | O gatilho da identidade de serviço não disparou | ✅ aceita · **emenda a 045** · **emendada** (22/11/2026: a rodada da cotação não pagou, e não precisava) |
 | 055 | O que o cliente mostra quando o servidor recusa | ✅ aceita |
 | 056 | Recurso de outra loja é 404, e o 403 fica com um significado só | ✅ aceita |
 | 057 | A idempotência natural por chave de domínio, e a segunda exceção à invariante 7 | ✅ aceita · **emenda a 048** |
@@ -68,7 +68,7 @@
 | 065 | O produto nasce por rota, e o cardápio é publicado por quem o monta | ✅ aceita · **emendada** (08/11/2026: a rota de tirar do ar nasce sem tela — ADR-078) |
 | 066 | A referência do corpo que não resolve é pedido inválido | ✅ aceita |
 | 067 | O cardápio ganha escrita, e a seção passa a significar alguma coisa | ✅ aceita · **emendada** (10/11/2026: o publicado ganha botão de volta — ADR-079) |
-| 068 | A listagem mostra o rascunho, porque quem a chama é o painel | ✅ aceita |
+| 068 | A listagem mostra o rascunho, porque quem a chama é o painel | ✅ aceita · **emendada** (22/11/2026: a cotação da porta da ADR-018 tem código) |
 | 069 | O convite chega pela mão de quem convida, e o token se lê uma vez | ✅ aceita |
 | 070 | A tela do convite, e o segredo que já está no navegador de quem o recebeu | ✅ aceita · **emendada** (19/10/2026: uma ação, e ela é aceitar — ADR-076) |
 | 071 | A lista tem um dono, e a cópia não é lista | ✅ aceita · **emendada** (16/10/2026: o terceiro item do gatilho não era gatilho; 16/10/2026 (2): os dois itens restantes são regra, e saem do razão) |
@@ -86,10 +86,11 @@
 | 083 | A primeira porta do pedido é o painel, e o canal vem logo depois | ✅ aceita |
 | 084 | O método vira skill obrigatória do repositório | ✅ aceita |
 | 085 | As ideias de plataforma esperam pelo gatilho | ✅ aceita |
-| 086 | O marco 3 em fatias | ✅ aceita · **emendada** (18/11/2026: a fatia 1 são duas consultas — ADR-087) |
+| 086 | O marco 3 em fatias | ✅ aceita · **emendada** (18/11/2026: a fatia 1 são duas consultas — ADR-087) · **emendada** (22/11/2026: a fatia 2 decidida — ADR-088) |
 | 087 | A operação da loja e as condições do pedido, em duas consultas | ✅ aceita |
+| 088 | A cotação do catálogo: a loja na URL, o vínculo basta, e o 409 traz tudo o que caiu | ✅ aceita |
 
-**Oitenta e quatro escritas, duas sem objeto — estas com registro próprio desde
+**Oitenta e cinco escritas, duas sem objeto — estas com registro próprio desde
 25/08/2026 —, nenhuma a escrever.**
 
 ## Onde mora o quê

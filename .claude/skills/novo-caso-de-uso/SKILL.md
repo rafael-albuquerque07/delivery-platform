@@ -103,8 +103,11 @@ no corpo (ADR-081). *Leia os cinco antes de escrever o seu.*
 A régua mora em `CLAUDE.md`, `## Convenções de código` (transição fora da tabela → 409), e na ADR-063 (regra do comerciante é 400; defeito nosso é 500). Em resumo, sem substituí-la:
 
 - **400**: erro de quem chamou · **409**: o estado do mundo não permite · **401**: sem token.
-- **Recurso de outra loja é 404, com o mesmo corpo do inexistente** — nunca 403, que vazaria a
-  existência (ADR-056). **O 403 fica com um significado só:** *"você não tem acesso a esta loja, ou não tem a permissão exigida."*.
+- **Recurso de outra loja cujo identificador vem na URL é 404, com o mesmo corpo do inexistente** —
+  nunca 403, que vazaria a existência (ADR-056, linhas 91 e 92). **Identificador que vem no corpo**
+  segue o documento do agregado — a categoria do produto é 400 (`catalogo.md` §1), o produto da
+  cotação é 409 (`catalogo.md` §5, ADR-088) —, sempre com a mesma resposta para inexistente e para
+  de outra loja (M7). **O 403 fica com um significado só:** *"você não tem acesso a esta loja, ou não tem a permissão exigida."*.
 - Criação → 201 · exclusão lógica → 204.
 
 ## Testes obrigatórios
@@ -114,13 +117,14 @@ A régua mora em `CLAUDE.md`, `## Convenções de código` (transição fora da 
 | **Domínio** | `src/test/java/.../unit/` | Invariante rejeita objeto inválido; transição fora da tabela lança exceção; cálculo de valor bate, inclusive arredondamento |
 | **Caso de uso** | `src/test/java/.../unit/` | Permissão negada impede o efeito; porta externa substituída |
 | **Integração** | `src/test/java/.../integration/`, classe terminada em `IT` | Migration roda; consulta filtra por estabelecimento; unicidade dispara |
-| **API** | `src/test/java/.../integration/`, classe terminada em `IT` | O código de sucesso; 403 sem acesso à loja; **404 para recurso de outra loja**; 400 com payload inválido; 409 em conflito |
+| **API** | `src/test/java/.../integration/`, classe terminada em `IT` | O código de sucesso; 403 sem acesso à loja; **404 para recurso de outra loja, com o id na URL**; 400 com payload inválido; 409 em conflito |
 
 Teste que toca banco usa **Testcontainers**, contra a mesma imagem de produção. Não existe H2 neste
 repositório.
 
 **O teste de isolamento é obrigatório e frequentemente esquecido:** usuário da loja A pede o recurso
-da loja B → **404, com o mesmo corpo do inexistente** (ADR-056). Exemplo: `backend/services/catalog-service/src/test/java/com/deliveryplatform/catalog/integration/ConsultaDeProdutoIT.java`.
+da loja B pelo id na URL → **404, com o mesmo corpo do inexistente** (ADR-056); com o id no corpo,
+vale o documento do agregado, e a mesma resposta para inexistente e para de outra loja (M7). Exemplo: `backend/services/catalog-service/src/test/java/com/deliveryplatform/catalog/integration/ConsultaDeProdutoIT.java`.
 
 ## Checklist antes do commit
 
@@ -137,7 +141,8 @@ da loja B → **404, com o mesmo corpo do inexistente** (ADR-056). Exemplo: `bac
 - [ ] Erro em `ProblemDetail`
 - [ ] Se publica evento: outbox na mesma transação
 - [ ] Se consome evento: `processed_messages` antes do efeito
-- [ ] Teste de isolamento entre estabelecimentos, com **404**
+- [ ] Teste de isolamento entre estabelecimentos: **404** para id na URL; para id no corpo, o que o
+  documento do agregado diz
 - [ ] `contracts/openapi/<nome>-service.json` atualizado
 - [ ] Se contradiz uma ADR: a ADR ganhou emenda na mesma alteração
 - [ ] `./gradlew :services:<nome>-service:test`, de dentro de `backend/`, passa

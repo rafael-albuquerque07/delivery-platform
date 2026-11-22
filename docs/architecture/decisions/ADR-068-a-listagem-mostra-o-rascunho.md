@@ -1,6 +1,6 @@
 # ADR-068 — A listagem mostra o rascunho, porque quem a chama é o painel
 
-- **Status:** aceita
+- **Status:** aceita · **emendada em 22/11/2026**: a cotação da porta da ADR-018 tem código (M3-2)
 - **Data:** 11/10/2026
 - **Rodada:** E-3d
 - **Relacionada:** ADR-018 (a porta de cotação do catálogo), ADR-053 (o contrato declara),
@@ -151,3 +151,11 @@ visível.
 **E o dia em que o cardápio de quem compra existir.** Ele entra pela ADR-018, e se alguém o
 fizer passar por esta rota, **esta ADR é a que está errada** — e o conserto é a porta, não o
 filtro.
+
+## Emenda de 22/11/2026, M3-2 — a cotação da porta da ADR-018 tem código
+
+O texto acima diz que o cardápio de quem compra entra *"pela porta da ADR-018
+(`POST /internal/catalog/quote`), que não existe em código"*. A cotação dessa porta ganhou código
+na M3-2 (ADR-088), em `/internal/merchants/{estabelecimentoId}/catalog/quote`. A leitura do
+cardápio para o canal segue sem rota, e a linha 69 do razão segue esperando por ela. O corpo fica
+como está.

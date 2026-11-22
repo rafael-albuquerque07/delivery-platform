@@ -1,6 +1,6 @@
 # ADR-054 — O gatilho da identidade de serviço não disparou
 
-- **Status:** aceita
+- **Status:** aceita · **emendada em 22/11/2026**: a rodada da cotação não pagou, e não precisava (M3-2)
 - **Data:** 07/10/2026
 - **Rodada:** G-D
 - **Emenda a:** ADR-045 (a credencial entre serviços é o token de quem pediu)
@@ -152,3 +152,10 @@ autoridade de estar escrito.
 de fato, e não dispensa esta ADR: sem ela, o caminho entre aqui e lá fica
 guardado só numa conversa — e foi exatamente isso que o décimo defeito deste
 projeto nomeou.
+
+## Emenda de 22/11/2026, M3-2 — a rodada da cotação não pagou, e não precisava
+
+O texto acima diz que a contradição entre a cotação sem portador e o `/internal/` que responde
+sobre o portador *"é a rodada da cotação que paga"*. A cotação ganhou código na M3-2 (ADR-088), e
+**no marco 3 quem a chama tem portador** — o atendente que lança o pedido (ADR-086). A
+contradição não aparece aqui, e continua armada na linha 48 do razão. O corpo fica como está.

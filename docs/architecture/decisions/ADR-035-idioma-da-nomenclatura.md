@@ -1,6 +1,6 @@
 # ADR-035 — Domínio em português, o resto em inglês, e o adaptador traduz
 
-**Status:** Aceita — 26/08/2026
+**Status:** Aceita — 26/08/2026 · **emendada em 22/11/2026**: o caminho da cotação (M3-2)
 **Fecha a pendência de:** `docs/dominio/catalogo.md` §1 e §10 — "decidir antes do primeiro código"
 **Relacionada:** ADR-012 (rotas do gateway), ADR-018 (modelo do catálogo em inglês), ADR-027 (envelope de evento)
 **Precisa existir antes do marco 1** — a primeira classe de domínio se chama `Usuario` ou `User`
@@ -169,3 +169,11 @@ nasce em português quando o `catalog-service` for escrito.
 
 **`catalogo.md` §1 e §10** — a nota de nomenclatura e o item de pendência saem,
 substituídos por referência a esta ADR.
+
+## Emenda de 22/11/2026, M3-2 — o caminho da cotação
+
+A tabela acima diz, do `POST /internal/catalog/quote`, que o *"prefixo fica"* e que os campos do
+payload viram domínio, *"`estabelecimentoId`, `produtoId`"*. O prefixo `/internal/` ficou; o
+caminho é `/internal/merchants/{estabelecimentoId}/catalog/quote`, e o `estabelecimentoId` saiu
+do corpo para a URL (ADR-088). Os campos do corpo nasceram em português: `itens`, `produtoId`,
+`quantidade`, `opcoes`. O corpo fica como está.

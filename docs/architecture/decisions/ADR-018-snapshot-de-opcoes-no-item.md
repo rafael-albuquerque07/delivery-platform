@@ -1,6 +1,6 @@
 # ADR-018 — Snapshot de opções no item do pedido e cotação pelo catálogo
 
-**Status:** Aceita — 16/08/2026
+**Status:** Aceita — 16/08/2026 · **emendada em 22/11/2026**: o caminho da cotação (M3-2, ADR-088)
 **Relacionada:** ADR-006 (carrinho no Redis), ADR-009 (valores), ADR-017 (MongoDB)
 
 > Esta ADR **refina** a especificação que a originou. Lá, o `order-service`
@@ -215,3 +215,11 @@ marco 2:
 | `POST /internal/catalog/quote` | prefixo fica; os campos do payload viram domínio |
 
 Os nomes da coluna da direita são os que `catalogo.md` §1 já usa.
+
+## Emenda de 22/11/2026, M3-2 — o caminho da cotação, e a nota de 07/10 respondida
+
+A cotação ganhou código na M3-2, em `POST /internal/merchants/{estabelecimentoId}/catalog/quote`:
+a loja sai do corpo e vai para a URL, como nas outras rotas (ADR-088). A nota de 07/10 acima diz
+que *"é a rodada da cotação que a resolve"*: no marco 3 quem chama a cotação tem portador — o
+atendente (ADR-086) —, e a contradição da ADR-054 segue armada na linha 48 do razão. O corpo fica
+como está.

@@ -1,6 +1,6 @@
 # ADR-086 — O marco 3 em fatias
 
-- **Status:** aceita · **emendada em 18/11/2026**: a fatia 1 são duas consultas (M3-1)
+- **Status:** aceita · **emendada em 18/11/2026**: a fatia 1 são duas consultas (M3-1) · **emendada em 22/11/2026**: a fatia 2 decidida (M3-2)
 - **Data:** 17/11/2026
 - **Rodada:** P-5
 - **Relacionada:** ADR-083 (a primeira porta do pedido é o painel), ADR-018 (a cotação), ADR-045 e
@@ -115,3 +115,10 @@ A Decisão 1 punha métodos, troco, mínimo e desconto na resposta da `OperacaoD
 o `estabelecimento.md` a declara com `aberto`, `tipoDeOperacao` e `maxEntregasSimultaneas`. Por
 decisão do Rafael, a operação responde o que a porta declara, e o que a T01 congela vem de uma
 segunda consulta, sem cache (ADR-087). O corpo fica como está.
+
+## Emenda de 22/11/2026, M3-2 — a fatia 2 decidida
+
+A fatia 2 dizia *"`POST /internal/catalog/quote`"* e *"a permissão que a cotação exige, a rodada
+da cotação decide"*. As duas ficaram decididas na ADR-088: o caminho é
+`/internal/merchants/{estabelecimentoId}/catalog/quote`, e o vínculo ativo basta, sem permissão.
+O corpo fica como está.
