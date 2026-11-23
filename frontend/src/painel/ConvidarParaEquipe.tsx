@@ -19,6 +19,7 @@ const ROTULOS: Record<PermissaoDoConvite, string> = {
   VER_ENTREGA: 'Ver entregas',
   GERENCIAR_EQUIPE: 'Convidar e gerenciar a equipe',
   GERENCIAR_JORNADA: 'Abrir e fechar a jornada dos entregadores',
+  LANCAR_PEDIDO: 'Lançar pedido pelo painel',
 };
 
 const ORDEM = Object.keys(ROTULOS) as PermissaoDoConvite[];

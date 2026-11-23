@@ -56,6 +56,20 @@ describe('ConvidarParaEquipe', () => {
     ).toEqual(['Ver pedidos', 'Mudar o andamento do pedido', 'Convidar e gerenciar a equipe']);
   });
 
+  it('M3-3 · quem tem LANCAR_PEDIDO vê a caixa "Lançar pedido pelo painel"', () => {
+    render(
+      <SessaoProvider>
+        <ConvidarParaEquipe
+          estabelecimentoId="p1"
+          minhasPermissoes={[...MINHAS, 'LANCAR_PEDIDO']}
+          origem={ORIGEM}
+        />
+      </SessaoProvider>,
+    );
+
+    expect(screen.getByRole('checkbox', { name: 'Lançar pedido pelo painel' })).toBeInTheDocument();
+  });
+
   it('A2 · o formulário manda o corpo do contrato, e nada além', async () => {
     chamarFalso.mockResolvedValue({ token: TOKEN, expiraEm: '2026-10-22T12:00:00Z' });
 

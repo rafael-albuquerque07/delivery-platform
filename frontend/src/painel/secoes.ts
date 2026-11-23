@@ -21,6 +21,8 @@ const ITENS: Record<Permissao, { rotulo: string; secao: Secao | null }> = {
   GERENCIAR_JORNADA: { rotulo: 'Jornada', secao: null },
   // O menu nomeia a permissão desde a segunda tela dela (ADR-074, gatilho; ADR-082).
   CONFIGURAR_LOJA: { rotulo: 'Configuração da loja', secao: 'configuracao' },
+  // Sem seção, como a GERENCIAR_JORNADA: a tela de lançar é da fatia 6 (ADR-086).
+  LANCAR_PEDIDO: { rotulo: 'Lançar pedido', secao: null },
 };
 
 export function secoesDe(permissoes: Permissao[]): { rotulo: string; secao: Secao }[] {

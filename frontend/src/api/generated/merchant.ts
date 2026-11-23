@@ -434,7 +434,7 @@ export interface components {
              */
             telefone: string;
             /** @description As permissões oferecidas. Só as que quem convida tem (A2). */
-            permissoes: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA")[];
+            permissoes: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA" | "LANCAR_PEDIDO")[];
         };
         /** @description O convite emitido. O token só aparece nesta resposta. */
         ConviteEmitidoResponse: {
@@ -445,7 +445,7 @@ export interface components {
              * @description Até quando o convite vale.
              */
             expiraEm?: string;
-            permissoes?: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA")[];
+            permissoes?: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA" | "LANCAR_PEDIDO")[];
         };
         CriarEstabelecimentoRequest: {
             identificacao: components["schemas"]["IdentificacaoRequest"];
@@ -479,14 +479,14 @@ export interface components {
             nome?: string;
             /** @enum {string} */
             papel?: "ADMINISTRADOR" | "COLABORADOR";
-            permissoes?: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA")[];
+            permissoes?: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA" | "LANCAR_PEDIDO")[];
         };
         AceiteResponse: {
             /** Format: uuid */
             estabelecimentoId?: string;
             /** @enum {string} */
             papel?: "ADMINISTRADOR" | "COLABORADOR";
-            permissoes?: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA")[];
+            permissoes?: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA" | "LANCAR_PEDIDO")[];
         };
         /** @description Se a loja está aberta agora, e como ela opera. */
         OperacaoAtualResponse: {
@@ -510,7 +510,7 @@ export interface components {
             estabelecimentoId?: string;
             /** @enum {string} */
             papel?: "ADMINISTRADOR" | "COLABORADOR";
-            permissoes?: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA")[];
+            permissoes?: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA" | "LANCAR_PEDIDO")[];
         };
         /** @description O expediente a carimbar numa marcação de disponibilidade. */
         ExpedienteCorrenteResponse: {
@@ -540,7 +540,7 @@ export interface components {
             papel: "ADMINISTRADOR" | "COLABORADOR";
             /** @enum {string} */
             estado: "ATIVO" | "SUSPENSO" | "REMOVIDO";
-            permissoes: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA")[];
+            permissoes: ("VER_PRODUTO" | "CRIAR_PRODUTO" | "ALTERAR_PRODUTO" | "DESATIVAR_PRODUTO" | "VER_PEDIDO" | "ALTERAR_STATUS" | "VER_VENDAS" | "VER_ENTREGA" | "GERENCIAR_EQUIPE" | "GERENCIAR_JORNADA" | "CONFIGURAR_LOJA" | "LANCAR_PEDIDO")[];
             /** Format: date-time */
             desde: string;
         };

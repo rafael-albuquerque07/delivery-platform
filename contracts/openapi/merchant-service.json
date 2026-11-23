@@ -1047,7 +1047,7 @@
             "description" : "As permissões oferecidas. Só as que quem convida tem (A2).",
             "items" : {
               "type" : "string",
-              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA" ]
+              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA", "LANCAR_PEDIDO" ]
             },
             "uniqueItems" : true
           }
@@ -1071,7 +1071,7 @@
             "type" : "array",
             "items" : {
               "type" : "string",
-              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA" ]
+              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA", "LANCAR_PEDIDO" ]
             },
             "uniqueItems" : true
           }
@@ -1167,7 +1167,7 @@
             "type" : "array",
             "items" : {
               "type" : "string",
-              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA" ]
+              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA", "LANCAR_PEDIDO" ]
             }
           }
         }
@@ -1187,7 +1187,7 @@
             "type" : "array",
             "items" : {
               "type" : "string",
-              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA" ]
+              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA", "LANCAR_PEDIDO" ]
             },
             "uniqueItems" : true
           }
@@ -1232,7 +1232,7 @@
             "type" : "array",
             "items" : {
               "type" : "string",
-              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA" ]
+              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA", "LANCAR_PEDIDO" ]
             },
             "uniqueItems" : true
           }
@@ -1294,7 +1294,7 @@
             "type" : "array",
             "items" : {
               "type" : "string",
-              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA" ]
+              "enum" : [ "VER_PRODUTO", "CRIAR_PRODUTO", "ALTERAR_PRODUTO", "DESATIVAR_PRODUTO", "VER_PEDIDO", "ALTERAR_STATUS", "VER_VENDAS", "VER_ENTREGA", "GERENCIAR_EQUIPE", "GERENCIAR_JORNADA", "CONFIGURAR_LOJA", "LANCAR_PEDIDO" ]
             },
             "uniqueItems" : true
           },

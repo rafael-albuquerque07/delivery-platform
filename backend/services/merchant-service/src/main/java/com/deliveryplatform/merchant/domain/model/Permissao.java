@@ -1,7 +1,7 @@
 package com.deliveryplatform.merchant.domain.model;
 
 /**
- * As permissões de H2.1, mais uma (`estabelecimento.md` §2).
+ * As permissões de H2.1, mais três (`estabelecimento.md` §2).
  *
  * <p><b>Mora no {@code merchant} e não em {@code :value-types}</b>, e é a mesma
  * pergunta que o {@code diaOperacional} levantou: com <b>um</b> serviço
@@ -45,8 +45,17 @@ public enum Permissao {
     /**
      * A configuração da loja inteira — o horário de funcionamento desde a E-4, e o que
      * mais da H1.2 ganhar rota (ADR-073 §2). Ampla de propósito: ninguém pediu "pode
-     * mexer no horário mas não nas taxas". O {@code ADMINISTRADOR} a recebe por
-     * {@code EnumSet.allOf}, e o convite não a oferece na tela.
+     * mexer no horário mas não nas taxas". O fundador a recebe na criação, por
+     * {@code EnumSet.allOf}, e a migration {@code V9} a deu aos fundadores anteriores a ela; o convite
+     * não a oferece na tela.
      */
-    CONFIGURAR_LOJA
+    CONFIGURAR_LOJA,
+
+    /**
+     * Lançar no painel o pedido que chegou por telefone ou no balcão (H4.5): <i>"uma permissão
+     * própria, que nenhuma das permissões de H2.1 cobre"</i>. O fundador a recebe com as outras, e
+     * o convite a oferece — é para o dono dá-la ao atendente. Nenhuma rota a exige hoje; a rota de
+     * lançar é a da fatia 4 da ADR-086, no {@code order}.
+     */
+    LANCAR_PEDIDO
 }
