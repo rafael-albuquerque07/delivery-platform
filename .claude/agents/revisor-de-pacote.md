@@ -64,6 +64,10 @@ confere, ou "a forma", quando ele confere a forma do pacote.*
 20. **A mutação** (regra 16). Se o pacote muta código: manda copiar o arquivo antes e restaurar da
     cópia, com `diff` vazio? A previsão de quais casos caem sai do que cada caso afirma? Abra os
     casos e confira se dois deles afirmam a mesma coisa.
+21. **A busca** (regra 17). Algum comando junta `-i` com mais de um `-e`? Alguma busca percorre
+    `docs` sem `--exclude-dir=rodadas`? Cada um é achado, com a forma certa ao lado.
+22. **A versão na pasta** (regra 18). Se o pacote é `-v2` ou adiante: o §0 lista os `APLICAR-` da
+    pasta, diz o nome inteiro desta versão, e manda parar se sair outro?
 
 ## O que devolver
 

@@ -105,7 +105,7 @@ application-local.properties
 # Pacote na raiz é de passagem: extraído e aplicado, nunca commitado dali — já
 # aconteceu quatro vezes. O pacote aplicado fica em docs/rodadas/ (S-7).
 /APLICAR-*.md
-# Para onde vai o pacote aplicado: o agente move, não apaga. Sem esta linha,
+# A pasta original do pacote, depois de copiada para docs/rodadas/: o agente move, não apaga. Sem esta linha,
 # um `git add .` publica todos os pacotes de uma vez.
 /_to_delete/
 

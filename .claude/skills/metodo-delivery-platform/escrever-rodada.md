@@ -55,3 +55,13 @@ Cada regra aqui nasceu de um pacote que errou. **Quem escreve segue; quem aplica
     é copiado para fora da árvore; depois, restaurado da cópia, com `diff` vazio — `git checkout`
     não desfaz mutação em arquivo que o git não conhece. E *"cai o caso N, e só ele"* se escreve
     lendo o que cada caso afirma, não o título dele: dois casos que afirmam a mesma coisa caem juntos.
+17. **A busca do pacote roda no Git Bash, e fora de `docs/rodadas/`.** `grep -i` leva um padrão
+    só: com mais de um `-e`, ele aborta no Git Bash do Rafael (saída 134), e a conta prevista vira
+    o número do erro. As alternativas vão num padrão, com `\|` — `grep -rn -i "imprim\|impress"`;
+    em célula de tabela, onde `|` não entra (regra 14), tire o `-i` e liste as grafias com `-e`.
+    E toda busca que percorre `docs` leva `--exclude-dir=rodadas`: os pacotes guardados lá citam as
+    frases antigas, e a busca da regra 15 as acharia.
+18. **Pacote reenviado muda de nome, e o §0 confere qual está na pasta.** Uma versão nova é
+    `APLICAR-<rodada>-v2-…`, e o §0 lista os `APLICAR-` da pasta e diz o nome inteiro desta versão:
+    se sair outro, ou dois, quem aplica para. Na S-7, a versão reenviada tinha o mesmo nome da primeira, nada no §0
+    as distinguia, e a primeira foi aplicada.

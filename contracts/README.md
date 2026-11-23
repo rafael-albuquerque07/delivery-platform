@@ -41,7 +41,10 @@ Repetir a linha nos sete documentos de domínio seria pior que a lacuna.
 
 A varredura, enquanto o build não a faz:
 
-    grep -rhoE "[A-Z][A-Za-z]+V[0-9]" docs/ contracts/ | sort | uniq -c
+    grep -rhoE "[A-Z][A-Za-z]+V[0-9]" docs/ contracts/ --exclude-dir=rodadas | sort | uniq -c
+
+O `--exclude-dir=rodadas` tira os pacotes aplicados guardados em `docs/rodadas/`, que citam
+nomes de evento como texto (S-8).
 
 ## Regra de versionamento
 

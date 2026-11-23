@@ -53,4 +53,11 @@ resposta dele · o que ficou de fora, e por quê · o estado final (`git status 
 `git log --oneline -1`).
 
 ⚠ **Nunca no relatório:** linha do `.env` que o pacote não nomeou, token, senha, nem caminho com o
-nome de usuário do Windows.
+nome de usuário do Windows. **E nenhum `ls -l` nem `ls -la`**, nem para olhar uma pasta por conta
+própria: a coluna do dono é o nome de usuário da máquina. Use `ls -A` (regra 11 do
+`escrever-rodada.md`; na S-6 e na S-7, o nome saiu no relatório por essa coluna).
+
+⚠ **No Git Bash, `grep -i` com mais de um `-e` aborta** (saída 134), e o que sai é o número do
+erro, não a conta. Junte as alternativas num padrão só: `grep -i "uma\|outra"` (regra 17 do
+`escrever-rodada.md`). Se um pacote trouxer a forma que aborta, rode a forma de um padrão só e
+diga no relatório. E busca sua que percorra `docs` leva `--exclude-dir=rodadas`.

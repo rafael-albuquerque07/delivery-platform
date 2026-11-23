@@ -1,6 +1,6 @@
 # ADR-084 — O método vira skill obrigatória do repositório
 
-- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4) · **emendada em 18/11/2026**: o subagente é do repositório (S-5) · **emendada em 22/11/2026**: o revisor de diff (S-6) · **emendada em 22/11/2026**: o pacote aplicado fica no repositório (S-7)
+- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4) · **emendada em 18/11/2026**: o subagente é do repositório (S-5) · **emendada em 22/11/2026**: o revisor de diff (S-6) · **emendada em 22/11/2026**: o pacote aplicado fica no repositório (S-7) · **emendada em 23/11/2026**: a busca no Git Bash e fora das rodadas, e a versão no §0 (S-8)
 - **Data:** 17/11/2026
 - **Rodada:** S-1
 - **Relacionada:** ADR-072 (a seção que o comando colhe, e a segunda passada do `docs/dividas.md`),
@@ -95,3 +95,14 @@ sumia. **Decisão do Rafael:** cada pacote aplicado fica em `docs/rodadas/<RODAD
 rodada, com um `RELATORIO.md` resumido (o passo 12 do `aplicar-rodada.md`; a forma no
 `docs/rodadas/README.md`). Nenhum framework de SDD entrou: a ideia veio do registro de mudanças
 do OpenSpec, sem a ferramenta, porque ela duplicaria o PRD e as ADRs. O corpo fica como está.
+
+## Emenda de 23/11/2026, S-8 — a busca no Git Bash e fora das rodadas, e a versão do pacote no §0
+
+Duas regras novas no `escrever-rodada.md`, cada uma com o item do `revisor-de-pacote` que a
+confere. **A 17:** no Git Bash do Rafael, `grep -i` com mais de um `-e` aborta (saída 134) —
+duas vezes na S-7 —, e as alternativas passam a ir num padrão só, com `\|`; e toda busca em
+`docs` leva `--exclude-dir=rodadas`, porque os pacotes guardados citam as frases antigas. **A 18:** pacote
+reenviado muda de nome, e o §0 confere a versão — na S-7, a versão reenviada tinha o nome da
+primeira, e a primeira foi aplicada, sem a linha do `ls -l` no `aplicar-rodada.md`. Essa linha
+entra agora, com a do `grep -i`, no "Nunca no relatório", que é o que quem aplica lê. O corpo
+fica como está.

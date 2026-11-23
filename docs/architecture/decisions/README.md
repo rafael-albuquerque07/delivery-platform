@@ -84,7 +84,7 @@
 | 081 | A última escrita do merchant, e a lista que o semeador sustentava | ✅ aceita |
 | 082 | A segunda tela da CONFIGURAR_LOJA, e o zero que não é ausência | ✅ aceita |
 | 083 | A primeira porta do pedido é o painel, e o canal vem logo depois | ✅ aceita |
-| 084 | O método vira skill obrigatória do repositório | ✅ aceita · **emendada** (17/11/2026: o critério aponta para o teste) · **emendada** (18/11/2026: o revisor de pacote) · **emendada** (18/11/2026: o subagente é do repositório) · **emendada** (22/11/2026: o revisor de diff) · **emendada** (22/11/2026: o pacote aplicado fica no repositório) |
+| 084 | O método vira skill obrigatória do repositório | ✅ aceita · **emendada** (17/11/2026: o critério aponta para o teste) · **emendada** (18/11/2026: o revisor de pacote) · **emendada** (18/11/2026: o subagente é do repositório) · **emendada** (22/11/2026: o revisor de diff) · **emendada** (22/11/2026: o pacote aplicado fica no repositório) · **emendada** (23/11/2026: a busca no Git Bash e fora das rodadas, e a versão no §0) |
 | 085 | As ideias de plataforma esperam pelo gatilho | ✅ aceita |
 | 086 | O marco 3 em fatias | ✅ aceita · **emendada** (18/11/2026: a fatia 1 são duas consultas — ADR-087) · **emendada** (22/11/2026: a fatia 2 decidida — ADR-088) |
 | 087 | A operação da loja e as condições do pedido, em duas consultas | ✅ aceita |
