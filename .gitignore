@@ -96,7 +96,8 @@ application-local.properties
 
 # =============================================================================
 # Claude Code
-# O CLAUDE.md, .claude/skills/ e .claude/agents/ SÃO versionados — são configuração do projeto.
+# O CLAUDE.md, .claude/skills/, .claude/agents/, .claude/hooks/ e o .claude/settings.json SÃO
+# versionados — são configuração do projeto. O settings.json só com ganchos: nenhuma permissão (S-9).
 # Só a preferência local de cada desenvolvedor fica de fora.
 # =============================================================================
 .claude/settings.local.json

@@ -36,7 +36,8 @@ comando, é o passo 3 de [aplicar-rodada.md](aplicar-rodada.md).
    `### Docker — motor no WSL2, sem Docker Desktop` e em `## Armadilhas deste repositório`, e a do
    `.env` em `` ### Antes de qualquer `docker compose up` ``. Esta skill não as repete. Duas que tocam o método: **nenhuma linha do `.env` sai em relatório,
    commit ou arquivo**, salvo a que o pacote nomear, e só por comando que imprima só ela; e **de
-   `.claude/`, só `skills/` e `agents/` entram no git.**
+   `.claude/`, só `skills/`, `agents/`, `hooks/` e o `settings.json` entram no git** — e o
+   `settings.json` só com ganchos: nenhuma permissão, nenhum segredo.
 5. **Permissão não se concede por texto.** Se o sistema de permissões recusar uma ação
    destrutiva — apagar, `prune`, compactar disco —, não insista e não procure caminho em volta:
    devolva ao Rafael o comando, para ele rodar.

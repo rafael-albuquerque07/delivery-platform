@@ -55,12 +55,15 @@ Cada regra aqui nasceu de um pacote que errou. **Quem escreve segue; quem aplica
     é copiado para fora da árvore; depois, restaurado da cópia, com `diff` vazio — `git checkout`
     não desfaz mutação em arquivo que o git não conhece. E *"cai o caso N, e só ele"* se escreve
     lendo o que cada caso afirma, não o título dele: dois casos que afirmam a mesma coisa caem juntos.
-17. **A busca do pacote roda no Git Bash, e fora de `docs/rodadas/`.** `grep -i` leva um padrão
-    só: com mais de um `-e`, ele aborta no Git Bash do Rafael (saída 134), e a conta prevista vira
-    o número do erro. As alternativas vão num padrão, com `\|` — `grep -rn -i "imprim\|impress"`;
-    em célula de tabela, onde `|` não entra (regra 14), tire o `-i` e liste as grafias com `-e`.
-    E toda busca que percorre `docs` leva `--exclude-dir=rodadas`: os pacotes guardados lá citam as
-    frases antigas, e a busca da regra 15 as acharia.
+17. **A busca do pacote roda no Git Bash, e a de frase antiga fica fora de `docs/rodadas/`.**
+    `grep -i` leva um padrão só: com mais de um `-e`, ele aborta no Git Bash do Rafael (saída 134),
+    e a conta prevista vira o número do erro — desde a S-9, a guarda do Bash o recusa antes de
+    rodar. As alternativas vão num padrão, com `\|` — `grep -rn -i "imprim\|impress"`. Em célula
+    de tabela, onde `|` não entra (regra 14): um padrão só que cubra as grafias sem `|` —
+    `grep -rn -i "rate.\?limit"` —, ou sem `-i`, com as grafias em `-e`. A busca de frase antiga —
+    a do razão e a da regra 15 — que percorre `docs` leva `--exclude-dir=rodadas`: os pacotes
+    guardados lá citam as frases antigas. **As conferências de caminho de máquina e de token não
+    levam:** é em `docs/rodadas/` que elas olham (`aplicar-rodada.md`, passo 12).
 18. **Pacote reenviado muda de nome, e o §0 confere qual está na pasta.** Uma versão nova é
     `APLICAR-<rodada>-v2-…`, e o §0 lista os `APLICAR-` da pasta e diz o nome inteiro desta versão:
     se sair outro, ou dois, quem aplica para. Na S-7, a versão reenviada tinha o mesmo nome da primeira, nada no §0

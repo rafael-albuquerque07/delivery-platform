@@ -1,6 +1,6 @@
 # ADR-084 — O método vira skill obrigatória do repositório
 
-- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4) · **emendada em 18/11/2026**: o subagente é do repositório (S-5) · **emendada em 22/11/2026**: o revisor de diff (S-6) · **emendada em 22/11/2026**: o pacote aplicado fica no repositório (S-7) · **emendada em 23/11/2026**: a busca no Git Bash e fora das rodadas, e a versão no §0 (S-8)
+- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4) · **emendada em 18/11/2026**: o subagente é do repositório (S-5) · **emendada em 22/11/2026**: o revisor de diff (S-6) · **emendada em 22/11/2026**: o pacote aplicado fica no repositório (S-7) · **emendada em 23/11/2026**: a busca no Git Bash e fora das rodadas, e a versão no §0 (S-8) · **emendada em 23/11/2026**: a guarda do Bash (S-9)
 - **Data:** 17/11/2026
 - **Rodada:** S-1
 - **Relacionada:** ADR-072 (a seção que o comando colhe, e a segunda passada do `docs/dividas.md`),
@@ -106,3 +106,23 @@ reenviado muda de nome, e o §0 confere a versão — na S-7, a versão reenviad
 primeira, e a primeira foi aplicada, sem a linha do `ls -l` no `aplicar-rodada.md`. Essa linha
 entra agora, com a do `grep -i`, no "Nunca no relatório", que é o que quem aplica lê. O corpo
 fica como está.
+
+## Emenda de 23/11/2026, S-9 — a guarda do Bash
+
+Na S-8, com a linha nova já no `aplicar-rodada.md`, o primeiro comando de quem aplicou foi outra
+vez um `ls -la` — antes de ler o pacote e a skill. Foi a terceira rodada seguida. **Texto lido
+depois do primeiro comando não segura o primeiro comando.** Desde esta emenda, um gancho do Claude
+Code — `.claude/settings.json`, `PreToolUse` sobre o Bash — chama `.claude/hooks/guarda-do-bash.mjs`
+antes de cada comando, e ele recusa o que imprime o dono do arquivo (regra 11) e o `grep -i` com
+mais de um `-e` (regra 17), com a forma certa na mensagem. O que está entre aspas é texto e passa.
+Se a entrada não for a esperada, a guarda deixa passar: fechar travaria a sessão por um defeito
+dela. `node .claude/hooks/guarda-do-bash.mjs --prova` roda os casos.
+
+E a regra 17 fica mais estreita: a busca de frase antiga pula `docs/rodadas/`, e as conferências
+de caminho de máquina e de token, que o passo 12 do `aplicar-rodada.md` passa a mandar rodar em
+toda rodada, olham justamente para lá. Em célula de tabela, um padrão só sem `|` também serve.
+
+A frase do corpo *"De `.claude/`, só `skills/` é do repositório"*, que a emenda da S-5 estendeu a
+`agents/`, passa a valer com `hooks/` e o `settings.json` também — o `settings.json` só com ganchos,
+nenhuma permissão e nenhum segredo. Decisão do Rafael. O `SKILL.md` e o comentário do `.gitignore`
+dizem o mesmo. O corpo fica como está.

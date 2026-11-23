@@ -45,6 +45,15 @@ O Rafael extrai uma pasta na raiz do repositório e pede para aplicar o `.md` de
     Rodada de medição não tem commit: a pasta dela entra em `docs/rodadas/` no commit da rodada que
     vem logo depois. Versão que parou não se guarda: o `RELATORIO.md` da versão aplicada diz que ela
     existiu, até onde foi e por que parou.
+    **Antes do commit, as duas conferências do que entra na pasta** — as duas têm de dar `1`:
+
+    ```bash
+    grep -rn -i "c:/users\|c:\\\\users\|appdata\|~1\." docs/rodadas/<RODADA>; echo "maquina=$?"
+    grep -rln "gho_\|ghp_\|github_pat_" docs/rodadas/<RODADA>; echo "token=$?"
+    ```
+
+    Pacote que cite esses padrões como texto — o da S-9 cita — sai da busca por `--exclude`, com o
+    nome do arquivo, e o relatório diz qual.
 
 ## O relatório
 
@@ -55,9 +64,12 @@ resposta dele · o que ficou de fora, e por quê · o estado final (`git status 
 ⚠ **Nunca no relatório:** linha do `.env` que o pacote não nomeou, token, senha, nem caminho com o
 nome de usuário do Windows. **E nenhum `ls -l` nem `ls -la`**, nem para olhar uma pasta por conta
 própria: a coluna do dono é o nome de usuário da máquina. Use `ls -A` (regra 11 do
-`escrever-rodada.md`; na S-6 e na S-7, o nome saiu no relatório por essa coluna).
+`escrever-rodada.md`; na S-6 e na S-7, o nome saiu no relatório por essa coluna). Desde a S-9, a
+guarda do Bash (`.claude/hooks/guarda-do-bash.mjs`) recusa esses comandos antes de rodarem.
 
 ⚠ **No Git Bash, `grep -i` com mais de um `-e` aborta** (saída 134), e o que sai é o número do
 erro, não a conta. Junte as alternativas num padrão só: `grep -i "uma\|outra"` (regra 17 do
 `escrever-rodada.md`). Se um pacote trouxer a forma que aborta, rode a forma de um padrão só e
-diga no relatório. E busca sua que percorra `docs` leva `--exclude-dir=rodadas`.
+diga no relatório; a guarda do Bash também recusa essa forma. E busca sua de frase antiga em
+`docs` leva `--exclude-dir=rodadas`; as conferências de caminho de máquina e de token do passo 12
+não levam, porque é em `docs/rodadas/` que elas olham.
