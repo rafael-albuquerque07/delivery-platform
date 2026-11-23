@@ -12,7 +12,7 @@
 | 008 | MongoDB como replica set de nó único | ✅ aceita · **emendada** (27/09/2026: `withReplicaSet()` na Testcontainers 2; `spring.mongodb.uri` no Boot 4) |
 | 009 | Modelo de valores do pedido | ✅ aceita · **emendada pela v1.1** · **emendada** (27/09/2026: `Money` em documento é texto) |
 | 010 | Saga do pedido: pivô em `PRONTO`, pagamento fora da transação | ✅ aceita · **reescrita pela v1.1** |
-| 011 | Autorização comercial: cache em processo, invalidação por evento, fail-closed | ✅ aceita · **emendada** (26/09/2026: a porta não recebe `usuarioId` — ADR-045; 28/09/2026: primeiro consumidor, sem cache até a G-B4; 29/09/2026: `topic` com fila exclusiva, e o cache existe; 17/10/2026: `CONFIGURAR_LOJA`, e por que ela é ampla; 19/10/2026: a permissão não alcança quem já era membro) |
+| 011 | Autorização comercial: cache em processo, invalidação por evento, fail-closed | ✅ aceita · **emendada** (26/09/2026: a porta não recebe `usuarioId` — ADR-045; 28/09/2026: primeiro consumidor, sem cache até a G-B4; 29/09/2026: `topic` com fila exclusiva, e o cache existe; 17/10/2026: `CONFIGURAR_LOJA`, e por que ela é ampla; 19/10/2026: a permissão não alcança quem já era membro; 23/11/2026: a `LANCAR_PEDIDO`, e a dívida de 19/10 paga) |
 | 012 | Roteamento do gateway por recurso, não por serviço | ✅ aceita · **emendada** (24/09/2026: limite de taxa e `correlationId` fora do marco 1; 30/09/2026: `/api/v1/me` compartilhado, a ordem decide; 16/10/2026: a tabela não acompanhou o gateway; 16/10/2026 (2): a tabela deixa de ser a lista, e o teste deriva do gateway) |
 | 013 | Retenção, anonimização e exclusão de dados pessoais | ✅ aceita |
 | 014 | Não adotar H2; Testcontainers como fonte de verdade | ✅ aceita · **emendada pela v1.1** · **emendada** (27/09/2026: todo contêiner prova que é o usado — `ConteinerDeVerdadeIT`) |
@@ -86,7 +86,7 @@
 | 083 | A primeira porta do pedido é o painel, e o canal vem logo depois | ✅ aceita |
 | 084 | O método vira skill obrigatória do repositório | ✅ aceita · **emendada** (17/11/2026: o critério aponta para o teste) · **emendada** (18/11/2026: o revisor de pacote) · **emendada** (18/11/2026: o subagente é do repositório) · **emendada** (22/11/2026: o revisor de diff) · **emendada** (22/11/2026: o pacote aplicado fica no repositório) · **emendada** (23/11/2026: a busca no Git Bash e fora das rodadas, e a versão no §0) · **emendada** (23/11/2026: a guarda do Bash) |
 | 085 | As ideias de plataforma esperam pelo gatilho | ✅ aceita |
-| 086 | O marco 3 em fatias | ✅ aceita · **emendada** (18/11/2026: a fatia 1 são duas consultas — ADR-087) · **emendada** (22/11/2026: a fatia 2 decidida — ADR-088) |
+| 086 | O marco 3 em fatias | ✅ aceita · **emendada** (18/11/2026: a fatia 1 são duas consultas — ADR-087) · **emendada** (22/11/2026: a fatia 2 decidida — ADR-088) · **emendada** (23/11/2026: a fatia 3 decidida) |
 | 087 | A operação da loja e as condições do pedido, em duas consultas | ✅ aceita |
 | 088 | A cotação do catálogo: a loja na URL, o vínculo basta, e o 409 traz tudo o que caiu | ✅ aceita |
 

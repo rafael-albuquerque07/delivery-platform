@@ -1,6 +1,6 @@
 # ADR-086 — O marco 3 em fatias
 
-- **Status:** aceita · **emendada em 18/11/2026**: a fatia 1 são duas consultas (M3-1) · **emendada em 22/11/2026**: a fatia 2 decidida (M3-2)
+- **Status:** aceita · **emendada em 18/11/2026**: a fatia 1 são duas consultas (M3-1) · **emendada em 22/11/2026**: a fatia 2 decidida (M3-2) · **emendada em 23/11/2026**: a fatia 3 decidida (M3-3)
 - **Data:** 17/11/2026
 - **Rodada:** P-5
 - **Relacionada:** ADR-083 (a primeira porta do pedido é o painel), ADR-018 (a cotação), ADR-045 e
@@ -122,3 +122,12 @@ A fatia 2 dizia *"`POST /internal/catalog/quote`"* e *"a permissão que a cotaç
 da cotação decide"*. As duas ficaram decididas na ADR-088: o caminho é
 `/internal/merchants/{estabelecimentoId}/catalog/quote`, e o vínculo ativo basta, sem permissão.
 O corpo fica como está.
+
+## Emenda de 23/11/2026, M3-3 — a fatia 3 decidida
+
+A fatia 3 dizia que o valor novo do `Permissao` *"o `ADMINISTRADOR` recebe por `EnumSet.allOf`"* e
+que *"a rodada da permissão decide como a nova alcança"*. Quem recebe o conjunto inteiro é o
+**fundador**, na criação; e a nova, `LANCAR_PEDIDO`, alcança os fundadores que já existem — o
+primeiro membro da loja, administrador, com as dez permissões anteriores à E-4 — pela
+migration `V9`, junto com a `CONFIGURAR_LOJA` que faltava (ADR-011, emenda desta data). O corpo
+fica como está.

@@ -108,7 +108,7 @@ cache curto.
 
 ### Permissões
 
-Exatamente as de H2.1, mais duas:
+Exatamente as de H2.1, mais três:
 
 ```
 VER_PRODUTO · CRIAR_PRODUTO · ALTERAR_PRODUTO · DESATIVAR_PRODUTO
@@ -117,12 +117,24 @@ VER_VENDAS  · VER_ENTREGA
 GERENCIAR_EQUIPE
 GERENCIAR_JORNADA
 CONFIGURAR_LOJA
+LANCAR_PEDIDO
 ```
 
 > **`CONFIGURAR_LOJA` é acréscimo ao PRD**, da E-4 (ADR-011, emenda de 17/10/2026; ADR-073).
 > Governa a configuração da loja inteira — o horário desde a E-4, e o resto da H1.2 quando
-> ganhar rota. O `ADMINISTRADOR` a recebe com todas as outras, e **a tela de convite não a
+> ganhar rota. O **fundador** a recebe com todas as outras, na criação, e **a tela de convite não a
 > oferece**: a rota de convite a aceita, sob a A2, e a tela não a mostra.
+
+> **`LANCAR_PEDIDO` nasce da H4.5**, que pede *"uma permissão própria, que nenhuma das permissões
+> de H2.1 cobre"* (M3-3, ADR-011 emenda de 23/11/2026). O fundador a recebe com as outras, e **a tela
+> de convite a oferece**: é para o dono dá-la ao atendente do balcão. Nenhuma rota a exige hoje; a
+> rota de lançar é a da fatia 4 da ADR-086, no `order`.
+>
+> **Quem já existia, e a migration `V9`.** As permissões ficam gravadas por membro, e o fundador só
+> ganha o conjunto inteiro na criação. A `V9` dá a `LANCAR_PEDIDO` e a `CONFIGURAR_LOJA` ao
+> fundador — o primeiro membro da loja, administrador, com as dez permissões anteriores à E-4. O
+> colaborador convidado com as dez não entra, nem o administrador promovido depois: papel não é
+> lista de permissões.
 
 > **`GERENCIAR_JORNADA` é acréscimo ao PRD**, e está marcado como tal. Abrir
 > turno, registrar adiantamento e fechar jornada mexem em dinheiro e não cabem

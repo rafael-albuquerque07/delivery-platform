@@ -5,9 +5,9 @@ H4.5, e o critério da H1.3 que entra no marco 3.
 
 **Como esta tabela se lê:** a skill `metodo-delivery-platform`, em `fechar-marco.md`. A coluna
 **fatias** diz que fatias da ADR-086 servem o critério; uma fatia que é **peça** dá ao critério uma
-parte, e não o completa. Fatia 1 medida na M3-1, sobre `d4fb2ec` (ADR-087). Fatia 2 medida na M3-2, sobre `b275220` (ADR-088).
+parte, e não o completa. Fatia 1 medida na M3-1, sobre `d4fb2ec` (ADR-087). Fatia 2 medida na M3-2, sobre `b275220` (ADR-088). Fatia 3 medida na M3-3, sobre `1172fee` (ADR-011, emenda; ADR-086, emenda).
 
-**Estado:** 14 critérios; 1 anotado; 13 contam; nenhum completo; a fatia 1 é peça em 5 deles, e a fatia 2 em 2.
+**Estado:** 14 critérios; 1 anotado; 13 contam; nenhum completo; a fatia 1 é peça em 5 deles, a fatia 2 em 2, e a fatia 3 em 1.
 
 | # | Critério | Fatias | Rota | Tela | Teste | Exercida |
 |---|---|---|---|---|---|---|
@@ -23,5 +23,5 @@ parte, e não o completa. Fatia 1 medida na M3-1, sobre `d4fb2ec` (ADR-087). Fat
 | 4.5c | Quem confirma é o atendente, por ato explícito no painel, no lugar do botão do cliente | | — | — | — | — |
 | 4.5d | O total aparece discriminado antes de lançar — itens, taxa de entrega e desconto | 1 · 2 | — | — | peça (fatia 1): `CondicoesDoPedidoControllerIT`, casos 5, 6 e 10 — a taxa e o desconto · peça (fatia 2): `CotacaoControllerIT`, casos 1 a 3 — os itens, com as opções e os preços | — |
 | 4.5e | O pedido entra na mesma fila do painel, com a origem `BALCAO` — a do que chegou por telefone e a do que chegou no balcão | | — | — | — | — |
-| 4.5f | Lançar exige uma permissão própria, que nenhuma das permissões de H2.1 cobre | | — | — | — | — |
+| 4.5f | Lançar exige uma permissão própria, que nenhuma das permissões de H2.1 cobre | 3 | — | — | peça (fatia 3): `PermissaoDeLancarIT`, casos 1 a 5 — a permissão existe, o fundador a recebe, o convite a dá, a `V9` alcança quem já existia; e `ConvidarParaEquipe.test.tsx`, *"M3-3 · quem tem LANCAR_PEDIDO vê a caixa"* — a tela a oferece | — |
 | 1.3b | Endereço fora da área é recusado no momento do pedido, com mensagem clara | 1 | — | — | peça (fatia 1): `CondicoesDoPedidoControllerIT`, caso 8 — a não atendida, com a lista dos bairros | — |

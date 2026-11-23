@@ -8,7 +8,8 @@ de receber `usuarioId` · **emendada em 28/09/2026**: a porta tem consumidor
 desde a G-B3; o cache fica para a G-B4, com o evento que o invalida ·
 **emendada em 29/09/2026**: a topologia é `topic` com fila exclusiva, e o
 cache existe desde a G-B4 · **emendada em 17/10/2026**: `CONFIGURAR_LOJA`, e por que ela é ampla ·
-**emendada em 19/10/2026**: a permissão não alcança quem já era membro
+**emendada em 19/10/2026**: a permissão não alcança quem já era membro · **emendada em 23/11/2026**:
+a `LANCAR_PEDIDO`, e a dívida de 19/10 paga (M3-3)
 **Relacionada:** ADR-012 (roteamento do gateway), ADR-015 (JWT com `NimbusJwtEncoder`)
 **Detalha:** `docs/dominio/estabelecimento.md` §2 e §3
 **Invariantes do `CLAUDE.md`:** 8 (nenhum serviço lê o banco de outro), 9 (identificador da URL não é confiável)
@@ -355,3 +356,20 @@ ela**, e a tela que ela protege não abre para o fundador dessas lojas.
 `docs/operacao/passagem-humana.md`.
 
 **Não é dívida com condição do mundo:** pagar é decisão nossa.
+
+## Emenda de 23/11/2026, M3-3 — a LANCAR_PEDIDO, e a dívida de 19/10 paga
+
+A H4.5 pede *"uma permissão própria, que nenhuma das permissões de H2.1 cobre"*: nasce a
+**`LANCAR_PEDIDO`**. O fundador a recebe com as outras, em `Membro.fundador`, e a tela de convite
+a oferece. **E ela alcança quem já existe** — o que a `CONFIGURAR_LOJA` não fez (a emenda de
+19/10): a migration `V9` dá a `LANCAR_PEDIDO` **e a `CONFIGURAR_LOJA` que faltava** ao fundador,
+que é o primeiro membro da loja — as três condições juntas: papel `ADMINISTRADOR`, o primeiro
+membro criado na loja, e as dez permissões anteriores à E-4. **O colaborador convidado com as dez
+não entra, nem o administrador promovido depois:** papel não é lista de permissões
+(`estabelecimento.md` §2), e a promoção nunca deu permissão. Sem filtro de estado: permissão não é
+acesso, e `SUSPENSO` ou `REMOVIDO` já barram o acesso sozinhos. Decisão do Rafael.
+
+A exceção da ADR-027 (emenda de 17/10), medida de novo para o valor novo nos três consumidores: o
+`OuvinteDeVinculoAlterado` do `catalog` não lê `permissoes`; `contracts/events/` não tem esquema do
+`VinculoAlteradoV1`, só o envelope, que não declara o enum; e o `PermissaoDoCatalogo.de` devolve
+vazio para o que não conhece. O corpo fica como está.
