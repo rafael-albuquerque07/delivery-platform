@@ -16,7 +16,7 @@ se trabalha** aqui.
 | Aplicar uma rodada | recebeu uma pasta com um `APLICAR-*.md` | [aplicar-rodada.md](aplicar-rodada.md) |
 | Escrever uma rodada | vai escrever um pacote — **ou vai conferir o que recebeu, antes de aplicar** | [escrever-rodada.md](escrever-rodada.md) |
 | Passagem humana | uma pessoa andou o produto no navegador e o que ela viu vai virar registro | [passagem.md](passagem.md) |
-| Fechar um marco | alguém vai dizer que um marco fechou, ou que uma coluna está cumprida | [fechar-marco.md](fechar-marco.md) e a tabela do marco em docs/marcos/ |
+| Fechar um marco | alguém vai dizer que um marco fechou, ou que uma coluna está cumprida | [fechar-marco.md](fechar-marco.md), a tabela do marco em docs/marcos/ e o subagente `auditor-de-marco` |
 
 **Escrever código** — história, endpoint, caso de uso — é da skill `novo-caso-de-uso`. Ela diz como
 se escreve; esta diz como se trabalha. **Numa rodada de código, as duas valem juntas.**

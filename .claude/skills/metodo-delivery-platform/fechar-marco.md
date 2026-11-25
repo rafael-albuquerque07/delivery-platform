@@ -28,4 +28,9 @@ a ordem de construção é a da ADR-083; os critérios de aceite estão nas hist
 5. **O teste e a pessoa não se substituem.** O teste prova que o critério vale hoje e continua
    valendo; a pessoa prova que alguém o viu funcionar como o comerciante vai ver. Um sem o outro
    deixa a coluna vazia.
-6. **Quem declara o marco fechado é o Rafael**, com a tabela na frente.
+6. **Antes de o Rafael declarar, o subagente `auditor-de-marco` refaz a tabela às cegas** — do PRD
+   e do repositório, sem ler `docs/rodadas/`, os pacotes nem a tabela — e só depois a compara com
+   ela. Divergência em que a tabela afirma mais do que o repositório **impede declarar**, até a
+   tabela ou o repositório mudar; a que afirma menos vai para o relatório. *Quem escreve as rodadas
+   preenche a tabela; quem a audita não pode partir do que ele escreveu* (S-10).
+7. **Quem declara o marco fechado é o Rafael**, com a tabela e a auditoria na frente.

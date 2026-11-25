@@ -1,6 +1,6 @@
 # ADR-084 — O método vira skill obrigatória do repositório
 
-- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4) · **emendada em 18/11/2026**: o subagente é do repositório (S-5) · **emendada em 22/11/2026**: o revisor de diff (S-6) · **emendada em 22/11/2026**: o pacote aplicado fica no repositório (S-7) · **emendada em 23/11/2026**: a busca no Git Bash e fora das rodadas, e a versão no §0 (S-8) · **emendada em 23/11/2026**: a guarda do Bash (S-9)
+- **Status:** aceita · **emendada em 17/11/2026**: o critério aponta para o teste (S-3) · **emendada em 18/11/2026**: o revisor de pacote (S-4) · **emendada em 18/11/2026**: o subagente é do repositório (S-5) · **emendada em 22/11/2026**: o revisor de diff (S-6) · **emendada em 22/11/2026**: o pacote aplicado fica no repositório (S-7) · **emendada em 23/11/2026**: a busca no Git Bash e fora das rodadas, e a versão no §0 (S-8) · **emendada em 23/11/2026**: a guarda do Bash (S-9) · **emendada em 25/11/2026**: o auditor de marco (S-10)
 - **Data:** 17/11/2026
 - **Rodada:** S-1
 - **Relacionada:** ADR-072 (a seção que o comando colhe, e a segunda passada do `docs/dividas.md`),
@@ -126,3 +126,16 @@ A frase do corpo *"De `.claude/`, só `skills/` é do repositório"*, que a emen
 `agents/`, passa a valer com `hooks/` e o `settings.json` também — o `settings.json` só com ganchos,
 nenhuma permissão e nenhum segredo. Decisão do Rafael. O `SKILL.md` e o comentário do `.gitignore`
 dizem o mesmo. O corpo fica como está.
+
+## Emenda de 25/11/2026, S-10 — o auditor de marco
+
+O `revisor-de-pacote` confere o plano contra as regras, e o `revisor-de-diff`, o código contra o
+pacote. **Os dois partem do pacote**: se a leitura que quem escreveu fez da especificação estiver
+errada, o pacote nasce errado, o código o segue, e os dois aprovam — foi o que o critério da `V9`
+quase fez na M3-3. **Decisão do Rafael:** um terceiro subagente, o `auditor-de-marco`, só leitura,
+que refaz às cegas a tabela de um marco — do PRD e do repositório, sem ler `docs/rodadas/`, os
+pacotes nem a própria tabela — e só depois a compara com `docs/marcos/marco-N.md`. Ele roda antes
+de o Rafael declarar um marco fechado (o item 6 do `fechar-marco.md`), e a divergência em que a
+tabela afirma mais do que o repositório impede declarar. Ele é independente do texto de quem
+escreve, não do modelo: a passagem humana continua sendo a única prova da tela. O corpo fica como
+está.
