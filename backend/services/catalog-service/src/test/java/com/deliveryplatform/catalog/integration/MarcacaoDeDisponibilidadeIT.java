@@ -179,6 +179,24 @@ class MarcacaoDeDisponibilidadeIT extends Infraestrutura {
                 .isNull();
     }
 
+    /**
+     * A volta que o comerciante faz quando repõe: o que acabou volta a ser oferecido pela mesma
+     * rota. Nenhum caso marcava DISPONIVEL até a A-1 — o auditor de marco achou a falta.
+     */
+    @Test
+    @DisplayName("DISPONIVEL depois de ESGOTADO_HOJE: 200, e o produto volta a ser vendável")
+    void volta_a_disponivel() {
+        Produto pizza = margherita();
+        marcar(loja, pizza.getId(), "ESGOTADO_HOJE").expectStatus().isOk();
+
+        Map<String, Object> resposta = corpo(marcar(loja, pizza.getId(), "DISPONIVEL"));
+
+        assertThat(resposta.get("disponibilidade")).isEqualTo("DISPONIVEL");
+        assertThat(resposta.get("vendavel")).isEqualTo(true);
+        assertThat(produtos.buscarPorId(pizza.getId()).orElseThrow().getDisponibilidade().estado())
+                .isEqualTo(EstadoDeDisponibilidade.DISPONIVEL);
+    }
+
     // ── a opção, e a razão de a resposta ter corpo ──────────────────────────
 
     @Test

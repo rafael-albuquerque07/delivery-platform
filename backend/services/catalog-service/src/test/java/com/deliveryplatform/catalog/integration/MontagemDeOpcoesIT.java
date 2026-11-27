@@ -111,6 +111,29 @@ class MontagemDeOpcoesIT extends Infraestrutura {
     }
 
     /**
+     * Remoção é grupo opcional com acréscimo zero em todas as opções (catalogo.md, a forma do
+     * grupo): ela não muda o valor, existe porque a cozinha precisa da instrução e o pedido
+     * congela o nome (ADR-018). O PRD a lista na H3.1, ao lado do tamanho e dos adicionais (A-1).
+     */
+    @Test
+    @DisplayName("remoções: grupo opcional com opções de acréscimo zero, pela rota — e o banco guarda o zero")
+    void remocoes_com_acrescimo_zero() {
+        Produto pizza = rascunho();
+
+        criarGrupo(loja, pizza.getId(), grupo("Remover", 0, 2, 0)).expectStatus().isCreated();
+        UUID grupoId = gruposNoBanco(pizza).get(0).id();
+        criarOpcao(loja, pizza.getId(), grupoId, opcao("Sem cebola", "0.00", 0)).expectStatus().isCreated();
+        criarOpcao(loja, pizza.getId(), grupoId, opcao("Sem tomate", "0.00", 1)).expectStatus().isCreated();
+
+        assertThat(gruposNoBanco(pizza)).singleElement().satisfies(g -> {
+            assertThat(g.minEscolhas()).as("remoção é opcional").isZero();
+            assertThat(g.maxEscolhas()).isEqualTo(2);
+            assertThat(g.opcoes()).extracting(Opcao::nome).containsExactly("Sem cebola", "Sem tomate");
+            assertThat(g.opcoes()).allSatisfy(o -> assertThat(o.acrescimo()).isEqualTo(Precos.reais("0.00")));
+        });
+    }
+
+    /**
      * O que a ADR-077 abre: a marcação da opção existia desde a G-C, e até aqui nenhuma
      * opção nascia pela rota. Uma opção criada pela rota é marcável pela rota.
      */

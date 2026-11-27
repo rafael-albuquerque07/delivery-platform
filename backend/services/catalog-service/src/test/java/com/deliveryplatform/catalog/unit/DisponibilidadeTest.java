@@ -154,6 +154,13 @@ class DisponibilidadeTest {
             p.marcar(Disponibilidade.esgotadoHoje(SABADO_A_01H, SEXTA));
             assertThat(p.getDisponibilidade().estado())
                     .isEqualTo(EstadoDeDisponibilidade.ESGOTADO_HOJE);
+
+            p.marcar(Disponibilidade.esgotadoIndeterminado(SABADO_A_01H, SEXTA));
+            assertThat(p.getDisponibilidade().estado())
+                    .isEqualTo(EstadoDeDisponibilidade.ESGOTADO_INDETERMINADO);
+
+            p.marcar(Disponibilidade.disponivel(SABADO_A_01H, SEXTA));
+            assertThat(p.getDisponibilidade().estado()).isEqualTo(EstadoDeDisponibilidade.DISPONIVEL);
         }
 
         @Test
